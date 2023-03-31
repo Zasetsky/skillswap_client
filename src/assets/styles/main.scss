@@ -1,0 +1,27 @@
+.custom-outline {
+    .v-text-field__slot:focus-within {
+        top: -5px;
+    }
+    .v-input__slot > fieldset > legend {
+        margin-left: 35px;
+    }
+}
+.password-custom-outline {
+    .v-text-field__slot:focus-within {
+        top: -5px;
+    }
+    .v-input__slot > fieldset > legend {
+        margin-left: 15px;
+    }
+}
+.notEmptyUsername {
+    .v-text-field__slot {
+        top: -5px;
+    }
+}
+.notEmptyPassword {
+    .v-text-field__slot {
+        top: -5px;
+    }
+}
+  
