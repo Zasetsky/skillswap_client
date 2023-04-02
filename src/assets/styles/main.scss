@@ -1,27 +1,65 @@
-.custom-outline {
-    .v-text-field__slot:focus-within {
-        top: -5px;
-    }
-    .v-input__slot > fieldset > legend {
-        margin-left: 35px;
-    }
+// .email-custom-outline {
+//     .v-text-field__slot:focus-within {
+//         top: -5px;
+//     }
+//     .v-input__slot > fieldset > legend {
+//         margin-left: 13px;
+//     }
+// }
+// .password-custom-outline {
+//     .v-text-field__slot:focus-within {
+//         top: -5px;
+//     }
+//     .v-input__slot > fieldset > legend {
+//         margin-left: 15px;
+//     }
+// }
+
+// .repeat-password-custom-outline {
+//     .v-text-field__slot:focus-within {
+//         top: -5px;
+//     }
+//     .v-input__slot > fieldset > legend {
+//         margin-left: 22px;
+//     }
+// }
+
+// .notEmptyEmail {
+//     .v-text-field__slot {
+//         top: -5px;
+//     }
+// }
+// .notEmptyPassword {
+//     .v-text-field__slot {
+//         top: -5px;
+//     }
+// }
+
+// .notEmptyRepeatPassword {
+//     .v-text-field__slot {
+//         top: -5px;
+//     }
+// }
+
+.email-custom-outline input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+.switch-form-text {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: 500;
+    text-align: center;
 }
-.password-custom-outline {
-    .v-text-field__slot:focus-within {
-        top: -5px;
-    }
-    .v-input__slot > fieldset > legend {
-        margin-left: 15px;
-    }
+
+.switch-form-link {
+    margin-left: 5px;
+    color: #264058;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
 }
-.notEmptyUsername {
-    .v-text-field__slot {
-        top: -5px;
-    }
-}
-.notEmptyPassword {
-    .v-text-field__slot {
-        top: -5px;
-    }
-}
-  

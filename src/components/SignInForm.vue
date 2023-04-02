@@ -1,18 +1,22 @@
 <template>
   <div class="sign-in-form">
     <v-img src="../assets/images/swp_logo.png" class="sign-in-form__logo" />
-    <v-form @submit.prevent="login" ref="form">
+    <v-form @submit.prevent="login" @keydown.native.enter="submitOnEnter" ref="form">
       <v-text-field
-        label="Phone number, username, or email"
-        outlined
-        v-model="username"
-        :class="{ notEmptyUsername: isNotEmptyUsername }"
-        class="sign-in-form__input custom-outline"
-        placeholder="'Phone number, username, or email'"
-        @blur="$v.username.$touch()"
-        persistent-hint
-        :error-messages="usernameErrors"
-      />
+          label="Email"
+          v-model="email"
+          :class="{ notEmptyEmail: isNotEmptyEmail }"
+          class="sign-in-form__input email-custom-outline"
+          :error-messages="emailErrors"
+          @input="onEmailInput"
+          @blur="$v.email.$touch()"
+          outlined
+          list="saved-emails"
+      ></v-text-field>
+      <datalist id="saved-emails" ref="savedEmailsList">
+        <option v-for="email in savedEmails" :key="email" :value="email"></option>
+      </datalist>
+
       <v-text-field
         label="Password"
         outlined
@@ -25,6 +29,7 @@
         :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
         @blur="$v.password.$touch()"
         :error-messages="passwordErrors"
+        @input="resetLoginError"
       />
 
       <v-checkbox
@@ -42,92 +47,139 @@
       >
         Log In
       </v-btn>
+      <span class="switch-form-text">Don't have an account yet?<a @click="$emit('switch-to-signup')" class="switch-form-link">Sign up</a></span>
     </v-form>
   </div>
 </template>
 <script>
-import { required, minLength } from 'vuelidate/lib/validators';
+import { required, email, minLength } from 'vuelidate/lib/validators';
 
 export default {
   name: 'SignInForm',
   data() {
     return {
-      username: '',
+      email: '',
       password: '',
       showPassword: false,
       remember: false,
+      savedEmails: [],
+      loginError: false,
     };
   },
+
   validations: {
-    username: { required, minLength: minLength(3), matches: value => /^[a-zA-Z][a-zA-Z0-9]*$/.test(value) },
+    email: { required, email },
     password: { required, minLength: minLength(6), matches: value => /^[a-zA-Z0-9!@#$%^&*()_+-=.,<>?/;:'"[\]{}|`~]+$/.test(value), },
   },
+
   computed: {
-    isNotEmptyUsername() {
-      if(this.username) {
-        return true
-      } else {
-        return false
-      }
+    isNotEmptyEmail() {
+      return !!this.email;
     },
+
     isNotEmptyPassword() {
-      if(this.password) {
-        return true
-      } else {
-        return false
-      }
+      return !!this.password;
     },
+
     isFormValid() {
-      return !this.$v.username.$invalid && !this.$v.password.$invalid;
+      return !this.$v.email.$invalid && !this.$v.password.$invalid;
     },
-    usernameErrors() {
+
+    emailErrors() {
       const errors = [];
-      if (this.$v.username.$error) {
-        if (!this.$v.username.required) {
-          errors.push('Имя пользователя обязательно');
-        }
-        if (!this.$v.username.minLength) {
-          errors.push('Имя пользователя должно содержать не менее 3 символов');
-        }
-        if (!this.$v.username.matches) {
-          errors.push('Имя пользователя не может содержать символы и начинаться с цифр');
-        }
-      }
+      if (!this.$v.email.$dirty) return errors;
+      !this.$v.email.email && errors.push('Invalid email');
+      !this.$v.email.required && errors.push('Email is required');
       return errors;
     },
+
     passwordErrors() {
       const errors = [];
+      if (this.loginError) {
+        errors.push('Неправильный email или пароль');
+      }
       if (this.$v.password.$error) {
         if (!this.$v.password.required) {
           errors.push('Пароль обязателен');
-        }
-        if (!this.$v.password.minLength) {
+        } else if (!this.$v.password.minLength) {
           errors.push('Пароль должен содержать не менее 6 символов');
-        }
-        if (!this.$v.password.matches) {
+        } else if (!this.$v.password.matches) {
           errors.push('Пароль не может содержать специальные символы');
         }
       }
       return errors;
     },
   },
+
   methods: {
     getButtonColor() {
       return this.isFormValid ? '#f8a201' : 'grey darken-1';
     },
-    login() {
+
+    async login() {
       this.$v.$touch();
 
       if (this.isFormValid) {
-        // Очистка полей
-        this.username = '';
-        this.password = '';
-        this.remember = false;
-        this.$v.$reset();
+        try {
+          const response = await this.$store.dispatch('auth/login', {
+            email: this.email,
+            password: this.password,
+          });
 
-        // Обработка входа
+          console.log('User logged in:', response);
+
+          // Сохранён ли уже email
+          if (!this.savedEmails.includes(this.email)) {
+            this.savedEmails.push(this.email);
+            localStorage.setItem('savedEmails', JSON.stringify(this.savedEmails));
+          }
+
+          // Очистка полей
+          this.email = '';
+          this.password = '';
+          this.remember = false;
+          this.$v.$reset();
+
+          // Обработка входа, например, перенаправление на другую страницу
+          this.$router.push('/home'); // Измените на маршрут, на который хотите перенаправить пользователя после входа
+
+        } catch (error) {
+          // Обработка ошибок входа, например, показ сообщения об ошибке
+          console.error('Error during login:', error);
+          if (error.response && (error.response.status === 401 || error.response.status === 404 || error.response.status === 400)) {
+            this.loginError = true;
+            this.password = '';
+          }
+        }
       }
     },
+
+    submitOnEnter(event) {
+      if (event.keyCode === 13 && this.isFormValid) {
+        this.login();
+      }
+    },
+
+    resetLoginError() {
+      this.loginError = false;
+    },
+
+    onEmailInput() {
+      this.$v.email.$touch();
+      if (this.savedEmails.includes(this.email)) {
+        this.$refs.savedEmailsList.innerHTML = '';
+      } else {
+        this.$refs.savedEmailsList.innerHTML = this.savedEmails.map(email => `<option value="${email}"></option>`).join('');
+      }
+    },
+  },
+
+  created() {
+    const savedEmails = localStorage.getItem('savedEmails');
+    if (savedEmails) {
+      this.savedEmails = JSON.parse(savedEmails);
+      console.log('Saved emails:', this.savedEmails);
+    }
   },
 };
 </script>
@@ -140,6 +192,7 @@ export default {
   margin: auto;
   margin-top: 10vh;
   padding: 20px;
+  text-align: center;
 
   @media screen and (max-width: 768px) {
     max-width: 70%;
@@ -167,5 +220,7 @@ export default {
   &__input:focus::placeholder {
     color: rgba(0, 0, 0, 0.8);
   }
+
 }
+
 </style>

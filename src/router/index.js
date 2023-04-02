@@ -1,8 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from '@/store'
 
-import Home from '@/views/LoginView.vue'
-// import Profile from '@/views/ProfileView.vue'
+import LoginPage from '@/views/LoginPage.vue'
+import ProfileSetup from '@/views/ProfileSetup.vue'
 // import Swap from '@/views/SwapView.vue'
 // import SkillDetails from '@/views/SkillDetails.vue'
 
@@ -13,14 +14,16 @@ const router = new Router({
   routes: [
     {
       path: '/',
-      name: 'Home',
-      component: Home,
+      name: 'Login',
+      component: LoginPage,
+      meta: { public: true },
     },
-    // {
-    //   path: '/profile',
-    //   name: 'Profile',
-    //   component: Profile,
-    // },
+    {
+      path: '/profile_setup',
+      name: 'ProfileSetup',
+      component: ProfileSetup,
+      meta: { requiresAuth: true },
+    },
     // {
     //   path: '/swap',
     //   name: 'Swap',
@@ -32,19 +35,23 @@ const router = new Router({
     //   component: SkillDetails,
     //   props: true,
     // },
-    // {
-    //   path: '/login',
-    //   name: 'LoginView',
-    //   component: LoginView,
-    // },
   ],
 })
 
+router.beforeEach((to, from, next) => {
+  const loggedIn = !!store.state.auth.token;
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const isPublic = to.matched.some(record => record.meta.public);
+
+  if (requiresAuth && !loggedIn) {
+    return next('/');
+  }
+
+  if (isPublic && loggedIn) {
+    return next('/profile_setup');
+  }
+
+  next();
+});
+
 export default router
-/*
-Home: Главная страница (путь: /), отображающая список навыков.
-Profile: Страница профиля пользователя (путь: /profile).
-Swap: Страница обмена навыками (путь: /swap).
-SkillDetails: Страница с подробной информацией о навыке (путь: /skill/:id). 
-В этом маршруте используется параметр :id для передачи идентификатора навыка.
-*/
