@@ -1,11 +1,10 @@
 <template>
   <div class="sign-in-form">
-    <v-img src="../assets/images/swp_logo.png" class="sign-in-form__logo" />
+    <v-img src="../../assets/images/swp_logo.png" class="sign-in-form__logo" />
     <v-form @submit.prevent="login" @keydown.native.enter="submitOnEnter" ref="form">
       <v-text-field
           label="Email"
           v-model="email"
-          :class="{ notEmptyEmail: isNotEmptyEmail }"
           class="sign-in-form__input email-custom-outline"
           :error-messages="emailErrors"
           @input="onEmailInput"
@@ -21,7 +20,6 @@
         label="Password"
         outlined
         v-model="password"
-        :class="{ notEmptyPassword: isNotEmptyPassword }"
         class="sign-in-form__input password-custom-outline"
         :placeholder="'Password'"
         :type="showPassword ? 'text' : 'password'"
@@ -73,14 +71,6 @@ export default {
   },
 
   computed: {
-    isNotEmptyEmail() {
-      return !!this.email;
-    },
-
-    isNotEmptyPassword() {
-      return !!this.password;
-    },
-
     isFormValid() {
       return !this.$v.email.$invalid && !this.$v.password.$invalid;
     },
@@ -141,7 +131,7 @@ export default {
           this.$v.$reset();
 
           // Обработка входа, например, перенаправление на другую страницу
-          this.$router.push('/home'); // Измените на маршрут, на который хотите перенаправить пользователя после входа
+          this.$router.push('/profile_setup'); // Измените на маршрут, на который хотите перенаправить пользователя после входа
 
         } catch (error) {
           // Обработка ошибок входа, например, показ сообщения об ошибке

@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import SignUpForm from '@/components/SignUpForm.vue';
-import SignInForm from '@/components/SignInForm.vue';
+import SignUpForm from '@/components/LoginComponents/SignUpForm.vue';
+import SignInForm from '@/components/LoginComponents/SignInForm.vue';
 
 export default {
   name: 'LoginPage',
