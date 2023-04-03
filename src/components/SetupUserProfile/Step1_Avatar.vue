@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import { mapActions, mapGetters } from "vuex";
+
 export default {
   name: "Step1_Avatar",
   data() {
@@ -25,19 +27,25 @@ export default {
     };
   },
   methods: {
+    ...mapActions("user", ["setAvatarUrl", "updateAvatar"]),
     previewAvatar() {
       if (this.avatarFile) {
         const reader = new FileReader();
         reader.readAsDataURL(this.avatarFile);
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
           this.avatarUrl = event.target.result;
-          this.$emit("avatarSelected", this.avatarFile);
         };
       }
     },
-    goToNextStep() {
+    async goToNextStep() {
+      if (this.avatarFile) {
+        await this.updateAvatar(this.avatarFile);
+      }
       this.$emit("go-to-next-step");
-    }
+    },
+  },
+  computed: {
+    ...mapGetters("user", ["getAvatarUrl"]),
   },
 };
 </script>
