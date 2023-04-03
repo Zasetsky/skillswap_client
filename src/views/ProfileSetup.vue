@@ -58,9 +58,30 @@ export default {
   data() {
     return {
       step: 1,
+      avatar: null,
+      name: "",
+      strongSkills: [],
+      weakSkills: [],
+      exchangePreferences: []
     };
   },
   methods: {
+    basicInfoUpdated({ name }) {
+      this.name = name;
+    },
+    strongSkillsUpdated(strongSkills) {
+      this.strongSkills = strongSkills;
+    },
+    weakSkillsUpdated(weakSkills) {
+      this.weakSkills = weakSkills;
+    },
+    exchangePreferencesUpdated(exchangePreferences) {
+      this.exchangePreferences = exchangePreferences;
+    },
+    finishProfileSetup() {
+      // Здесь вы можете отправить данные профиля на сервер или выполнить другие действия
+      console.log("Профиль успешно настроен");
+    },
     goToNextStep() {
       this.step++;
     }

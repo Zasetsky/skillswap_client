@@ -67,7 +67,7 @@ const actions = {
       // Сохраняем токен в localStorage и в state
       localStorage.setItem('token', token);
       commit('setToken', token);
-
+      
       // Сохраняем информацию о пользователе в state
       commit('setUser', user);
 
@@ -101,7 +101,8 @@ const actions = {
             'Authorization': `Bearer ${token}`,
           },
         });
-        commit('setUser', response.data);
+        commit('setUser', response.data.user);
+        console.log('USER: ', response.data.user);
       } catch (error) {
         console.error('Error during auto-login:', error);
         if (error.response && error.response.status === 401) {
