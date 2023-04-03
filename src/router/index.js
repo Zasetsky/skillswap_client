@@ -41,8 +41,8 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   const loggedIn = !!store.state.auth.token;
-  const isProfileSetUp = store.state.auth.user && store.state.auth.user.isProfileSetUp;
-  console.log('isProfileSetUp: ', isProfileSetUp);
+  const isLastNameLength = store.state.auth.user && store.state.auth.user.lastName;
+  console.log(isLastNameLength);
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const isPublic = to.matched.some(record => record.meta.public);
 
@@ -50,11 +50,11 @@ router.beforeEach((to, from, next) => {
     return next('/');
   }
 
-  if (isPublic && loggedIn) {
+  if (isPublic && loggedIn ) { // && !isLastNameLength
     return next('/profile_setup');
   }
 
-  // if (to.name === 'ProfileSetup' && isProfileSetUp) {
+  // if (to.name === 'ProfileSetup' && isLastNameLength) {
   //   return next('/home'); 
   // }
 
