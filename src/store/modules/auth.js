@@ -102,7 +102,7 @@ const actions = {
           },
         });
         commit('setUser', response.data.user);
-
+        console.log(response.data.user);
       } catch (error) {
         console.error('Error during auto-login:', error);
         if (error.response && error.response.status === 401) {

@@ -94,7 +94,7 @@ export default {
 
 
   methods: {
-    ...mapActions(['fetchAvailableSkills']),
+    ...mapActions(['fetchAvailableSkills', 'addStrongSkills']),
 
     selectTheme(theme) {
       this.selectedTheme = theme;
@@ -146,8 +146,9 @@ export default {
       this.selectedSubCategory = null;
     },
 
-    goToNextStep() {
+    async goToNextStep() {
       if (this.strongSkills.length >= this.minSkillsRequired) {
+        await this.addStrongSkills(this.strongSkills);
         this.$emit("go-to-next-step");
       }
     },

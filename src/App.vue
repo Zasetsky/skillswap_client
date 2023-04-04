@@ -1,8 +1,8 @@
 <template>
   <v-app>
-    <!-- <nav v-if="isAuthenticated && !isLoginPage">
+    <nav v-if="isAuthenticated && !isLoginPage">
       <NavbarComponent />
-    </nav> -->
+    </nav>
     <v-main>
       <router-view />
     </v-main>
@@ -10,12 +10,12 @@
 </template>
 
 <script>
-// import NavbarComponent from './components/NavbarComponent.vue';
+import NavbarComponent from './components/NavbarComponent.vue';
 
 export default {
   name: 'App',
   components: {
-    // NavbarComponent,
+    NavbarComponent,
   },
   computed: {
     isAuthenticated() {
