@@ -61,12 +61,12 @@ export default {
     };
   },
   methods: {
-    loadStepFromLocalStorage() {
-      const storedStep = localStorage.getItem("currentStep");
-      if (storedStep) {
-        this.step = parseInt(storedStep, 10);
-      }
-    },
+    // loadStepFromLocalStorage() {
+    //   const storedStep = localStorage.getItem("currentStep");
+    //   if (storedStep) {
+    //     this.step = parseInt(storedStep, 10);
+    //   }
+    // },
 
     goToNextStep() {
       this.step++;
@@ -74,9 +74,9 @@ export default {
     },
   },
 
-  mounted() {
-    this.loadStepFromLocalStorage();
-  },
+  // mounted() {
+  //   this.loadStepFromLocalStorage();
+  // },
 };
 </script>
 

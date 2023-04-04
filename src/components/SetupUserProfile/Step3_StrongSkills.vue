@@ -62,7 +62,7 @@
         Далее
       </v-btn>
       <div v-if="strongSkills.length < minSkillsRequired" class="error-message">
-      Выберите хотя бы 3 навыка
+      Выберите хотя бы 1 навык
     </div>
     </v-form>
   </div>
@@ -88,7 +88,7 @@ export default {
       selectedTheme: null,
       selectedCategory: null,
       selectedSubCategory: null,
-      minSkillsRequired: 3,
+      minSkillsRequired: 1,
       };
   },
 
@@ -148,7 +148,7 @@ export default {
 
     async goToNextStep() {
       if (this.strongSkills.length >= this.minSkillsRequired) {
-        await this.addStrongSkills(this.strongSkills);
+        // await this.addStrongSkills(this.strongSkills);
         this.$emit("go-to-next-step");
       }
     },
@@ -203,75 +203,73 @@ export default {
 
 <style scoped lang="scss">
 .step3-strong-skills {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-
-
   .title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 2rem;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
   }
 
   .form {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .error-message {
-    margin-top: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .theme-buttons {
-    margin-bottom: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 
     .theme-button {
-      margin-bottom: 0.5rem;
-      text-transform: none;
-    }
-  }
-
-  .navigation-container {
-    margin-bottom: 2rem;
-
-    .navigation-button {
-      margin-right: 1rem;
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
     }
   }
 
   .category-buttons {
-    margin-bottom: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 
     .category-button {
-      margin-bottom: 0.5rem;
-      text-transform: none;
-      flex: 1;
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
     }
   }
 
   .subcategory-buttons {
-    margin-bottom: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 
     .subcategory-button {
-      margin-bottom: 0.5rem;
-      text-transform: none;
-      flex: 1;
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
     }
   }
 
   .skill-chips {
-    margin-bottom: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    .v-chip {
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+    }
   }
 
   .selected-skills {
-    margin-top: 2rem;
+    margin-bottom: 1.5rem;
 
     h4 {
+      font-size: 1.5rem;
       margin-bottom: 1rem;
     }
 
     v-btn {
+      font-size: 1.5rem;
       margin-right: 1rem;
       margin-bottom: 1rem;
       text-transform: none;
@@ -279,9 +277,50 @@ export default {
   }
 
   .next-button {
-    margin-top: 2rem;
+    font-size: 1.5rem;
+    padding: 0.5rem 1rem;
     text-transform: none;
     max-width: 10rem;
+  }
+
+  .navigation-container {
+    margin-bottom: 1.5rem;
+
+    .navigation-button {
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      margin-right: 1rem;
+    }
+  }
+
+  .error-message {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .step3-strong-skills {
+    .title {
+      font-size: 1.5rem;
+    }
+
+    .theme-button, .category-button, .subcategory-button, .v-chip, .next-button, .navigation-button {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .error-message {
+      font-size: 1rem;
+    }
+
+    .navigation-container {
+      .navigation-button {
+        font-size: 1rem;
+        padding: 0.5rem;
+        margin-right: 0.5rem;
+      }
+    }
   }
 }
 </style>
