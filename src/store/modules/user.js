@@ -37,7 +37,7 @@ const actions = {
       formData.append('avatar', file);
       console.log('Authorization header:', axios.defaults.headers.common['Authorization']);
       const token = localStorage.getItem('token');
-      console.log('Token from localStorage:', token);
+
       const response = await axios.post(`${API_URL}/avatar`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -64,7 +64,7 @@ const actions = {
       });
   
       commit("SET_USER_PROFILE", response.data.user);
-      console.log('USER_PROFILE_RES:', response.data.user);
+
     } catch (error) {
       console.error("Error updating profile:", error);
     }

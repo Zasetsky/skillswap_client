@@ -19,19 +19,19 @@
         </v-stepper-content>
 
         <v-stepper-content step="2">
-          <Step2_BasicInfo @basic-info-updated="basicInfoUpdated" @go-to-next-step="goToNextStep" />
+          <Step2_BasicInfo @go-to-next-step="goToNextStep" />
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <Step3_StrongSkills @strong-skills-updated="strongSkillsUpdated" @go-to-next-step="goToNextStep" />
+          <Step3_StrongSkills @go-to-next-step="goToNextStep" />
         </v-stepper-content>
 
         <v-stepper-content step="4">
-          <Step4_WeakSkills @weak-skills-updated="weakSkillsUpdated" @go-to-next-step="goToNextStep" />
+          <Step4_WeakSkills @go-to-next-step="goToNextStep" />
         </v-stepper-content>
 
         <v-stepper-content step="5">
-          <Step5_ExchangePreferences @exchange-preferences-updated="exchangePreferencesUpdated" @go-to-next-step="goToNextStep" />
+          <Step5_ExchangePreferences @go-to-next-step="goToNextStep" />
         </v-stepper-content>
 
       </v-stepper-items>
@@ -58,26 +58,9 @@ export default {
   data() {
     return {
       step: 1,
-      avatar: null,
-      name: "",
-      strongSkills: [],
-      weakSkills: [],
-      exchangePreferences: []
     };
   },
   methods: {
-    basicInfoUpdated({ name }) {
-      this.name = name;
-    },
-    strongSkillsUpdated(strongSkills) {
-      this.strongSkills = strongSkills;
-    },
-    weakSkillsUpdated(weakSkills) {
-      this.weakSkills = weakSkills;
-    },
-    exchangePreferencesUpdated(exchangePreferences) {
-      this.exchangePreferences = exchangePreferences;
-    },
     finishProfileSetup() {
       // Здесь вы можете отправить данные профиля на сервер или выполнить другие действия
       console.log("Профиль успешно настроен");

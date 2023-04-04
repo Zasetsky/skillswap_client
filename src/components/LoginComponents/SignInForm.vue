@@ -168,7 +168,6 @@ export default {
     const savedEmails = localStorage.getItem('savedEmails');
     if (savedEmails) {
       this.savedEmails = JSON.parse(savedEmails);
-      console.log('Saved emails:', this.savedEmails);
     }
   },
 };

@@ -2,8 +2,8 @@
   <div class="step1-avatar">
     <h3>Загрузите ваш аватар</h3>
     <v-avatar size="150">
-      <img v-if="!currentUser.avatar" :src="avatarUrl" alt="Аватар" />
-      <img v-else :src="currentUser.avatar" alt="Аватар" />
+      <img v-if="avatarUrl" :src="avatarUrl" alt="Аватар" />
+      <img v-else-if="currentUser && currentUser.avatar" :src="currentUser.avatar" alt="Аватар" />
     </v-avatar>
     <v-file-input
       label="Выберите файл"
@@ -50,9 +50,6 @@ export default {
     ...mapGetters("user", ["getAvatarUrl"]),
     ...mapGetters("auth", ["currentUser"])
   },
-  mounted() {
-    console.log(this.currentUser.avatar);
-  }
 };
 </script>
 
