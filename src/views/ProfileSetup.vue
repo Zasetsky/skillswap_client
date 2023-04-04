@@ -61,14 +61,22 @@ export default {
     };
   },
   methods: {
-    finishProfileSetup() {
-      // Здесь вы можете отправить данные профиля на сервер или выполнить другие действия
-      console.log("Профиль успешно настроен");
+    loadStepFromLocalStorage() {
+      const storedStep = localStorage.getItem("currentStep");
+      if (storedStep) {
+        this.step = parseInt(storedStep, 10);
+      }
     },
+
     goToNextStep() {
       this.step++;
-    }
-  }
+      localStorage.setItem("currentStep", this.step);
+    },
+  },
+
+  mounted() {
+    this.loadStepFromLocalStorage();
+  },
 };
 </script>
 
