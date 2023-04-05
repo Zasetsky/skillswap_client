@@ -1,34 +1,19 @@
 import axios from 'axios';
+import store from '@/store';
 
 const API_URL = 'http://localhost:3000/api/profile'
 
 const state = {
-  userProfile: {
-    avatarUrl: null,
-    name: null,
-    strongSkills: [],
-    weakSkills: [],
-    exchangePreferences: [],
-  },
+  avatarUrl: null,
 };
 
 const mutations = {
-  SET_USER_PROFILE(state, userProfile) {
-    state.userProfile = userProfile;
-  },
   SET_AVATAR_URL(state, avatarUrl) {
-    state.userProfile.avatarUrl = avatarUrl;
+    state.avatarUrl = avatarUrl;
   },
 };
 
 const actions = {
-  setUserProfile({ commit }, userProfile) {
-    commit("SET_USER_PROFILE", userProfile);
-  },
-
-  setAvatarUrl({ commit }, avatarUrl) {
-    commit("SET_AVATAR_URL", avatarUrl);
-  },
 
   // Обновление аватарки
 
@@ -106,16 +91,18 @@ const actions = {
   
       // Обработка ответа сервера
       console.log('Server: ', response.data);
+  
+      // Обновление текущего пользователя в состоянии приложения
+      store.commit('auth/setUser', response.data.user, { root: true });
     } catch (error) {
       console.error('Error saving availability:', error);
     }
-  },  
+  },
 
 };
 
 
 const getters = {
-  getUserProfile: state => state.userProfile,
   getAvatarUrl: state => state.userProfile.avatarUrl,
 };
 

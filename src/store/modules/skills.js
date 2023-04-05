@@ -28,7 +28,7 @@ const actions = {
 
     // Добавление навыков пользователю для преподавания 
 
-    async addStrongSkills(strongSkills) {
+    async addStrongSkills(context, strongSkills) {
         try {
             await axios.post(`${API_URL}/add-skills-to-teach`, { skills: strongSkills });
             } catch (error) {
@@ -38,7 +38,7 @@ const actions = {
 
     // Добавление навыков пользователю для изучения 
 
-    async addWeakSkills( weakSkills) {
+    async addWeakSkills(context, weakSkills) {
         try {
           await axios.post(`${API_URL}/add-skills-to-learn`, { skills: weakSkills });
         } catch (error) {

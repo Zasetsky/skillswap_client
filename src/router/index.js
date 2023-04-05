@@ -30,6 +30,7 @@ const router = new Router({
       path: '/profile',
       name: 'Profile',
       component: ProfilePage,
+      meta: { requiresAuth: true },
     },
     // {
     //   path: '/skill/:id',
@@ -40,7 +41,7 @@ const router = new Router({
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const token = store.state.auth.token;
   let loggedIn = false;
   if (token) {
@@ -54,20 +55,22 @@ router.beforeEach((to, from, next) => {
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const isPublic = to.matched.some(record => record.meta.public);
+  const isProfileSetup = store.state.auth.user?.availability;
 
-  if (requiresAuth && !loggedIn) {
-    return next('/');
+  try {
+    if (requiresAuth && !loggedIn) {
+      throw new Error('Unauthorized');
+    } else if (isPublic && loggedIn && !isProfileSetup) {
+      await router.push('/profile_setup');
+    } else if (to.name === 'ProfileSetup' && isProfileSetup) {
+      await router.push('/profile');
+    } else {
+      next();
+    }
+  } catch (error) {
+    console.error(error);
+    await router.push('/');
   }
-
-  if (isPublic && loggedIn) {
-    return next('/profile_setup');
-  }
-
-   // if (to.name === 'ProfileSetup' && isLastNameLength) {
-  //   return next('/profile'); 
-  // }
-
-  next();
 });
 
 export default router

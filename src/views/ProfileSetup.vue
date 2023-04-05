@@ -31,7 +31,7 @@
         </v-stepper-content>
 
         <v-stepper-content step="5">
-          <Step5_ExchangePreferences @go-to-next-step="goToNextStep" />
+          <Step5_ExchangePreferences @finish-profile-setup="finishProfileSetup" />
         </v-stepper-content>
 
       </v-stepper-items>
@@ -61,23 +61,32 @@ export default {
       step: 1,
     };
   },
-  methods: {
-    // loadStepFromLocalStorage() {
-    //   const storedStep = localStorage.getItem("currentStep");
-    //   if (storedStep) {
-    //     this.step = parseInt(storedStep, 10);
-    //   }
-    // },
 
-    goToNextStep() {
-      this.step++;
-      localStorage.setItem("currentStep", this.step);
-    },
+
+  methods: {
+  loadStepFromLocalStorage() {
+    const userId = this.$store.state.auth.user._id;
+    const storedStep = localStorage.getItem(`currentStep_${userId}`);
+    if (storedStep) {
+      this.step = parseInt(storedStep, 10);
+    }
   },
 
-  // mounted() {
-  //   this.loadStepFromLocalStorage();
-  // },
+  goToNextStep() {
+    const userId = this.$store.state.auth.user.id;
+    this.step++;
+    localStorage.setItem(`currentStep_${userId}`, this.step);
+  },
+
+    finishProfileSetup() {
+      this.$router.push('/profile');
+    }
+  },
+
+
+  mounted() {
+    this.loadStepFromLocalStorage();
+  },
 };
 </script>
 

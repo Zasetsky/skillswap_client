@@ -32,7 +32,7 @@ export default {
     async saveAndGoToNextStep() {
       console.log('exchangePreference before dispatch:', this.exchangePreference);
       await this.$store.dispatch('user/updateUserAvailability', this.exchangePreference);
-      // this.$emit('go-to-next-step');
+      this.$emit('finish-profile-setup');
     },
   },
 };

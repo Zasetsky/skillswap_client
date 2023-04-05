@@ -71,6 +71,7 @@ const actions = {
       
       // Сохраняем информацию о пользователе в state
       commit('setUser', user);
+      console.log(user);
 
       // Установка заголовка авторизации для всех будущих запросов
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
