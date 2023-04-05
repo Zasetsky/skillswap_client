@@ -147,7 +147,7 @@ export default {
 
     async goToNextStep() {
       if (this.weakSkills.length >= this.minSkillsRequired) {
-        await this.addWeakSkills(this.weakSkills);
+        // await this.addWeakSkills(this.weakSkills);
         this.$emit("go-to-next-step");
       }
     },

@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-stepper v-model="step">
-      <v-stepper-header>
+      <!-- <v-stepper-header>
         <v-stepper-step step="1" complete-icon="mdi-check">Аватар</v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="2" complete-icon="mdi-check">Основная информация</v-stepper-step>
@@ -11,7 +11,7 @@
         <v-stepper-step step="4" complete-icon="mdi-check">Слабые навыки</v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step="5" complete-icon="mdi-check">Предпочтения обмена</v-stepper-step>
-      </v-stepper-header>
+      </v-stepper-header> -->
 
       <v-stepper-items>
         <v-stepper-content step="1">
@@ -47,6 +47,7 @@ import Step4_WeakSkills from '@/components/SetupUserProfile/Step4_WeakSkills.vue
 import Step5_ExchangePreferences from '@/components/SetupUserProfile/Step5_ExchangePreferences.vue';
 
 export default {
+  
   name: 'ProfileSetup',
   components: {
     Step1_Avatar,
@@ -81,8 +82,4 @@ export default {
 </script>
 
 <style scoped>
-.profile-setup {
-  max-width: 800px;
-  margin: 0 auto;
-}
 </style>

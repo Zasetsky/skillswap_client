@@ -1,10 +1,11 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import store from '@/store'
+import jwtDecode from 'jwt-decode';
 
 import LoginPage from '@/views/LoginPage.vue'
 import ProfileSetup from '@/views/ProfileSetup.vue'
-import HomePage from '@/views/HomePage.vue'
+import ProfilePage from '@/views/ProfilePage.vue'
 // import Swap from '@/views/SwapView.vue'
 // import SkillDetails from '@/views/SkillDetails.vue'
 
@@ -26,9 +27,9 @@ const router = new Router({
       meta: { requiresAuth: true },
     },
     {
-      path: '/home',
-      name: 'Home',
-      component: HomePage,
+      path: '/profile',
+      name: 'Profile',
+      component: ProfilePage,
     },
     // {
     //   path: '/skill/:id',
@@ -40,9 +41,17 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
-  const loggedIn = !!store.state.auth.token;
-  const isLastNameLength = store.state.auth.user && store.state.auth.user.lastName;
-  console.log(isLastNameLength);
+  const token = store.state.auth.token;
+  let loggedIn = false;
+  if (token) {
+    try {
+      const decodedToken = jwtDecode(token);
+      loggedIn = decodedToken.exp > Date.now() / 1000;
+    } catch (e) {
+      loggedIn = false;
+    }
+  }
+
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const isPublic = to.matched.some(record => record.meta.public);
 
@@ -50,12 +59,12 @@ router.beforeEach((to, from, next) => {
     return next('/');
   }
 
-  if (isPublic && loggedIn ) { // && !isLastNameLength
+  if (isPublic && loggedIn) {
     return next('/profile_setup');
   }
 
-  // if (to.name === 'ProfileSetup' && isLastNameLength) {
-  //   return next('/home'); 
+   // if (to.name === 'ProfileSetup' && isLastNameLength) {
+  //   return next('/profile'); 
   // }
 
   next();

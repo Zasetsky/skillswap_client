@@ -11,12 +11,12 @@ const mutations = {
   setAvailableSkills(state, availableSkills) {
     state.availableSkills = availableSkills;
   },
-  updateUser(state, user) {
-    state.user = user;
-  }
 };
 
 const actions = {
+
+  // Получение списка доступных навыков
+
     async fetchAvailableSkills({ commit }) {
         try {
             const response = await axios.get(`${API_URL}/available-skills`);
@@ -26,23 +26,23 @@ const actions = {
         }
     },
 
-    async addStrongSkills({ commit }, strongSkills) {
+    // Добавление навыков пользователю для преподавания 
+
+    async addStrongSkills(strongSkills) {
         try {
-            const response = await axios.post(`${API_URL}/add-skills-to-teach`, { skills: strongSkills });
-            commit('updateUser', response.data.user);
-            console.log(response.data.user);
+            await axios.post(`${API_URL}/add-skills-to-teach`, { skills: strongSkills });
             } catch (error) {
             console.error('Error during adding strong skills:', error);
         }
     },
 
-    async addWeakSkills({ commit }, weakSkills) {
+    // Добавление навыков пользователю для изучения 
+
+    async addWeakSkills( weakSkills) {
         try {
-        const response = await axios.post(`${API_URL}/add-skills-to-learn`, { skills: weakSkills });
-        commit('updateUser', response.data.user);
-        console.log(response.data.user);
+          await axios.post(`${API_URL}/add-skills-to-learn`, { skills: weakSkills });
         } catch (error) {
-        console.error('Error during adding weak skills:', error);
+          console.error('Error during adding weak skills:', error);
         }
     }
   
