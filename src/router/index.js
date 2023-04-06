@@ -42,6 +42,7 @@ const router = new Router({
       path: '/user/:userId',
       name: 'UserProfile',
       component: UserProfile,
+      props: true,
       meta: { requiresAuth: true },
     },
     // {

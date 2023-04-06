@@ -5,12 +5,7 @@ const API_URL = 'http://localhost:3000/api/profile'
 
 const state = {
   avatarUrl: null,
-};
-
-const mutations = {
-  SET_AVATAR_URL(state, avatarUrl) {
-    state.avatarUrl = avatarUrl;
-  },
+  userProfile: {}
 };
 
 const actions = {
@@ -99,6 +94,26 @@ const actions = {
     }
   },
 
+  // Запрос профиля пользователя
+
+  async fetchUserProfile({ commit }, userId) {
+    try {
+      const response = await axios.get(`${API_URL}/current/${userId}`);
+      commit('setUserProfile', response.data.user);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  },
+
+};
+
+const mutations = {
+  SET_AVATAR_URL(state, avatarUrl) {
+    state.avatarUrl = avatarUrl;
+  },
+  setUserProfile(state, userProfile) {
+    state.userProfile = userProfile;
+  },
 };
 
 

@@ -51,7 +51,7 @@ export default {
     },
     openUserProfile(userId) {
       this.$router.push({ name: 'UserProfile', params: { userId } });
-    },
+    }
   },
   computed: {
       ...mapGetters('auth', ['currentUser']),
