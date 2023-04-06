@@ -1,7 +1,7 @@
 <template>
   <v-navigation-drawer app dark permanent>
     <v-list>
-      <v-list-item @click="$router.push('/profile')">
+      <v-list-item @click="$router.push('/home')">
         <v-list-item-icon>
           <v-icon>mdi-home</v-icon>
         </v-list-item-icon>

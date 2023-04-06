@@ -17,7 +17,6 @@ const actions = {
             currentUserId: rootState.auth.user._id,
             skillToLearn: selectedSkillToLearn,
           });
-          console.log('body: ', response.data);
           commit('setMatchingUsers', response.data);
           return response.data
         } catch (error) {

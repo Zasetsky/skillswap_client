@@ -16,12 +16,9 @@ const actions = {
     try {
       const formData = new FormData();
       formData.append('avatar', file);
-      console.log('Authorization header:', axios.defaults.headers.common['Authorization']);
-      const token = localStorage.getItem('token');
 
       const response = await axios.post(`${API_URL}/avatar`, formData, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
@@ -40,7 +37,6 @@ const actions = {
     try {
       await axios.put(`${API_URL}/update`, userProfile, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
         },
       });
@@ -80,7 +76,6 @@ const actions = {
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       });
   

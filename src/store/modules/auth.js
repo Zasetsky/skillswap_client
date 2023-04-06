@@ -3,6 +3,20 @@ import jwtDecode from 'jwt-decode';
 
 const API_URL = 'http://localhost:3000/api/auth'; 
 
+// Настройка Axios interceptor
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 const state = {
   user: null,
   token: localStorage.getItem('token') || '',
@@ -45,9 +59,6 @@ const actions = {
       // Сохраняем информацию о пользователе в state
       commit('setUser', user);
 
-      // Установка заголовка авторизации для всех будущих запросов
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
       return response.data;
     } catch (error) {
       console.error('Error during registration:', error);
@@ -71,10 +82,6 @@ const actions = {
       
       // Сохраняем информацию о пользователе в state
       commit('setUser', user);
-      console.log(user);
-
-      // Установка заголовка авторизации для всех будущих запросов
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       return response.data;
     } catch (error) {
@@ -106,8 +113,6 @@ const actions = {
         dispatch('logout');
         return;
       }
-
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       try {
         const response = await axios.get(`${API_URL}/user`, {

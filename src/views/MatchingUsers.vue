@@ -7,9 +7,10 @@
             <v-autocomplete
               v-model="skillToLearn"
               :items="listSkillsToLearn"
-              item-text="skill"
+              :item-text="item => item.skill"
               label="Выберите навык, который хотите улучшить"
               outlined
+              return-object
             ></v-autocomplete>
             <v-btn color="primary" @click="findMatchingUsers">Найти</v-btn>
           </v-col>
@@ -35,7 +36,7 @@ import { mapActions, mapGetters } from 'vuex';
 export default {
   data() {
       return {
-          skillToLearn: '',
+          skillToLearn: {},
           matchingUsers: [],
       };
   },
@@ -44,13 +45,16 @@ export default {
     async findMatchingUsers() {
         try {
             this.matchingUsers = await this.fetchMatchingUsers(this.skillToLearn);
-            console.log('body2:', this.matchingUsers);
         } catch (error) {
             console.error(error);
         }
     },
     openUserProfile(userId) {
-      this.$router.push({ name: 'UserProfile', params: { userId } });
+      this.$router.push({ 
+        name: 'UserProfile', 
+        params: { userId }, 
+        query: { skillToLearnId: this.skillToLearn._id } 
+      });
     }
   },
   computed: {

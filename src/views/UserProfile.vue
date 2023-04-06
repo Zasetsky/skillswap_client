@@ -35,13 +35,13 @@
   
   
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapState, mapActions, mapGetters  } from 'vuex';
 
 export default {
     props: {
         userId: {
-        type: String,
-        required: true,
+            type: String,
+            required: true,
         },
     },
     data() {
@@ -49,26 +49,86 @@ export default {
             localUserId: this.userId || '',
         };
     },
+
+
     computed: {
-    ...mapState('user', ['userProfile']),
+        ...mapState('user', ['userProfile']),
+        ...mapGetters('auth', ['currentUser']),
+
+        myStrongSkillsForUser() {
+            const mySkills = this.currentUser.skillsToTeach;
+            const userSkills = this.userProfile.skillsToLearn || [];
+            const skillsForUser = userSkills.filter(userSkill => {
+                return mySkills.some(mySkill => {
+                return (
+                    mySkill.skill === userSkill.skill &&
+                    mySkill.subCategory === userSkill.subCategory &&
+                    mySkill.category === userSkill.category &&
+                    mySkill.theme === userSkill.theme
+                );
+                });
+            });
+            return skillsForUser;
+        },
+
+        mySkillToLearn() {
+            let skill = {};
+            for (let i = 0; i < this.currentUser.skillsToLearn.length; i++) {
+                const element = this.currentUser.skillsToLearn[i];
+                if(this.$route.query.skillToLearnId === element._id) {
+                    skill = element;
+                }
+            }
+            return skill;
+        },
     },
+
+
     async created() {
         try {
             await this.fetchUserProfile(this.localUserId);
-            console.log('userid: ', this.userId);
-            console.log('localUserid: ', this.localUserId);
         } catch (error) {
             console.error('Error fetching user profile:', error);
         }
     },
+
+
     methods: {
         ...mapActions('user', ['fetchUserProfile']),
-        proposeSkillExchange() {
-        // Здесь вам нужно добавить код для предложения обмена навыками с другим пользователем.
-        // Например, отправьте запрос к API с предложением обмена навыками.
-        console.log('Proposing skill exchange...');
+        ...mapActions('swapRequests', ['sendSwapRequest']),
+
+        async proposeSkillExchange() {
+            const senderData = {
+                id: this.currentUser._id,
+                avatar: this.currentUser.avatar,
+                firstName: this.currentUser.firstName,
+                lastName: this.currentUser.lastName,
+                bio: this.currentUser.bio,
+                skillsToLearn: this.mySkillToLearn,
+                skillsToTeach: this.myStrongSkillsForUser,
+            };
+
+            const receiverData = {
+                id: this.userId,
+                avatar: this.userProfile.avatar,
+                firstName: this.userProfile.firstName,
+                lastName: this.userProfile.lastName,
+                bio: this.userProfile.bio,
+                skillsToLearn: this.mySkillToLearn,
+                skillsToTeach: '', // Здесь будет ответ пользователя, если он согласится
+            };
+            console.log(this.userProfile);
+            try {
+            await this.sendSwapRequest({ senderData, receiverData });
+            console.log('Swap request created successfully');
+            } catch (error) {
+            console.error('Error creating swap request:', error);
+            }
         },
     },
+    mounted() {
+        console.log(this.mySkillToLearn);
+    }
 };
 </script>
   
