@@ -1,6 +1,7 @@
 import axios from 'axios';
+import jwtDecode from 'jwt-decode';
 
-const API_URL = 'http://localhost:3000/api/auth'; // Замените на адрес вашего сервера
+const API_URL = 'http://localhost:3000/api/auth'; 
 
 const state = {
   user: null,
@@ -67,9 +68,10 @@ const actions = {
       // Сохраняем токен в localStorage и в state
       localStorage.setItem('token', token);
       commit('setToken', token);
-
+      
       // Сохраняем информацию о пользователе в state
       commit('setUser', user);
+      console.log(user);
 
       // Установка заголовка авторизации для всех будущих запросов
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -90,28 +92,43 @@ const actions = {
     delete axios.defaults.headers.common['Authorization'];
   },
 
+
   async autoLogin({ commit, dispatch, state }) {
     const token = state.token;
+
     if (token) {
+      // Проверяем срок действия токена
+      const decodedToken = jwtDecode(token);
+      const isTokenExpired = decodedToken.exp * 1000 < Date.now();
+
+      // Если токен истек, выполните выход
+      if (isTokenExpired) {
+        dispatch('logout');
+        return;
+      }
+
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  
+
       try {
         const response = await axios.get(`${API_URL}/user`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
         });
-        commit('setUser', response.data);
+        commit('setUser', response.data.user);
+
       } catch (error) {
-        console.error('Error during auto-login:', error);
         if (error.response && error.response.status === 401) {
           // Если токен истек или недействителен, выполните выход
           dispatch('logout');
+        } else {
+          // Выводите сообщение об ошибке только в случае, если код состояния не равен 401
+          console.error('Error during auto-login:', error);
         }
-        throw error;
       }
     }
   },
+
 };
 
 export default {

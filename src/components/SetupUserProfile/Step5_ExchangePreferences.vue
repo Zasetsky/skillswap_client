@@ -6,35 +6,33 @@
         v-model="exchangePreference"
         :items="exchangeOptions"
         item-text="name"
-        item-value="id"
+        item-value="name"
         label="Как вы предпочитаете обмениваться навыками?"
         outlined
       ></v-select>
     </v-form>
-    <v-btn color="primary" @click="goToNextStep">Далее</v-btn>
+    <v-btn @click="saveAndGoToNextStep">Далее</v-btn>
   </div>
 </template>
 <script>
+
 export default {
   name: "Step5_ExchangePreferences",
   data() {
     return {
       exchangePreference: null,
       exchangeOptions: [
-        { id: 1, name: "Онлайн" },
-        { id: 2, name: "Очно" },
-        { id: 3, name: "Гибкий подход (онлайн или очно)" },
+        { name: "Онлайн" },
+        { name: "Очно" },
+        { name: "Гибкий подход (онлайн или очно)" },
       ],
     };
   },
-  watch: {
-    exchangePreference: function (value) {
-      this.$emit("exchange-preference-changed", value);
-    },
-  },
   methods: {
-    goToNextStep() {
-      this.$emit("go-to-next-step");
+    async saveAndGoToNextStep() {
+      console.log('exchangePreference before dispatch:', this.exchangePreference);
+      await this.$store.dispatch('user/updateUserAvailability', this.exchangePreference);
+      this.$emit('finish-profile-setup');
     },
   },
 };

@@ -70,24 +70,26 @@ export default {
       ];
     },
     bioRules() {
-      if (this.$v.bio.$dirty && this.bio) { // добавлено условие this.bio
+      if (this.$v.bio.$dirty && this.bio) {
         return [(value) => value.length > 0 && value.length <= 200 || 'Максимальная длина 200 символов'];
       }
       return [];
     },
   },
   methods: {
-    goToNextStep() {
+    async goToNextStep() {
       if (this.$v.$invalid) {
         this.$v.firstName.$touch();
         this.$v.lastName.$touch();
         this.$v.bio.$touch();
         return;
       }
-      this.$emit('basic-info-updated', {
-        name: `${this.firstName} ${this.lastName}`,
+      const userProfile = {
+        firstName: this.firstName,
+        lastName: this.lastName,
         bio: this.bio,
-      });
+      };
+      await this.$store.dispatch("user/updateProfile", userProfile);
       this.$emit('go-to-next-step');
     },
   },
