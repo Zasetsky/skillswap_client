@@ -56,24 +56,24 @@ const actions = {
   },
 
   // Получение геолокации
-
-  async getCurrentLocation() {
-    return new Promise((resolve, reject) => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            resolve({ latitude, longitude });
-          },
-          (error) => {
-            reject(error);
-          }
-        );
-      } else {
-        reject(new Error('Geolocation not supported in this browser'));
-      }
-    });
-  },
+  // 
+  // async getCurrentLocation() {
+  //   return new Promise((resolve, reject) => {
+  //     if (navigator.geolocation) {
+  //       navigator.geolocation.getCurrentPosition(
+  //         (position) => {
+  //           const { latitude, longitude } = position.coords;
+  //           resolve({ latitude, longitude });
+  //         },
+  //         (error) => {
+  //           reject(error);
+  //         }
+  //       );
+  //     } else {
+  //       reject(new Error('Geolocation not supported in this browser'));
+  //     }
+  //   });
+  // },
 
   // Обновление доступности для обмена
 

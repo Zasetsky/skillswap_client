@@ -5,9 +5,9 @@ import jwtDecode from 'jwt-decode';
 
 import LoginPage from '@/views/LoginPage.vue'
 import ProfileSetup from '@/views/ProfileSetup.vue'
-import ProfilePage from '@/views/ProfilePage.vue'
-// import Swap from '@/views/SwapView.vue'
-// import SkillDetails from '@/views/SkillDetails.vue'
+import Home from '@/views/HomePage.vue'
+import MatchingUsers from '@/views/MatchingUsers.vue'
+import UserProfile from '@/views/UserProfile.vue'
 
 Vue.use(Router)
 
@@ -27,9 +27,21 @@ const router = new Router({
       meta: { requiresAuth: true },
     },
     {
-      path: '/profile',
-      name: 'Profile',
-      component: ProfilePage,
+      path: '/home',
+      name: 'Home',
+      component: Home,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/matching',
+      name: 'MatchingUsers',
+      component: MatchingUsers,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/user/:userId',
+      name: 'UserProfile',
+      component: UserProfile,
       meta: { requiresAuth: true },
     },
     // {
@@ -63,7 +75,7 @@ router.beforeEach(async (to, from, next) => {
     } else if (isPublic && loggedIn && !isProfileSetup) {
       await router.push('/profile_setup');
     } else if (to.name === 'ProfileSetup' && isProfileSetup) {
-      await router.push('/profile');
+      await router.push('/home');
     } else {
       next();
     }

@@ -8,13 +8,13 @@
       </v-col>
       <v-col cols="12" sm="8" md="9">
         <h2>{{ name }}</h2>
-        <p>{{ user.title }}</p>
-        <p>{{ user.location }}</p>
+        <!-- <p>{{ user.title }}</p>
+        <p>{{ user.location }}</p> -->
         <v-chip-group>
-          <v-chip label color="primary" v-for="skill in strongSkills" :key="skill">{{ skill }}</v-chip>
+          <v-chip label color="primary" v-for="(skill, index) in strongSkills" :key="index">{{ skill }}</v-chip>
         </v-chip-group>
         <v-chip-group>
-          <v-chip label color="secondary" v-for="skill in weakSkills" :key="skill">{{ skill }}</v-chip>
+          <v-chip label color="secondary" v-for="(skill, index) in weakSkills" :key="index">{{ skill }}</v-chip>
         </v-chip-group>
         <p v-if="bio">{{ bio }}</p>
       </v-col>
@@ -51,7 +51,13 @@ export default {
       const skills = [];
       for (let i = 0; i < this.currentUser.skillsToTeach.length; i++) {
         const element = this.currentUser.skillsToTeach[i];
-        skills.push(element.skill);
+        if(element.theme === "Языки") {
+          skills.push(element.category);
+        } else if(element.category === "Региональная кухня") {
+          skills.push(element.subCategory);
+        } else {
+          skills.push(element.skill);
+        }
       }
       return skills;
     },
@@ -61,7 +67,13 @@ export default {
       const skills = [];
       for (let i = 0; i < this.currentUser.skillsToLearn.length; i++) {
         const element = this.currentUser.skillsToLearn[i];
-        skills.push(element.category);
+        if(element.theme === "Языки") {
+          skills.push(element.category);
+        } else if(element.category === "Региональная кухня") {
+          skills.push(element.subCategory);
+        } else {
+          skills.push(element.skill);
+        }
       }
       return skills;
     },

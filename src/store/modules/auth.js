@@ -1,7 +1,7 @@
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
 
-const API_URL = 'http://localhost:3000/api/auth'; // Замените на адрес вашего сервера
+const API_URL = 'http://localhost:3000/api/auth'; 
 
 const state = {
   user: null,

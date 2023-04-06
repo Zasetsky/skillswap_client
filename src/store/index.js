@@ -7,6 +7,7 @@ import skills from './modules/skills';
 import notifications from './modules/notifications';
 import swapRequests from './modules/swapRequests';
 import user from './modules/user';
+import matching from './modules/matching';
 
 Vue.use(Vuex);
 
@@ -17,6 +18,7 @@ export default new Vuex.Store({
     skills,
     notifications,
     swapRequests,
-    user
+    user,
+    matching
   }
 });
