@@ -2,17 +2,46 @@
     <div>
       <v-container>
         <v-row>
-          <v-col>
-            <v-avatar size="120">
-              <img v-if="userProfile.avatar" :src="userProfile.avatar">
-              <img v-else src="https://via.placeholder.com/150">
-            </v-avatar>
-          </v-col>
-          <v-col>
-            <h2>{{ userProfile.firstName }} {{ userProfile.lastName }}</h2>
-            <h4>Биография:</h4>
-            <p>{{ userProfile.bio }}</p>
-            <v-btn color="primary" @click="proposeSkillExchange">Предложить обмен навыками</v-btn>
+            <v-col>
+                <v-avatar size="120">
+                <img v-if="userProfile.avatar" :src="userProfile.avatar">
+                <img v-else src="https://via.placeholder.com/150">
+                </v-avatar>
+            </v-col>
+            <v-col>
+                <h2>{{ userProfile.firstName }} {{ userProfile.lastName }}</h2>
+                <h4>Биография:</h4>
+                <p>{{ userProfile.bio }}</p>
+                <v-btn
+                    v-if="!isSwapRequestAlreadySent && !isSwapRequestReceived"
+                    color="primary"
+                    @click="proposeSkillExchange"
+                >
+                    Предложить обмен навыками
+                </v-btn>
+                <v-btn
+                    class="grey lighten-2"
+                    v-else-if="isSwapRequestAlreadySent"
+                    @click="cancelSwapRequest"
+                >
+                    <v-hover>
+                        <template  v-slot:default="{ hover }">
+                        <span style="min-width: 286px;">{{ hover ? 'Отменить запрос' : 'Запрос на обмен уже отправлен' }}</span>
+                        </template>
+                    </v-hover>
+                </v-btn>
+                <v-btn
+                    class="grey lighten-2"
+                    v-else
+                    @click="cancelSwapRequest"
+                    style="min-width: 300px;"
+                >
+                    <v-hover>
+                        <template v-slot:default="{ hover }">
+                        <span style="min-width: 269px;">{{ hover ? 'Отклонить запрос' : 'Запрос на обмен уже получен' }}</span>
+                        </template>
+                    </v-hover>
+                </v-btn>
           </v-col>
         </v-row>
         <v-row>
@@ -71,22 +100,52 @@ export default {
             return skillsForUser;
         },
 
-        mySkillToLearn() {
-            let skill = {};
-            for (let i = 0; i < this.currentUser.skillsToLearn.length; i++) {
-                const element = this.currentUser.skillsToLearn[i];
-                if(this.$route.query.skillToLearnId === element._id) {
-                    skill = element;
+        swapRequestId() {
+            let swapRequestId = '';
+            if (this.currentUser) {
+                this.currentUser.swapRequests.forEach((request) => {
+                if (request.senderData.id === this.localUserId) {
+                    swapRequestId = request.senderData.id;
+                } else {
+                    swapRequestId = request.receiverData.id
                 }
+                });
             }
-            return skill;
+            return swapRequestId;
+        },
+
+        mySkillToLearn() {
+            return this.currentUser.skillsToLearn.find(skill => skill._id === this.$route.query.skillToLearnId) || {};
+        },
+
+
+        isSwapRequestAlreadySent() {
+            if (this.currentUser) {
+                return this.currentUser.swapRequests.some(
+                    (request) => request.receiverData.id === this.localUserId
+                );
+            } else {
+                return false;
+            }
+        },
+
+        isSwapRequestReceived() {
+            if (this.currentUser) {
+                return this.currentUser.swapRequests.some(
+                (request) => request.senderData.id === this.localUserId
+                );
+            } else {
+                return false;
+            }
         },
     },
+
 
 
     async created() {
         try {
             await this.fetchUserProfile(this.localUserId);
+            // await this.fetchCurrentUser();
         } catch (error) {
             console.error('Error fetching user profile:', error);
         }
@@ -95,7 +154,9 @@ export default {
 
     methods: {
         ...mapActions('user', ['fetchUserProfile']),
-        ...mapActions('swapRequests', ['sendSwapRequest']),
+        ...mapActions('user', ['fetchCurrentUser']),
+        ...mapActions('swapRequests', ['sendSwapRequest', 'deleteSwapRequest']),
+        
 
         async proposeSkillExchange() {
             const senderData = {
@@ -120,15 +181,24 @@ export default {
             console.log(this.userProfile);
             try {
             await this.sendSwapRequest({ senderData, receiverData });
-            console.log('Swap request created successfully');
+            await this.fetchCurrentUser();
             } catch (error) {
             console.error('Error creating swap request:', error);
             }
         },
+        async cancelSwapRequest() {
+            try {
+                await this.deleteSwapRequest(this.swapRequestId);
+                await this.fetchCurrentUser();
+            } catch (error) {
+                console.error('Error creating swap request:', error);
+            }
+        }
     },
-    mounted() {
-        console.log(this.mySkillToLearn);
-    }
+    // mounted() {
+    //     console.log('user: ', this.currentUser);
+    //     console.log('localId: ', this.localUserId);
+    //     console.log('swapId: ', this.swapRequestId);
+    // }
 };
 </script>
-  

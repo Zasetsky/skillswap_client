@@ -100,6 +100,15 @@ const actions = {
     }
   },
 
+  async fetchCurrentUser() {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/auth/user`);
+      store.commit('auth/setUser', response.data.user, { root: true });
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  },
+
 };
 
 const mutations = {

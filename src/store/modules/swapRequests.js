@@ -5,10 +5,7 @@ const API_URL = "http://localhost:3000/api/swap-requests/";
 const actions = {
     async sendSwapRequest(context, { senderData, receiverData }) {
         try {
-            await axios.post(API_URL + "send", { receiverId: receiverData.id, senderData, receiverData }, {
-                headers: {
-                },
-            });
+            await axios.post(API_URL + "send", { receiverId: receiverData.id, senderData, receiverData });
         } catch (error) {
             console.error("Error sending swap request:", error);
         }

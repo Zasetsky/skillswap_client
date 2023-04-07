@@ -90,7 +90,7 @@ export default {
 
   },
   mounted() {
-    console.log('USER: ', this.currentUser);
+    // console.log('USER: ', this.currentUser);
   }
 };
 </script>

@@ -115,11 +115,7 @@ const actions = {
       }
 
       try {
-        const response = await axios.get(`${API_URL}/user`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(`${API_URL}/user`);
         commit('setUser', response.data.user);
 
       } catch (error) {
@@ -132,6 +128,10 @@ const actions = {
         }
       }
     }
+  },
+
+  updateCurrentUser({ commit }, updatedUserData) {
+    commit('setUser', updatedUserData);
   },
 
 };
