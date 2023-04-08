@@ -156,7 +156,7 @@ export default {
         ...mapActions('user', ['fetchUserProfile']),
         ...mapActions('user', ['fetchCurrentUser']),
         ...mapActions('swapRequests', ['sendSwapRequest', 'deleteSwapRequest']),
-        
+        ...mapActions('skills', ['toggleIsInProcessSkillToLearn']),
 
         async proposeSkillExchange() {
             const senderData = {
@@ -180,15 +180,18 @@ export default {
             };
             console.log(this.userProfile);
             try {
-            await this.sendSwapRequest({ senderData, receiverData });
-            await this.fetchCurrentUser();
+                await this.sendSwapRequest({ senderData, receiverData });
+                await this.toggleIsInProcessSkillToLearn(this.$route.query.skillToLearnId)
+                await this.fetchCurrentUser();
             } catch (error) {
-            console.error('Error creating swap request:', error);
+                console.error('Error creating swap request:', error);
             }
         },
+
         async cancelSwapRequest() {
             try {
                 await this.deleteSwapRequest(this.swapRequestId);
+                await this.toggleIsInProcessSkillToLearn(this.$route.query.skillToLearnId)
                 await this.fetchCurrentUser();
             } catch (error) {
                 console.error('Error creating swap request:', error);
@@ -196,7 +199,7 @@ export default {
         }
     },
     // mounted() {
-    //     console.log('user: ', this.currentUser);
+    //     console.log('skill: ', this.$route.query.skillToLearnId);
     //     console.log('localId: ', this.localUserId);
     //     console.log('swapId: ', this.swapRequestId);
     // }

@@ -43,6 +43,7 @@ export default {
   methods: {
     ...mapActions('matching', ['fetchMatchingUsers']),
     async findMatchingUsers() {
+      this.matchingUsers = [];
       try {
         console.log(this.skillToLearn);
         const response = await this.fetchMatchingUsers(this.skillToLearn._id);
