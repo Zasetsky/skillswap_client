@@ -3,11 +3,8 @@ import Router from 'vue-router'
 import store from '@/store'
 import jwtDecode from 'jwt-decode';
 
-import LoginPage from '@/views/LoginPage.vue'
-import ProfileSetup from '@/views/ProfileSetup.vue'
 import Home from '@/views/HomePage.vue'
 import MatchingUsers from '@/views/MatchingUsers.vue'
-import UserProfile from '@/views/UserProfile.vue'
 
 Vue.use(Router)
 
@@ -17,13 +14,13 @@ const router = new Router({
     {
       path: '/',
       name: 'Login',
-      component: LoginPage,
+      component: () => import('@/views/LoginPage.vue'),
       meta: { public: true },
     },
     {
       path: '/profile_setup',
       name: 'ProfileSetup',
-      component: ProfileSetup,
+      component: () => import('@/views/ProfileSetup.vue'),
       meta: { requiresAuth: true },
     },
     {
@@ -41,16 +38,24 @@ const router = new Router({
     {
       path: '/user/:userId',
       name: 'UserProfile',
-      component: UserProfile,
+      component: () => import('@/views/UserProfile.vue'),
       props: true,
       meta: { requiresAuth: true },
     },
-    // {
-    //   path: '/skill/:id',
-    //   name: 'SkillDetails',
-    //   component: SkillDetails,
-    //   props: true,
-    // },
+    {
+      path: '/swap-requests',
+      name: 'SwapRequests',
+      component: () => import('@/views/SwapRequests.vue'),
+      props: true,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/weak-skills',
+      name: 'WeakSkillsPage',
+      component: () => import('@/components/ProfileComponents/WeakSkillsPage.vue'),
+      props: true,
+      meta: { requiresAuth: true },
+    }
   ],
 })
 

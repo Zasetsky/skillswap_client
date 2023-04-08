@@ -75,7 +75,7 @@ export default {
   name: "Step3_StrongSkills",
 
   computed: {
-    ...mapGetters(['getSkillList']),
+    ...mapGetters('skills', ['getSkillList']),
     groupedSkills() {
       return this.groupSkills(this.getSkillList);
     },
@@ -94,10 +94,21 @@ export default {
 
 
   methods: {
-    ...mapActions(['fetchAvailableSkills', 'addStrongSkills']),
+    ...mapActions('skills', ['fetchAvailableSkills', 'addStrongSkills']),
 
     selectTheme(theme) {
       this.selectedTheme = theme;
+    },
+
+    findSkillId(skill) {
+      const skillItem = this.getSkillList.find(
+        (s) =>
+          s.theme === this.selectedTheme.theme &&
+          s.category === this.selectedCategory.category &&
+          s.subCategory === this.selectedSubCategory.subCategory &&
+          s.skill === skill
+      );
+      return skillItem ? skillItem._id : null;
     },
 
     removeSkill(index) {
@@ -120,11 +131,14 @@ export default {
       );
     },
     toggleSkill(skill) {
+      const skillId = this.findSkillId(skill);
+
       const selectedSkill = {
+        _id: skillId,
         theme: this.selectedTheme.theme,
         category: this.selectedCategory.category,
         subCategory: this.selectedSubCategory.subCategory,
-        skill,
+        skill        
       };
 
       const index = this.strongSkills.findIndex(

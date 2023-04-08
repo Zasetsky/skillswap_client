@@ -4,8 +4,8 @@
         <v-row>
             <v-col>
                 <v-avatar size="120">
-                <img v-if="userProfile.avatar" :src="userProfile.avatar">
-                <img v-else src="https://via.placeholder.com/150">
+                <img v-if="userProfile.avatar" :src="userProfile.avatar" alt="User avatar">
+                <img v-else src="https://via.placeholder.com/150" alt="User avatar">
                 </v-avatar>
             </v-col>
             <v-col>

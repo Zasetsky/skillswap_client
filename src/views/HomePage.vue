@@ -14,7 +14,22 @@
           <v-chip label color="primary" v-for="(skill, index) in strongSkills" :key="index">{{ skill }}</v-chip>
         </v-chip-group>
         <v-chip-group>
-          <v-chip label color="secondary" v-for="(skill, index) in weakSkills" :key="index">{{ skill }}</v-chip>
+          <router-link
+            v-for="(skill, index) in weakSkills"
+            :key="index"
+            :to="{ name: 'WeakSkillsPage', params: { skillObject: skill } }"
+            v-slot="{ navigate, isActive }"
+            custom
+          >
+            <v-chip
+              label
+              color="secondary"
+              @click="navigate"
+              :class="{ 'active-link': isActive }"
+            >
+              {{ skill.skill || skill.category || skill.subCategory }}
+            </v-chip>
+          </router-link>
         </v-chip-group>
         <p v-if="bio">{{ bio }}</p>
       </v-col>
@@ -64,18 +79,7 @@ export default {
 
     weakSkills() {
       if (!this.currentUser || !this.currentUser.skillsToLearn.length) return "NaN"
-      const skills = [];
-      for (let i = 0; i < this.currentUser.skillsToLearn.length; i++) {
-        const element = this.currentUser.skillsToLearn[i];
-        if(element.theme === "Языки") {
-          skills.push(element.category);
-        } else if(element.category === "Региональная кухня") {
-          skills.push(element.subCategory);
-        } else {
-          skills.push(element.skill);
-        }
-      }
-      return skills;
+      return this.currentUser.skillsToLearn; // Возвращаем полный массив объектов, а не только имена навыков
     },
 
     avatarUrl() {
@@ -90,7 +94,7 @@ export default {
 
   },
   mounted() {
-    // console.log('USER: ', this.currentUser);
+    console.log('USER: ', this.currentUser);
   }
 };
 </script>

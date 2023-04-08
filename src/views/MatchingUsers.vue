@@ -43,11 +43,14 @@ export default {
   methods: {
     ...mapActions('matching', ['fetchMatchingUsers']),
     async findMatchingUsers() {
-        try {
-            this.matchingUsers = await this.fetchMatchingUsers(this.skillToLearn);
-        } catch (error) {
-            console.error(error);
-        }
+      try {
+        console.log(this.skillToLearn);
+        const response = await this.fetchMatchingUsers(this.skillToLearn._id);
+        this.matchingUsers = response.matchingUsers;
+        console.log('foundUsers :', this.matchingUsers);
+      } catch (error) {
+        console.error(error);
+      }
     },
     openUserProfile(userId) {
       this.$router.push({ 
@@ -62,6 +65,7 @@ export default {
       listSkillsToLearn() {
           if(!this.currentUser) return 'NaN';
           const SkillsToLearn = [];
+
           for (let i = 0; i < this.currentUser.skillsToLearn.length; i++) {
               const element = this.currentUser.skillsToLearn[i];
               SkillsToLearn.push(element);
