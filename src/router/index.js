@@ -82,6 +82,8 @@ router.beforeEach(async (to, from, next) => {
       await router.push('/profile_setup');
     } else if (to.name === 'ProfileSetup' && isProfileSetup) {
       await router.push('/home');
+    } else if (to.name === 'Login' && loggedIn) { // Добавьте эту проверку
+      await router.push('/home');
     } else {
       next();
     }

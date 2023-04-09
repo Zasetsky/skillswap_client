@@ -18,13 +18,13 @@
             v-for="(skill, index) in weakSkills"
             :key="index"
             :to="{ name: 'WeakSkillsPage', params: { skillObject: skill } }"
-            v-slot="{ navigate, isActive }"
+            v-slot="{ isActive }"
             custom
           >
             <v-chip
               label
               color="secondary"
-              @click="navigate"
+              @click="handleChipClick(skill)"
               :class="{ 'active-link': isActive }"
             >
               {{ skill.skill || skill.category || skill.subCategory }}
@@ -43,11 +43,6 @@ import { mapGetters } from "vuex";
 export default {
   data() {
     return {
-      user: {
-        title: 'Web Developer',
-        location: 'New York, USA',
-        bio: 'I am a passionate web developer with experience in creating modern web applications using cutting-edge technologies. I am always eager to learn new skills and collaborate with like-minded professionals.',
-      }
       };
   },
   computed: {
@@ -93,6 +88,14 @@ export default {
     }
 
   },
+
+  methods: {
+    handleChipClick(skill) {
+      localStorage.setItem('skillObject', JSON.stringify(skill));
+      this.$router.push({ name: 'WeakSkillsPage', params: { skillObject: skill } });
+    }
+  },
+
   mounted() {
     console.log('USER: ', this.currentUser);
   }
