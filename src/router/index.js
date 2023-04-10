@@ -50,9 +50,16 @@ const router = new Router({
       meta: { requiresAuth: true },
     },
     {
-      path: '/weak-skills',
+      path: '/weak-skill',
       name: 'WeakSkillsPage',
       component: () => import('@/components/ProfileComponents/WeakSkillsPage.vue'),
+      props: true,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/strong-skill',
+      name: 'StrongSkillsPage',
+      component: () => import('@/components/ProfileComponents/StrongSkillsPage.vue'),
       props: true,
       meta: { requiresAuth: true },
     }

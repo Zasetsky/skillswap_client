@@ -42,11 +42,6 @@
   export default {
     computed: {
         ...mapGetters("auth", ["currentUser"]),
-        sentRequests() {
-            return this.currentUser.swapRequests
-            .map(request => request.receiverData)
-            .filter(receiverData => receiverData.lastName);
-        },
         receivedRequests() {
             return this.currentUser.swapRequests
             .map(request => request.senderData)
@@ -60,7 +55,6 @@
       ]),
     },
     mounted() {
-      console.log('отправленные: ', this.sentRequests);
       console.log('полученные: ', this.receivedRequests);
     }
   };

@@ -63,11 +63,23 @@ export default {
   },
   computed: {
       ...mapGetters('auth', ['currentUser']),
-      listSkillsToLearn() {
-        if (!this.currentUser) return []; // Return an empty array
 
-        return this.currentUser.skillsToLearn.filter(skill => !skill.isInProcess);
+      listSkillsToLearn() {
+        if (!this.currentUser || !this.currentUser.swapRequests) return []; // Return an empty array
+
+        // Get skillsToLearn from all swapRequests
+        const swapRequestsSkillsToLearn = this.currentUser.swapRequests.reduce((acc, request) => {
+          acc.push(...request.receiverData.skillsToLearn);
+          return acc;
+        }, []);
+
+        return this.currentUser.skillsToLearn.filter(skillToLearn => {
+          return !swapRequestsSkillsToLearn.some(skillInRequest =>
+            JSON.stringify(skillToLearn) === JSON.stringify(skillInRequest)
+          );
+        });
       },
+
   },
 };
 </script>

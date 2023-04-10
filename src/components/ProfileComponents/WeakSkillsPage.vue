@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <h2>{{ skillObject.skill || skillObject.category || skillObject.subCategory }}</h2>
+        <h2>{{ weakSkillObject.skill || weakSkillObject.category || weakSkillObject.subCategory }}</h2>
       </v-col>
     </v-row>
     <v-row>
@@ -11,13 +11,13 @@
         <v-card v-for="sentRequest in filteredSentRequests" :key="sentRequest._id" class="mb-4">
           <v-card-text>
               <v-avatar size="64" class="mb-2">
-                <img :src="sentRequest.avatar || 'https://via.placeholder.com/64'" alt="User avatar">
+                <img :src="sentRequest.receiverData.avatar || 'https://via.placeholder.com/64'" alt="User avatar">
               </v-avatar>
               
-              <strong>Имя:</strong> {{ sentRequest.firstName }} {{ sentRequest.lastName }}<br>
-              <strong>Описание:</strong> {{ sentRequest.bio }}<br>
+              <strong>Имя:</strong> {{ sentRequest.receiverData.firstName }} {{ sentRequest.receiverData.lastName }}<br>
+              <strong>Описание:</strong> {{ sentRequest.receiverData.bio }}<br>
 
-              <strong>Хочу изучить:</strong> {{ sentRequest.skillToLearn }}<br>
+              <strong>Хочу изучить:</strong> {{ sentRequest.receiverData.skillsToLearn[0].skill }}<br>
 
               <v-btn class="mt-4" color="primary" @click="cancelSwapRequest(sentRequest._id)">
                 Отменить запрос
@@ -46,56 +46,57 @@ import { mapGetters, mapActions } from "vuex";
 export default {
   data() {
     return {
-      skillObject: null
-    };
+      localSkillId: '',
+    }
   },
+
   computed: {
     ...mapGetters("auth", ["currentUser"]),
-    sentRequests() {
-      if (!this.currentUser.swapRequests || !this.skillObject) {
-        return [];
+
+    weakSkillObject() {
+      if (!this.currentUser) {
+        return {};
       }
-      return this.currentUser.swapRequests
-        .map(request => ({
-          ...request.receiverData,
-          skillToLearn: request.receiverData.skillsToLearn && request.receiverData.skillsToLearn[0] ? request.receiverData.skillsToLearn[0].skill : '',
-        }))
-        .filter(receiverData => receiverData.id && this.skillObject.isInProcess);
+
+      const skillId = this.localSkillId;
+      return this.currentUser.skillsToLearn.find(skill => skill._id === skillId) || {};
     },
+
     filteredSentRequests() {
-      if (!this.sentRequests) {
+      if (!this.currentUser || !this.currentUser.swapRequests) {
         return [];
       }
-      return this.sentRequests.filter(request => request.id);
+      return this.currentUser.swapRequests.filter(request => {
+        return request.receiverData.skillsToLearn.some(skill => skill._id === this.localSkillId);
+      });
     },
   },
 
-  created() {
-    const storedSkillObject = localStorage.getItem("skillObject");
-
-    if (storedSkillObject) {
-      this.skillObject = JSON.parse(storedSkillObject);
-    } else {
-      this.$router.push({ name: "SkillsListPage" });
-    }
+  async created() {
+    try {
+        await this.fetchCurrentUser();
+        this.localSkillId = localStorage.getItem("weakSkillId");
+        console.log(this.filteredSentRequests);
+      } catch (error) {
+        console.error('Error creating swap request:', error);
+      }
   },
 
   methods: {
     ...mapActions("swapRequests", ["deleteSwapRequest"]),
     ...mapActions('user', ['fetchCurrentUser']),
+    ...mapActions('skills', ['toggleIsInProcessSkillToLearn']),
 
-    async cancelSwapRequest() {
+    async cancelSwapRequest(swapRequestId) {
+      console.log(this.localSkillId);
       try {
-        await this.deleteSwapRequest(this.swapRequestId);
-        await this.toggleIsInProcessSkillToLearn(this.skillObject._id);
+        await this.deleteSwapRequest(swapRequestId);
         await this.fetchCurrentUser();
       } catch (error) {
-          console.error('Error creating swap request:', error);
+        console.error('Error creating swap request:', error);
       }
     }
+
   },
-  mounted() {
-    console.log('sent: ', this.sentRequests);
-  }
 };
 </script>

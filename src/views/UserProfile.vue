@@ -89,39 +89,25 @@ export default {
             const userSkills = this.userProfile.skillsToLearn || [];
             const skillsForUser = userSkills.filter(userSkill => {
                 return mySkills.some(mySkill => {
-                return (
-                    mySkill.skill === userSkill.skill &&
-                    mySkill.subCategory === userSkill.subCategory &&
-                    mySkill.category === userSkill.category &&
-                    mySkill.theme === userSkill.theme
-                );
+                return mySkill._id === userSkill._id;
                 });
             });
             return skillsForUser;
-        },
+            },
 
         swapRequestId() {
-            let swapRequestId = '';
-            const skillToLearnId = this.$route.query.skillToLearnId;
-
-            if (this.currentUser) {
-                this.currentUser.swapRequests.forEach((request) => {
-                    const senderSkillToLearnId = request.senderData.skillsToLearn.map(
-                        (skill) => skill._id
-                    );
-                    const receiverSkillToLearnId = request.receiverData.skillsToLearn.map(
-                        (skill) => skill._id
-                    );
-
-                    if (senderSkillToLearnId.includes(skillToLearnId)) {
-                        swapRequestId = request._id;
-                    } else if (receiverSkillToLearnId.includes(skillToLearnId)) {
-                        swapRequestId = request._id;
-                    }
-                });
+            if (!this.currentUser) {
+                return '';
             }
-            return swapRequestId;
-            },
+
+            const request = this.currentUser.swapRequests.find(
+                (request) =>
+                    request.senderData.id === this.localUserId ||
+                    request.receiverData.id === this.localUserId
+            );
+
+            return request ? request._id : '';
+        },
 
         mySkillToLearn() {
             return this.currentUser.skillsToLearn.find(skill => skill._id === this.$route.query.skillToLearnId) || {};
@@ -147,14 +133,12 @@ export default {
                 return false;
             }
         },
+
     },
-
-
 
     async created() {
         try {
             await this.fetchUserProfile(this.localUserId);
-            // await this.fetchCurrentUser();
         } catch (error) {
             console.error('Error fetching user profile:', error);
         }
@@ -165,7 +149,6 @@ export default {
         ...mapActions('user', ['fetchUserProfile']),
         ...mapActions('user', ['fetchCurrentUser']),
         ...mapActions('swapRequests', ['sendSwapRequest', 'deleteSwapRequest']),
-        ...mapActions('skills', ['toggleIsInProcessSkillToLearn']),
 
         async proposeSkillExchange() {
             const senderData = {
@@ -179,7 +162,7 @@ export default {
             };
 
             const receiverData = {
-                id: this.userId,
+                id: this.localUserId,
                 avatar: this.userProfile.avatar,
                 firstName: this.userProfile.firstName,
                 lastName: this.userProfile.lastName,
@@ -187,29 +170,25 @@ export default {
                 skillsToLearn: this.mySkillToLearn,
                 skillsToTeach: '', // Здесь будет ответ пользователя, если он согласится
             };
-            console.log(this.userProfile);
             try {
                 await this.sendSwapRequest({ senderData, receiverData });
-                await this.toggleIsInProcessSkillToLearn(this.$route.query.skillToLearnId);
                 await this.fetchCurrentUser();
+                localStorage.setItem("skillId", this.mySkillToLearn._id);
+                this.$router.push({ name: 'WeakSkillsPage', params: { skillId: this.mySkillToLearn._id } });
             } catch (error) {
                 console.error('Error creating swap request:', error);
             }
         },
 
         async cancelSwapRequest() {
-            console.log("swapRequestId in cancelSwapRequest:", this.swapRequestId);
             try {
                 await this.deleteSwapRequest(this.swapRequestId);
-                await this.toggleIsInProcessSkillToLearn(this.$route.query.skillToLearnId);
                 await this.fetchCurrentUser();
             } catch (error) {
                 console.error('Error creating swap request:', error);
             }
         }
+
     },
-    mounted() {
-        console.log('request: ', this.swapRequestId);
-    }
 };
 </script>

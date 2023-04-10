@@ -11,25 +11,25 @@
         <!-- <p>{{ user.title }}</p>
         <p>{{ user.location }}</p> -->
         <v-chip-group>
-          <v-chip label color="primary" v-for="(skill, index) in strongSkills" :key="index">{{ skill }}</v-chip>
+          <v-chip 
+            label color="primary" 
+            v-for="(skill, index) in strongSkills" 
+            :key="index" 
+            @click="handleOnStrongSkillClick(skill._id)"
+          >
+            {{ skill.skill || skill.category || skill.subCategory }}
+          </v-chip>
         </v-chip-group>
         <v-chip-group>
-          <router-link
+          <v-chip
+            label
+            color="secondary"
             v-for="(skill, index) in weakSkills"
             :key="index"
-            :to="{ name: 'WeakSkillsPage', params: { skillObject: skill } }"
-            v-slot="{ isActive }"
-            custom
+            @click="handleOnWeakSkillClick(skill._id)"
           >
-            <v-chip
-              label
-              color="secondary"
-              @click="handleChipClick(skill)"
-              :class="{ 'active-link': isActive }"
-            >
-              {{ skill.skill || skill.category || skill.subCategory }}
-            </v-chip>
-          </router-link>
+            {{ skill.skill || skill.category || skill.subCategory }}
+          </v-chip>
         </v-chip-group>
         <p v-if="bio">{{ bio }}</p>
       </v-col>
@@ -41,10 +41,6 @@
 import { mapGetters } from "vuex";
 
 export default {
-  data() {
-    return {
-      };
-  },
   computed: {
     ...mapGetters("auth", ["currentUser"]),
     name() {
@@ -58,18 +54,7 @@ export default {
 
     strongSkills() {
       if (!this.currentUser || !this.currentUser.skillsToTeach.length) return "NaN"
-      const skills = [];
-      for (let i = 0; i < this.currentUser.skillsToTeach.length; i++) {
-        const element = this.currentUser.skillsToTeach[i];
-        if(element.theme === "Языки") {
-          skills.push(element.category);
-        } else if(element.category === "Региональная кухня") {
-          skills.push(element.subCategory);
-        } else {
-          skills.push(element.skill);
-        }
-      }
-      return skills;
+      return this.currentUser.skillsToTeach; // Возвращаем полный массив объектов, а не только имена навыков
     },
 
     weakSkills() {
@@ -90,9 +75,14 @@ export default {
   },
 
   methods: {
-    handleChipClick(skill) {
-      localStorage.setItem('skillObject', JSON.stringify(skill));
-      this.$router.push({ name: 'WeakSkillsPage', params: { skillObject: skill } });
+    handleOnWeakSkillClick(skill) {
+      localStorage.setItem("weakSkillId", skill);
+      this.$router.push({ name: 'WeakSkillsPage', params: { skillId: skill._id } });
+    },
+
+    handleOnStrongSkillClick(skill) {
+      localStorage.setItem("strongSkillId", skill);
+      this.$router.push({ name: 'StrongSkillsPage', params: { skillId: skill._id } });
     }
   },
 
