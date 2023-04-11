@@ -2,7 +2,12 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <h2>{{ weakSkillObject.skill || weakSkillObject.category || weakSkillObject.subCategory }}</h2>
+        <div class="header-container">
+          <h2>{{ weakSkillObject.skill || weakSkillObject.category || weakSkillObject.subCategory }}</h2>
+          <v-btn v-if="filteredSentRequests.length === 0" color="primary" @click="goToMatchingUsers">
+            Найти совпадения
+          </v-btn>
+        </div>
       </v-col>
     </v-row>
     <v-row>
@@ -95,8 +100,22 @@ export default {
       } catch (error) {
         console.error('Error creating swap request:', error);
       }
-    }
+    },
+
+    goToMatchingUsers() {
+      this.$router.push({
+        name: "MatchingUsers",
+        query: { skillToLearnId: this.localSkillId },
+      });
+    },
 
   },
 };
 </script>
+<style scoped>
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+</style>

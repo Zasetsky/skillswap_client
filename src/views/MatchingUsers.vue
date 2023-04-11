@@ -40,6 +40,20 @@ export default {
           matchingUsers: [],
       };
   },
+
+  created() {
+    if (this.$route.query.skillToLearnId) {
+      const skillToLearnId = this.$route.query.skillToLearnId;
+      const skillToLearn = this.currentUser.skillsToLearn.find(
+        (skill) => skill._id === skillToLearnId
+      );
+      if (skillToLearn) {
+        this.skillToLearn = skillToLearn;
+        this.findMatchingUsers();
+      }
+    }
+  },
+
   methods: {
     ...mapActions('matching', ['fetchMatchingUsers']),
     async findMatchingUsers() {

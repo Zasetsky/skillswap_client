@@ -173,7 +173,7 @@ export default {
             try {
                 await this.sendSwapRequest({ senderData, receiverData });
                 await this.fetchCurrentUser();
-                localStorage.setItem("skillId", this.mySkillToLearn._id);
+                localStorage.setItem("weakSkillId", this.mySkillToLearn._id);
                 this.$router.push({ name: 'WeakSkillsPage', params: { skillId: this.mySkillToLearn._id } });
             } catch (error) {
                 console.error('Error creating swap request:', error);

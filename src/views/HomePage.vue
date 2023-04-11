@@ -11,19 +11,23 @@
         <!-- <p>{{ user.title }}</p>
         <p>{{ user.location }}</p> -->
         <v-chip-group>
-          <v-chip 
-            label color="primary" 
-            v-for="(skill, index) in strongSkills" 
-            :key="index" 
+          <v-chip
+            label color="primary"
+            v-for="(skill, index) in strongSkills"
+            :key="index"
             @click="handleOnStrongSkillClick(skill._id)"
+            class="swap-request-chip"
           >
             {{ skill.skill || skill.category || skill.subCategory }}
+            <span v-if="receivedSwapRequests[skill._id]" class="swap-request-counter">
+              {{ receivedSwapRequests[skill._id] }}
+            </span>
           </v-chip>
         </v-chip-group>
         <v-chip-group>
           <v-chip
             label
-            color="secondary"
+            :color="weakSkillsWithSwapRequests.includes(skill._id) ? 'purple' : 'secondary'"
             v-for="(skill, index) in weakSkills"
             :key="index"
             @click="handleOnWeakSkillClick(skill._id)"
@@ -43,6 +47,35 @@ import { mapGetters } from "vuex";
 export default {
   computed: {
     ...mapGetters("auth", ["currentUser"]),
+
+    receivedSwapRequests() {
+      if (!this.currentUser || !this.currentUser.swapRequests) return [];
+
+      return this.currentUser.swapRequests.reduce((acc, request) => {
+        if (request.status !== "pending") return acc;
+
+        request.senderData.skillsToLearn.forEach(skill => {
+          const skillId = skill._id;
+          acc[skillId] = (acc[skillId] || 0) + 1;
+        });
+
+        return acc;
+      }, {});
+    },
+
+
+    weakSkillsWithSwapRequests() {
+      if (!this.currentUser || !this.currentUser.swapRequests.length) return [];
+      const swapRequests = this.currentUser.swapRequests;
+
+      return swapRequests.reduce((ids, request) => {
+        if (request.receiverData.skillsToLearn.some(skill => skill._id)) {
+          ids.push(request.receiverData.skillsToLearn[0]._id);
+        }
+        return ids;
+      }, []);
+    },
+
     name() {
       if (!this.currentUser || !this.currentUser.firstName || !this.currentUser.lastName) return "NaN NaN";
       const firstName = this.currentUser.firstName.toLowerCase();
@@ -93,4 +126,22 @@ export default {
 </script>
 
 <style scoped>
+.swap-request-chip {
+  position: relative;
+  overflow: visible;
+}
+
+.swap-request-counter {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  font-size: 10px;
+  line-height: 18px;
+  height: 18px;
+  width: 18px;
+  text-align: center;
+}
 </style>
