@@ -20,6 +20,14 @@ const actions = {
     }
   },
 
+  async rejectSwapRequest(context, swapRequestId) {
+    try {
+      await axios.put(API_URL + `reject/${swapRequestId}`);
+    } catch (error) {
+      console.error("Error rejecting swap request:", error);
+    }
+  },
+
   async deleteSwapRequest(context, requestId) {
     try {
       await axios.delete(API_URL + `${requestId}`);

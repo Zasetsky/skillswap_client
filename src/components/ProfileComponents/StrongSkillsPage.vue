@@ -53,8 +53,9 @@
               >
               </v-select>
               <v-btn 
-                class="mt-4" 
-                color="primary"  
+                class="mt-4"
+                color="primary"
+                :disabled="!selectedSkillObject.skill"
                 @click="acceptSwapRequest(receivedRequest._id, receivedRequest.senderData.id, selectedSkillObject)"
               >
                 Принять запрос
@@ -72,7 +73,25 @@
         </v-col>
         <v-col cols="12" sm="6">
           <h3>История запросов и сделок</h3>
-          <v-card>
+          <v-card v-for="pastRequest in pastRequests" :key="pastRequest._id" class="mb-4">
+            <v-card-text>
+              <v-avatar size="64" class="mb-2">
+                <img :src="pastRequest.senderData.avatar || 'https://via.placeholder.com/64'" alt="User avatar">
+              </v-avatar>
+
+              <strong>Имя:</strong> {{ pastRequest.senderData.firstName }} {{ pastRequest.senderData.lastName }}<br>
+              <strong>Описание:</strong> {{ pastRequest.senderData.bio }}<br>
+
+              <strong>Хочу изучить:</strong> {{ pastRequest.senderData.skillsToLearn[0].skill }}<br>
+              <strong>Навыки для обмена:</strong>
+              <span v-for="(skillToTeach, index) in pastRequest.senderData.skillsToTeach" :key="index">
+                {{ skillToTeach.skill }}<span v-if="index < pastRequest.senderData.skillsToTeach.length - 1">, </span>
+              </span><br>
+
+              <strong>Статус:</strong> {{ pastRequest.status }}
+            </v-card-text>
+          </v-card>
+          <v-card v-if="pastRequests.length === 0">
             <v-card-text>Здесь будет информация о прошлых запросах</v-card-text>
           </v-card>
         </v-col>
@@ -121,6 +140,15 @@
         });
       },
 
+      pastRequests() {
+        if (!this.currentUser || !this.currentUser.swapRequests) {
+          return [];
+        }
+        return this.currentUser.swapRequests.filter(request => {
+          return ["rejected", "finished", "dealRejected"].includes(request.status) && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId);
+        });
+      },
+
     },
   
     async created() {
@@ -134,31 +162,30 @@
     },
 
     methods: {
-        ...mapActions("swapRequests", ["deleteSwapRequest"]),
-        ...mapActions('user', ['fetchCurrentUser']),
-        ...mapActions('skills', ['toggleIsInProcessSkillToLearn']),
+      ...mapActions('user', ['fetchCurrentUser']),
+      ...mapActions('skills', ['toggleIsInProcessSkillToLearn']),
 
-        async acceptSwapRequest(swapRequestId, senderId, selectedSkill) {
-          try {
-            await this.$store.dispatch('swapRequests/acceptSwapRequest', {
-              currentUserId: this.currentUser._id,
-              requestId: swapRequestId,
-              userId: senderId,
-              skillToTeach: selectedSkill,
-            });
-            await this.fetchCurrentUser();
-          } catch (error) {
-            console.error('Error accepting swap request:', error);
-          }
-        },
+      async acceptSwapRequest(swapRequestId, senderId, selectedSkill) {
+        try {
+          await this.$store.dispatch('swapRequests/acceptSwapRequest', {
+            currentUserId: this.currentUser._id,
+            requestId: swapRequestId,
+            userId: senderId,
+            skillToTeach: selectedSkill,
+          });
+          await this.fetchCurrentUser();
+        } catch (error) {
+          console.error('Error accepting swap request:', error);
+        }
+      },
 
-        async rejectSwapRequest(swapRequestId) {
-          try {
-            await this.deleteSwapRequest(swapRequestId);
-            await this.fetchCurrentUser();
-          } catch (error) {
-            console.error('Error rejecting swap request:', error);
-          }
+      async rejectSwapRequest(swapRequestId) {
+        try {
+          await this.$store.dispatch('swapRequests/rejectSwapRequest', swapRequestId);
+          await this.fetchCurrentUser();
+        } catch (error) {
+          console.error('Error rejecting swap request:', error);
+        }
       },
     }
 };
