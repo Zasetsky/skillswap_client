@@ -15,18 +15,31 @@
         <h3>Активный запрос</h3>
         <v-card v-for="sentRequest in filteredSentRequests" :key="sentRequest._id" class="mb-4">
           <v-card-text>
-              <v-avatar size="64" class="mb-2">
-                <img :src="sentRequest.receiverData.avatar || 'https://via.placeholder.com/64'" alt="User avatar">
-              </v-avatar>
-              
-              <strong>Имя:</strong> {{ sentRequest.receiverData.firstName }} {{ sentRequest.receiverData.lastName }}<br>
-              <strong>Описание:</strong> {{ sentRequest.receiverData.bio }}<br>
+            <v-avatar size="64" class="mb-2">
+              <img :src="sentRequest.receiverData.avatar || 'https://via.placeholder.com/64'" alt="User avatar">
+            </v-avatar>
+            
+            <strong>Имя:</strong> {{ sentRequest.receiverData.firstName }} {{ sentRequest.receiverData.lastName }}<br>
+            <strong>Описание:</strong> {{ sentRequest.receiverData.bio }}<br>
+            <strong>Хочет изучить:</strong> {{ sentRequest.receiverData.skillsToTeach[0].skill }}<br>
+            <strong>Хочу изучить:</strong> {{ sentRequest.receiverData.skillsToLearn[0].skill }}<br>
 
-              <strong>Хочу изучить:</strong> {{ sentRequest.receiverData.skillsToLearn[0].skill }}<br>
-
-              <v-btn class="mt-4" color="primary" @click="cancelSwapRequest(sentRequest._id)">
-                Отменить запрос
-              </v-btn>
+            <v-btn
+              v-if="sentRequest.status === 'accepted'"
+              class="mt-4"
+              color="primary"
+              @click="openChat(sentRequest.receiverData.id)"
+            >
+              Открыть чат сделки
+            </v-btn>
+            <v-btn
+              v-else
+              class="mt-4"
+              color="primary"
+              @click="cancelSwapRequest(sentRequest._id)"
+            >
+              Отменить запрос
+            </v-btn>
           </v-card-text>
         </v-card>
         <v-card v-if="filteredSentRequests.length === 0">
@@ -57,6 +70,7 @@ export default {
 
   computed: {
     ...mapGetters("auth", ["currentUser"]),
+    ...mapGetters("chat", ["getCurrentChat"]),
 
     weakSkillObject() {
       if (!this.currentUser) {
@@ -90,7 +104,7 @@ export default {
   methods: {
     ...mapActions("swapRequests", ["deleteSwapRequest"]),
     ...mapActions('user', ['fetchCurrentUser']),
-    ...mapActions('skills', ['toggleIsInProcessSkillToLearn']),
+    ...mapActions('chat', ['createChat']),
 
     async cancelSwapRequest(swapRequestId) {
       console.log(this.localSkillId);
@@ -99,6 +113,19 @@ export default {
         await this.fetchCurrentUser();
       } catch (error) {
         console.error('Error creating swap request:', error);
+      }
+    },
+
+    async openChat(senderId) {
+      try {
+        await this.createChat({
+          senderId,
+          skillId: this.localSkillId,
+        });
+        const chat = this.getCurrentChat;
+        this.$router.push(`/${chat._id}`);
+      } catch (error) {
+        console.error('Error opening chat:', error);
       }
     },
 

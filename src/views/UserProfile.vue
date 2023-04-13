@@ -168,7 +168,6 @@ export default {
                 lastName: this.userProfile.lastName,
                 bio: this.userProfile.bio,
                 skillsToLearn: this.mySkillToLearn,
-                skillsToTeach: '', // Здесь будет ответ пользователя, если он согласится
             };
             try {
                 await this.sendSwapRequest({ senderData, receiverData });

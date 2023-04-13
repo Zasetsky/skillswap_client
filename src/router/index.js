@@ -43,12 +43,12 @@ const router = new Router({
       meta: { requiresAuth: true },
     },
     {
-      path: '/swap-requests',
-      name: 'SwapRequests',
-      component: () => import('@/views/SwapRequests.vue'),
-      props: true,
+      path: '/:chatId',
+      name: 'Chat',
+      component: () => import('@/views/DealChat.vue'),
+      props: route => ({ chatId: route.params.chatId }),
       meta: { requiresAuth: true },
-    },
+    },    
     {
       path: '/weak-skill',
       name: 'WeakSkillsPage',

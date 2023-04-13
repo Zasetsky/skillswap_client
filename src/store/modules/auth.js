@@ -130,10 +130,6 @@ const actions = {
     }
   },
 
-  updateCurrentUser({ commit }, updatedUserData) {
-    commit('setUser', updatedUserData);
-  },
-
 };
 
 export default {

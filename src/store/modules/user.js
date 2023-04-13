@@ -8,6 +8,10 @@ const state = {
   userProfile: {}
 };
 
+const getters = {
+  getAvatarUrl: state => state.userProfile.avatarUrl,
+};
+
 const actions = {
 
   // Обновление аватарки
@@ -118,11 +122,6 @@ const mutations = {
   setUserProfile(state, userProfile) {
     state.userProfile = userProfile;
   },
-};
-
-
-const getters = {
-  getAvatarUrl: state => state.userProfile.avatarUrl,
 };
 
 export default {

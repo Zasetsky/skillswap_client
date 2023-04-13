@@ -20,7 +20,11 @@
               <strong>Хочу изучить:</strong> {{ acceptedRequest.senderData.skillsToLearn[0].skill }}<br>
               <strong>Навык для обмена:</strong> {{ acceptedRequest.senderData.skillsToTeach[0].skill }}<br>
 
-              <v-btn class="mt-4" color="primary">
+              <v-btn 
+                class="mt-4"
+                color="primary"
+                @click="openChat(acceptedRequest.senderData.id)"
+              >
                 Открыть чат сделки
               </v-btn>
             </v-card-text>
@@ -112,6 +116,7 @@
   
     computed: {
       ...mapGetters("auth", ["currentUser"]),
+      ...mapGetters("chat", ["getCurrentChat"]),
   
       strongSkillObject() {
         if (!this.currentUser) {
@@ -163,7 +168,7 @@
 
     methods: {
       ...mapActions('user', ['fetchCurrentUser']),
-      ...mapActions('skills', ['toggleIsInProcessSkillToLearn']),
+      ...mapActions('chat', ['createChat']),
 
       async acceptSwapRequest(swapRequestId, senderId, selectedSkill) {
         try {
@@ -187,6 +192,20 @@
           console.error('Error rejecting swap request:', error);
         }
       },
+
+      async openChat(senderId) {
+        try {
+          await this.createChat({
+            senderId,
+            skillId: this.localSkillId,
+          });
+          const chat = this.getCurrentChat
+          this.$router.push(`/${chat._id}`);
+        } catch (error) {
+          console.error('Error opening chat:', error);
+        }
+      },
+
     }
 };
 </script>

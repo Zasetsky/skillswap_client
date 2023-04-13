@@ -10,12 +10,12 @@
         </v-list-item-content>
       </v-list-item>
 
-      <v-list-item @click="$router.push('/swap-requests')">
+      <v-list-item @click="$router.push('/DealChat')">
         <v-list-item-icon>
-          <v-icon>mdi-sync</v-icon>
+          <v-icon>mdi-chat</v-icon>
         </v-list-item-icon>
         <v-list-item-content>
-          <v-list-item-title>Запросы на обмен</v-list-item-title>
+          <v-list-item-title>Чаты</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
 
