@@ -11,7 +11,7 @@
       />
     </div>
     <div class="bottom-bar">
-      <DealFormComponent ref="dealForm" :deal="getCurrentChat.deal" @submit-deal-form="handleDealFormSubmit" />
+      <DealFormComponent ref="dealForm" :deal="getCurrentChat.deal" @submit-deal-form="handleDealFormSubmit" @confirm-deal="confirmDeal" />
       <MessageForm @send-message="sendMessage" />
     </div>
   </div>
@@ -53,11 +53,10 @@ export default {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     },
 
-    async sendMessage(content) {
-      console.log('chat: ', this.getCurrentChat);
-
+    async sendMessage(type, content) {
       const newMessage = await this.$store.dispatch('chat/sendMessage', {
         chatId: this.getCurrentChat._id,
+        type,
         content,
       });
       this.addMessageToLocalChat(newMessage);
@@ -65,22 +64,36 @@ export default {
 
     async handleDealFormSubmit({ formData1, formData2 }) {
       const updatedDeal = await this.$store.dispatch("chat/updateDeal", {
-          chatId: this.getCurrentChat._id,
-          status: 'pending',
-          senderId: this.currentUser._id,
-          formData1,
-          formData2,
+        chatId: this.getCurrentChat._id,
+        status: 'pending',
+        senderId: this.currentUser._id,
+        formData1,
+        formData2,
       });
-      console.log(updatedDeal);
+
       this.getCurrentChat.deal = updatedDeal;
 
-      await this.sendMessage({
-          type: 'deal_proposal',
-      });
-  },
+      await this.sendMessage("deal_proposal");
+    },
     
     handleOpenDealForm() {
       this.$refs.dealForm.dialog = true;
+    },
+
+    async confirmDeal() {
+      try {
+        const updatedDeal = await this.$store.dispatch("chat/confirmDeal", {
+          chatId: this.getCurrentChat._id,
+        });
+
+        // Отправка ссылки на встречу и пароля в чат
+        await this.sendMessage("meeting_details", {
+          meetingLink: updatedDeal.join_url,
+          password: updatedDeal.password,
+        });
+      } catch (error) {
+        console.error("Error confirming deal:", error);
+      }
     },
   },
 
@@ -95,6 +108,7 @@ export default {
   },
 
   mounted() {
+    console.log(this.getCurrentChat);
     this.getMessages(this.getCurrentChat._id);
     this.$nextTick(() => {
       this.scrollToBottom();

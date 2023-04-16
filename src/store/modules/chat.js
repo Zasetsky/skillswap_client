@@ -39,26 +39,29 @@ const actions = {
         }
     },
 
-    async sendMessage(context, { chatId, content }) {
+    async sendMessage(context, { chatId, type, content }) {
         try {
-            const response = await axios.post(`${API_URL}/send`, {
-                chatId,
-                content,
+          const response = await axios.post(`${API_URL}/send`, {
+            chatId,
+            type: type || 'text',
+            content,
           });
-        const messageWithSenderObject = {
+      
+          const messageWithSenderObject = {
             ...response.data.message,
             sender: { _id: response.data.message.sender },
-        };
-            return messageWithSenderObject;
+          };
+      
+          return messageWithSenderObject;
         } catch (error) {
-            console.error('Error sending message:', error);
-            throw error;
+          console.error('Error sending message:', error);
+          throw error;
         }
     },
 
     async updateDeal({ commit }, { chatId, status, senderId, formData1, formData2 }) {
         try {
-            const response = await axios.patch(`${API_URL}/deal/${chatId}`, {
+            const response = await axios.patch(`${API_URL}/deal/update/${chatId}`, {
                 status,
                 senderId,
                 formData1,
@@ -70,6 +73,18 @@ const actions = {
         } catch (error) {
             console.error("Error updating deal:", error);
             throw error;
+        }
+    },
+
+    async confirmDeal({ commit }, { chatId }) {
+        try {
+          const response = await axios.patch(`${API_URL}/deal/confirm/${chatId}`);
+          const updatedDeal = response.data.deal;
+          commit('UPDATE_DEAL', updatedDeal);
+          return response.data.zoomMeeting;
+        } catch (error) {
+          console.error("Error confirming deal:", error);
+          throw error;
         }
     },
 };

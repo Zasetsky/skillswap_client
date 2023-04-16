@@ -9,6 +9,10 @@
           Предложены параметры сделки: 
           <v-btn v-if="isLastDealProposal" color="primary" small @click="openDealForm">Открыть</v-btn>
         </template>
+        <template v-else-if="message.type === 'meeting_details'">
+          <a :href="message.content.meetingLink" target="_blank">Ссылка на встречу</a><br>
+          Пароль: <b>{{ message.content.password }}</b>
+        </template>
       </v-card-text>
     </v-card>
   </div>
@@ -51,6 +55,9 @@ export default {
     openDealForm() {
       this.$emit('open-deal-form', this.message.content);
     }
+  },
+  mounted() {
+    console.log(this.message);
   }
 };
 </script>

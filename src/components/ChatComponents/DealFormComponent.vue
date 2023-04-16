@@ -88,7 +88,7 @@
           <v-spacer></v-spacer>
           <v-btn color="blue darken-1" text @click="close">Отмена</v-btn>
           <v-btn 
-            v-if="!isConfirm || isFormChanged"
+            v-if="(!isConfirm || isFormChanged) && deal.status === 'pending'"
             color="blue darken-1"
             :disabled="!isFormChanged"
             text
@@ -96,7 +96,16 @@
           >
             Отправить
           </v-btn>
-          <v-btn v-else color="blue darken-1" text @click="confirmDeal">Подтвердить</v-btn>
+          <v-btn 
+            v-else-if="deal.status === 'not_started'"
+            color="blue darken-1"
+            :disabled="!isBothFormsFilled"
+            text
+            @click="submitForm"
+          >
+            Отправить
+          </v-btn>
+          <v-btn v-else color="blue darken-1" text @click="emitConfirmDeal">Подтвердить</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -129,7 +138,6 @@ export default {
           form2: {
             meetingDate: null,
             meetingTime: null,
-            meetingDuration: null,
           },
         };
     },
@@ -151,12 +159,21 @@ export default {
 
       isFormChanged() {
         return (
-          this.form1.meetingDate !== this.deal.form.meetingDate ||
-          this.form1.meetingTime !== this.deal.form.meetingTime ||
-          this.form1.meetingDuration !== this.deal.form.meetingDuration ||
-          this.form2.meetingDate !== this.deal.form2.meetingDate ||
-          this.form2.meetingTime !== this.deal.form2.meetingTime ||
-          this.form2.meetingDuration !== this.deal.form2.meetingDuration
+          (this.form1.meetingDate && this.deal.form && this.deal.form.meetingDate && this.form1.meetingDate !== this.deal.form.meetingDate) ||
+          (this.form1.meetingTime && this.deal.form && this.deal.form.meetingTime && this.form1.meetingTime !== this.deal.form.meetingTime) ||
+          (this.form1.meetingDuration && this.deal.form && this.deal.form.meetingDuration && this.form1.meetingDuration !== this.deal.form.meetingDuration) ||
+          (this.form2.meetingDate && this.deal.form2 && this.deal.form2.meetingDate && this.form2.meetingDate !== this.deal.form2.meetingDate) ||
+          (this.form2.meetingTime && this.deal.form2 && this.deal.form2.meetingTime && this.form2.meetingTime !== this.deal.form2.meetingTime)
+        );
+      },
+
+      isBothFormsFilled() {
+        return (
+          this.form1.meetingDate &&
+          this.form1.meetingTime &&
+          this.form1.meetingDuration &&
+          this.form2.meetingDate &&
+          this.form2.meetingTime
         );
       },
 
@@ -174,8 +191,6 @@ export default {
     },
 
     created() {
-      console.log(this.currentUser._id);
-      console.log(this.deal.sender);
       if (this.deal && this.deal.form) {
         this.form1.meetingDate = this.deal.form.meetingDate || null;
         this.form1.meetingTime = this.deal.form.meetingTime || null;
@@ -214,7 +229,7 @@ export default {
       },
 
       openDialog() {
-            this.dialog = true;
+        this.dialog = true;
       },
 
       submitForm() {
@@ -238,15 +253,16 @@ export default {
         formData2: {
           meetingDate: this.form2.meetingDate,
           meetingTime: this.form2.meetingTime,
-          meetingDuration: this.form2.meetingDuration,
+          meetingDuration: this.form1.meetingDuration,
         },
       });
 
         this.dialog = false;
       },
 
-      confirmDeal() {
-        console.log("Сделка подтверждена");
+      emitConfirmDeal() {
+        this.$emit("confirm-deal");
+        this.dialog = false;
       },
 
       close() {
