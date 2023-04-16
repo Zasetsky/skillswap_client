@@ -1,5 +1,17 @@
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
+import store from '@/store';
+import io from 'socket.io-client';
+const socket = io('http://localhost:3000');
+
+socket.on('connect', () => {
+  console.log('Connected to the server:', socket.id);
+});
+
+socket.on('openAuthWindow', (authUrl) => {
+  console.log('Received openAuthWindow event:', authUrl);
+  window.open(authUrl, "_blank");
+});
 
 const API_URL = 'http://localhost:3000/api/auth'; 
 
@@ -25,19 +37,6 @@ const state = {
 const getters = {
   isAuthenticated: (state) => !!state.token,
   currentUser: (state) => state.user,
-};
-
-const mutations = {
-  setUser(state, user) {
-    state.user = user;
-  },
-  setToken(state, token) {
-    state.token = token;
-  },
-  logout(state) {
-    state.user = null;
-    state.token = '';
-  },
 };
 
 const actions = {
@@ -130,6 +129,55 @@ const actions = {
     }
   },
 
+  async ensureZoomId({ state }, { senderId, acceptedRequestId }) {
+    if (!state.user.zoomId) {
+        // Запросите авторизацию в Zoom на сервере
+        console.log(senderId);
+        console.log(acceptedRequestId);
+        const response = await axios.get("http://localhost:3000/api/zoom/auth/start", {
+          params: {
+            state: state.token,
+            senderId: senderId,
+            acceptedRequestId: acceptedRequestId,
+          },
+        });
+        const authUrl = response.data.authUrl;
+        const authUrlWithToken = `${authUrl}&state=${state.token}`;
+
+        // Отправьте событие на сервер
+        socket.emit('openAuthWindow', authUrlWithToken);
+        try {
+            // Обновите данные текущего пользователя
+            await store.dispatch('user/fetchCurrentUser');
+            console.log('Обновленные данные пользователя:', state.user);
+        } catch (error) {
+            console.error("Ошибка при обновлении данных пользователя:", error);
+            return false;
+        }
+    }
+
+    if (state.user.zoomId) {
+        return true;
+    } else {
+        // Отобразите сообщение об ошибке, если zoomId по-прежнему отсутствует.
+        console.error("Не удалось получить zoomId для пользователя");
+        return false;
+    }
+  },
+
+};
+
+const mutations = {
+  setUser(state, user) {
+    state.user = user;
+  },
+  setToken(state, token) {
+    state.token = token;
+  },
+  logout(state) {
+    state.user = null;
+    state.token = '';
+  },
 };
 
 export default {

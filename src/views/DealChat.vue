@@ -5,10 +5,13 @@
         v-for="message in messages"
         :key="message._id"
         :message="message"
+        :allMessages="messages"
         :currentUserId="currentUser._id"
+        @open-deal-form="handleOpenDealForm"
       />
     </div>
     <div class="bottom-bar">
+      <DealFormComponent ref="dealForm" :deal="getCurrentChat.deal" @submit-deal-form="handleDealFormSubmit" />
       <MessageForm @send-message="sendMessage" />
     </div>
   </div>
@@ -18,11 +21,13 @@
 import { mapGetters, mapActions } from 'vuex';
 import MessageComponent from '@/components/ChatComponents/MessageComponent.vue';
 import MessageForm from '@/components/ChatComponents/MessageFormComponent.vue';
+import DealFormComponent from '@/components/ChatComponents/DealFormComponent.vue';
 
 export default {
   components: {
     MessageComponent,
     MessageForm,
+    DealFormComponent,
   },
 
   computed: {
@@ -34,10 +39,9 @@ export default {
   },
 
   methods: {
-    ...mapActions('chat', ['getMessages', 'sendMessage']),
+    ...mapActions('chat', ['getMessages', 'updateDeal']),
 
     addMessageToLocalChat(newMessage) {
-      console.log('addMessageToLocalChat', newMessage);
       this.getCurrentChat.messages.push(newMessage);
       this.$nextTick(() => {
         this.scrollToBottom();
@@ -45,19 +49,38 @@ export default {
     },
 
     scrollToBottom() {
-      console.log('scrollToBottom');
-      console.log('messagesContainer height:', this.$refs.messagesContainer.offsetHeight);
-      console.log('messagesContainer scrollHeight:', this.$refs.messagesContainer.scrollHeight);
       const messagesContainer = this.$refs.messagesContainer;
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     },
 
     async sendMessage(content) {
+      console.log('chat: ', this.getCurrentChat);
+
       const newMessage = await this.$store.dispatch('chat/sendMessage', {
         chatId: this.getCurrentChat._id,
         content,
       });
       this.addMessageToLocalChat(newMessage);
+    },
+
+    async handleDealFormSubmit({ formData1, formData2 }) {
+      const updatedDeal = await this.$store.dispatch("chat/updateDeal", {
+          chatId: this.getCurrentChat._id,
+          status: 'pending',
+          senderId: this.currentUser._id,
+          formData1,
+          formData2,
+      });
+      console.log(updatedDeal);
+      this.getCurrentChat.deal = updatedDeal;
+
+      await this.sendMessage({
+          type: 'deal_proposal',
+      });
+  },
+    
+    handleOpenDealForm() {
+      this.$refs.dealForm.dialog = true;
     },
   },
 

@@ -27,10 +27,12 @@ const mutations = {
   setMatchingUsers: (state, matchingUsers) => (state.matchingUsers = matchingUsers),
 };
 
+
+
 export default {
   namespaced: true,
   state,
-  getters,
   actions,
   mutations,
+  getters,
 };

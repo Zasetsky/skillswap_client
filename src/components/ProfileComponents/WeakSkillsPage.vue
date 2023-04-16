@@ -28,7 +28,7 @@
               v-if="sentRequest.status === 'accepted'"
               class="mt-4"
               color="primary"
-              @click="openChat(sentRequest.receiverData.id)"
+              @click="openChat(sentRequest.receiverData.id, sentRequest._id)"
             >
               Открыть чат сделки
             </v-btn>
@@ -116,17 +116,17 @@ export default {
       }
     },
 
-    async openChat(senderId) {
-      try {
-        await this.createChat({
-          senderId,
-          skillId: this.localSkillId,
-        });
-        const chat = this.getCurrentChat;
-        this.$router.push(`/${chat._id}`);
-      } catch (error) {
-        console.error('Error opening chat:', error);
-      }
+    async openChat(senderId, acceptedRequestId) {
+        try {
+          await this.createChat({
+            senderId,
+            swapRequestId: acceptedRequestId,
+          });
+          const chat = this.getCurrentChat
+          this.$router.push(`/${chat._id}`);
+        } catch (error) {
+          console.error('Error opening chat:', error);
+        }
     },
 
     goToMatchingUsers() {

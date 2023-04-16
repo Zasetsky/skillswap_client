@@ -7,10 +7,9 @@ const state = {
 
 };
 
-const mutations = {
-  setAvailableSkills(state, availableSkills) {
-    state.availableSkills = availableSkills;
-  },
+const getters = {
+  getSkillList: (state) => state.availableSkills,
+
 };
 
 const actions = {
@@ -69,9 +68,10 @@ const actions = {
   
 };
 
-const getters = {
-    getSkillList: (state) => state.availableSkills,
-
+const mutations = {
+  setAvailableSkills(state, availableSkills) {
+    state.availableSkills = availableSkills;
+  },
 };
 
 export default {

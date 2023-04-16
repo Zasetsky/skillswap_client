@@ -23,11 +23,11 @@ export default {
     },
   
     methods: {
-        async sendNewMessage() {
-            if (!this.newMessage) return;
-            this.$emit('send-message', this.newMessage);
-            this.newMessage = '';
-        },
+      async sendNewMessage() {
+        if (!this.newMessage) return;
+        this.$emit('send-message', this.newMessage);
+        this.newMessage = '';
+      },
     },
 };
 </script>

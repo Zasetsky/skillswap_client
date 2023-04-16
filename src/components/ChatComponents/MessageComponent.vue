@@ -1,7 +1,15 @@
 <template>
   <div class="message-container" :class="{'my-message': isMyMessage, 'other-message': !isMyMessage}">
     <v-card class="message-card mb-2">
-      <v-card-text>{{ message.content }}</v-card-text>
+      <v-card-text>
+        <template v-if="message.type === 'text'">
+          {{ message.content }}
+        </template>
+        <template v-else-if="message.type === 'deal_proposal'">
+          Предложены параметры сделки: 
+          <v-btn v-if="isLastDealProposal" color="primary" small @click="openDealForm">Открыть</v-btn>
+        </template>
+      </v-card-text>
     </v-card>
   </div>
 </template>
@@ -13,8 +21,14 @@ export default {
       type: Object,
       required: true,
     },
+
     currentUserId: {
       type: String,
+      required: true,
+    },
+
+    allMessages: {
+      type: Array,
       required: true,
     },
   },
@@ -23,7 +37,21 @@ export default {
     isMyMessage() {
       return this.message.sender._id === this.currentUserId;
     },
+
+    isLastDealProposal() {
+      const lastDealProposal = this.allMessages
+        .slice()
+        .reverse()
+        .find((msg) => msg.type === 'deal_proposal');
+      return this.message._id === lastDealProposal._id;
+    },
   },
+
+  methods: {
+    openDealForm() {
+      this.$emit('open-deal-form', this.message.content);
+    }
+  }
 };
 </script>
 

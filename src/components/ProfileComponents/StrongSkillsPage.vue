@@ -23,7 +23,7 @@
               <v-btn 
                 class="mt-4"
                 color="primary"
-                @click="openChat(acceptedRequest.senderData.id)"
+                @click="onButtonClick(acceptedRequest.senderData.id, acceptedRequest._id)"
               >
                 Открыть чат сделки
               </v-btn>
@@ -101,112 +101,150 @@
         </v-col>
       </v-row>
     </v-container>
-  </template>
+</template>
   
-  <script>
-  import { mapGetters, mapActions } from "vuex";
+<script>
+import { mapGetters, mapActions } from "vuex";
+
+export default {
+  data() {
+    return {
+      localSkillId: '',
+      selectedSkillObject: {},
+    }
+  },
   
-  export default {
-    data() {
-      return {
-        localSkillId: '',
-        selectedSkillObject: {},
+  computed: {
+    ...mapGetters("auth", ["currentUser"]),
+    ...mapGetters("chat", ["getCurrentChat"]),
+
+    strongSkillObject() {
+      if (!this.currentUser) {
+        return {};
+      }
+
+      const skillId = this.localSkillId;
+      return this.currentUser.skillsToTeach.find(skill => skill._id === skillId) || {};
+    },
+
+    filteredReceivedRequests() {
+      if (!this.currentUser || !this.currentUser.swapRequests) {
+        return [];
+      }
+      return this.currentUser.swapRequests.filter(request => {
+        return request.status === "pending" && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId);
+      });
+    },
+
+    acceptedRequests() {
+      if (!this.currentUser || !this.currentUser.swapRequests) {
+        return [];
+      }
+      return this.currentUser.swapRequests.filter(request => {
+        return (request.status === "accepted" || request.status === "active") && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId);
+      });
+    },
+
+    pastRequests() {
+      if (!this.currentUser || !this.currentUser.swapRequests) {
+        return [];
+      }
+      return this.currentUser.swapRequests.filter(request => {
+        return ["rejected", "finished", "dealRejected"].includes(request.status) && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId);
+      });
+    },
+
+  },
+
+  async created() {
+    try {
+        await this.fetchCurrentUser();
+        this.localSkillId = localStorage.getItem("strongSkillId");
+        console.log(this.acceptedRequests);
+      } catch (error) {
+        console.error('Error creating swap request:', error);
+      }
+  },
+
+  methods: {
+    ...mapActions('user', ['fetchCurrentUser']),
+    ...mapActions('chat', ['createChat']),
+
+    async acceptSwapRequest(swapRequestId, senderId, selectedSkill) {
+      try {
+        await this.$store.dispatch('swapRequests/acceptSwapRequest', {
+          currentUserId: this.currentUser._id,
+          requestId: swapRequestId,
+          userId: senderId,
+          skillToTeach: selectedSkill,
+        });
+        await this.fetchCurrentUser();
+      } catch (error) {
+        console.error('Error accepting swap request:', error);
       }
     },
-  
-    computed: {
-      ...mapGetters("auth", ["currentUser"]),
-      ...mapGetters("chat", ["getCurrentChat"]),
-  
-      strongSkillObject() {
-        if (!this.currentUser) {
-          return {};
-        }
-  
-        const skillId = this.localSkillId;
-        return this.currentUser.skillsToTeach.find(skill => skill._id === skillId) || {};
-      },
-  
-      filteredReceivedRequests() {
-        if (!this.currentUser || !this.currentUser.swapRequests) {
-          return [];
-        }
-        return this.currentUser.swapRequests.filter(request => {
-          return request.status === "pending" && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId);
-        });
-      },
 
-      acceptedRequests() {
-        if (!this.currentUser || !this.currentUser.swapRequests) {
-          return [];
-        }
-        return this.currentUser.swapRequests.filter(request => {
-          return (request.status === "accepted" || request.status === "active") && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId);
-        });
-      },
-
-      pastRequests() {
-        if (!this.currentUser || !this.currentUser.swapRequests) {
-          return [];
-        }
-        return this.currentUser.swapRequests.filter(request => {
-          return ["rejected", "finished", "dealRejected"].includes(request.status) && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId);
-        });
-      },
-
-    },
-  
-    async created() {
+    async rejectSwapRequest(swapRequestId) {
       try {
-          await this.fetchCurrentUser();
-          this.localSkillId = localStorage.getItem("strongSkillId");
-          console.log(this.acceptedRequests);
-        } catch (error) {
-          console.error('Error creating swap request:', error);
-        }
+        await this.$store.dispatch('swapRequests/rejectSwapRequest', swapRequestId);
+        await this.fetchCurrentUser();
+      } catch (error) {
+        console.error('Error rejecting swap request:', error);
+      }
     },
 
-    methods: {
-      ...mapActions('user', ['fetchCurrentUser']),
-      ...mapActions('chat', ['createChat']),
+    async openChat(senderId, acceptedRequestId) {
+      try {
+        await this.createChat({
+          senderId,
+          swapRequestId: acceptedRequestId,
+        });
+        const chat = this.getCurrentChat
+        this.$router.push(`/${chat._id}`);
+      } catch (error) {
+        console.error('Error opening chat:', error);
+      }
+    },
 
-      async acceptSwapRequest(swapRequestId, senderId, selectedSkill) {
-        try {
-          await this.$store.dispatch('swapRequests/acceptSwapRequest', {
-            currentUserId: this.currentUser._id,
-            requestId: swapRequestId,
-            userId: senderId,
-            skillToTeach: selectedSkill,
-          });
-          await this.fetchCurrentUser();
-        } catch (error) {
-          console.error('Error accepting swap request:', error);
+    async onButtonClick(senderId, acceptedRequestId) {
+      const { zoomId } = this.currentUser.zoomId;
+      if (!zoomId) {
+        console.log('senderclick: ', senderId);
+        console.log('requestclick: ', acceptedRequestId);
+        const zoomIdObtained = await this.$store.dispatch('auth/ensureZoomId', {
+          senderId,
+          acceptedRequestId,
+        });
+        if (zoomIdObtained) {
+          this.openChat(senderId, acceptedRequestId);
         }
-      },
+      } else {
+        this.openChat(senderId, acceptedRequestId);
+      }
+    },
 
-      async rejectSwapRequest(swapRequestId) {
-        try {
-          await this.$store.dispatch('swapRequests/rejectSwapRequest', swapRequestId);
-          await this.fetchCurrentUser();
-        } catch (error) {
-          console.error('Error rejecting swap request:', error);
-        }
-      },
+    handleMessageEvent(event) {
+      console.log('Получены данные с сервера: event.data:', event.data);
+      if (event.data.success) {
+        console.log('sender: ', event.data.senderId);
+        console.log('request: ', event.data.acceptedRequestId);
+        this.openChat(event.data.senderId, event.data.acceptedRequestId);
+      } else {
+        console.error('Ошибка при получении Zoom ID:', event.data.error);
+      }
+    },
 
-      async openChat(senderId) {
-        try {
-          await this.createChat({
-            senderId,
-            skillId: this.localSkillId,
-          });
-          const chat = this.getCurrentChat
-          this.$router.push(`/${chat._id}`);
-        } catch (error) {
-          console.error('Error opening chat:', error);
-        }
-      },
 
-    }
+  },
+  mounted() {
+    // Добавьте обработчик события message
+    window.addEventListener('message', this.handleMessageEvent);
+  },
+
+  beforeDestroy() {
+    // Удалите обработчик события при уничтожении компонента
+    window.removeEventListener('message', this.handleMessageEvent);
+  },
 };
 </script>
   
