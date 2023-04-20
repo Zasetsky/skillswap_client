@@ -1,43 +1,86 @@
-import axios from "axios";
+import io from "socket.io-client";
 
-const API_URL = "http://localhost:3000/api/swap-requests/";
+const API_URL = "http://localhost:3000/";
+const socket = io(API_URL);
+
+const state = {
+  swapRequests: [],
+};
+
+const getters = {
+  getSwapRequests: (state) => {
+    return state.swapRequests;
+  },
+};
 
 const actions = {
-  async sendSwapRequest(context, { senderData, receiverData }) {
-      try {
-        console.log('id: ', receiverData.id);
-          await axios.post(API_URL + "send", { receiverId: receiverData.id, senderData, receiverData });
-      } catch (error) {
-          console.error("Error sending swap request:", error);
-      }
+  async sendSwapRequest(context, { senderId, receiverId, senderData, receiverData }) {
+    try {
+      socket.emit("sendSwapRequest", { senderId, receiverId, senderData, receiverData });
+      socket.on("swapRequestSent", () => {
+        context.dispatch("getAllSwapRequests");
+      });
+    } catch (error) {
+      console.error("Error sending swap request:", error);
+    }
   },
 
-  async acceptSwapRequest(context, { currentUserId, requestId, userId, skillToTeach }) {
+  async acceptSwapRequest(context, { swapRequestId }) {
     try {
-      await axios.post(API_URL + "accept", { currentUserId, requestId, userId, skillToTeach });
+      socket.emit("acceptSwapRequest", { swapRequestId });
+      socket.on("swapRequestAccepted", () => {
+        context.dispatch("getAllSwapRequests");
+      });
     } catch (error) {
       console.error("Error accepting swap request:", error);
     }
   },
 
-  async rejectSwapRequest(context, swapRequestId) {
+  async rejectSwapRequest({ dispatch }, swapRequestId) {
     try {
-      await axios.put(API_URL + `reject/${swapRequestId}`);
+      socket.emit("rejectSwapRequest", { swapRequestId });
+      socket.on("swapRequestRejected", () => {
+        dispatch("getAllSwapRequests");
+      });
     } catch (error) {
       console.error("Error rejecting swap request:", error);
     }
   },
 
-  async deleteSwapRequest(context, requestId) {
+  async deleteSwapRequest({ dispatch }, requestId) {
     try {
-      await axios.delete(API_URL + `${requestId}`);
+      socket.emit("deleteSwapRequest", { requestId });
+      socket.once("swapRequestDeleted", () => {
+        dispatch("getAllSwapRequests");
+      });
     } catch (error) {
       console.error("Error deleting swap request:", error);
     }
+  },
+
+  async getAllSwapRequests({ commit }) {
+    try {
+      socket.emit("getAllSwapRequests")
+      socket.once("allSwapRequests", (swapRequests) => {
+        commit("setSwapRequests", swapRequests);
+        console.log(swapRequests);
+      });
+    } catch (error) {
+      console.error("Error fetching all swap requests:", error);
+    }
+  },
+};
+
+const mutations = {
+  setSwapRequests(state, swapRequests) {
+    state.swapRequests = swapRequests;
   },
 };
 
 export default {
   namespaced: true,
+  state,
+  getters,
   actions,
+  mutations,
 };

@@ -23,7 +23,7 @@
               <v-btn 
                 class="mt-4"
                 color="primary"
-                @click="onButtonClick(acceptedRequest.senderData.id, acceptedRequest._id)"
+                @click="openChat(acceptedRequest.senderData.id, acceptedRequest._id)"
               >
                 Открыть чат сделки
               </v-btn>
@@ -60,7 +60,7 @@
                 class="mt-4"
                 color="primary"
                 :disabled="!selectedSkillObject.skill"
-                @click="acceptSwapRequest(receivedRequest._id, receivedRequest.senderData.id, selectedSkillObject)"
+                @click="acceptSwapRequest(receivedRequest._id)"
               >
                 Принять запрос
               </v-btn>
@@ -117,6 +117,7 @@ export default {
   computed: {
     ...mapGetters("auth", ["currentUser"]),
     ...mapGetters("chat", ["getCurrentChat"]),
+    ...mapGetters("swapRequests", ["getSwapRequests"]),
 
     strongSkillObject() {
       if (!this.currentUser) {
@@ -128,29 +129,30 @@ export default {
     },
 
     filteredReceivedRequests() {
-      if (!this.currentUser || !this.currentUser.swapRequests) {
+      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
         return [];
       }
-      return this.currentUser.swapRequests.filter(request => {
-        return request.status === "pending" && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId);
+
+      return this.getSwapRequests.filter(request => {
+        return request.status === "pending" && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) && request.receiverId === this.currentUser._id;
       });
     },
 
     acceptedRequests() {
-      if (!this.currentUser || !this.currentUser.swapRequests) {
+      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
         return [];
       }
-      return this.currentUser.swapRequests.filter(request => {
-        return (request.status === "accepted" || request.status === "active") && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId);
+      return this.getSwapRequests.filter(request => {
+        return (request.status === "accepted" || request.status === "active") && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) && request.receiverId === this.currentUser._id;
       });
     },
 
     pastRequests() {
-      if (!this.currentUser || !this.currentUser.swapRequests) {
+      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
         return [];
       }
-      return this.currentUser.swapRequests.filter(request => {
-        return ["rejected", "finished", "dealRejected"].includes(request.status) && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId);
+      return this.getSwapRequests.filter(request => {
+        return ["rejected", "finished", "dealRejected"].includes(request.status) && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) && request.receiverId === this.currentUser._id;
       });
     },
 
@@ -160,7 +162,8 @@ export default {
     try {
         await this.fetchCurrentUser();
         this.localSkillId = localStorage.getItem("strongSkillId");
-        console.log(this.acceptedRequests);
+        await this.getAllSwapRequests();
+        console.log('hi!', this.localSkillId);
       } catch (error) {
         console.error('Error creating swap request:', error);
       }
@@ -169,16 +172,14 @@ export default {
   methods: {
     ...mapActions('user', ['fetchCurrentUser']),
     ...mapActions('chat', ['createChat']),
+    ...mapActions('swapRequests', ['getAllSwapRequests']),
 
-    async acceptSwapRequest(swapRequestId, senderId, selectedSkill) {
+    async acceptSwapRequest(swapRequestId) {
       try {
         await this.$store.dispatch('swapRequests/acceptSwapRequest', {
-          currentUserId: this.currentUser._id,
-          requestId: swapRequestId,
-          userId: senderId,
-          skillToTeach: selectedSkill,
+          swapRequestId,
         });
-        await this.fetchCurrentUser();
+        // await this.fetchCurrentUser();
       } catch (error) {
         console.error('Error accepting swap request:', error);
       }
@@ -187,7 +188,7 @@ export default {
     async rejectSwapRequest(swapRequestId) {
       try {
         await this.$store.dispatch('swapRequests/rejectSwapRequest', swapRequestId);
-        await this.fetchCurrentUser();
+        // await this.fetchCurrentUser();
       } catch (error) {
         console.error('Error rejecting swap request:', error);
       }
@@ -195,56 +196,18 @@ export default {
 
     async openChat(senderId, acceptedRequestId) {
       try {
-        await this.createChat({
+        // Создать новый чат
+        await this.$store.dispatch("chat/createChat", {
+          currentUserId: this.currentUser._id,
           senderId,
           swapRequestId: acceptedRequestId,
         });
-        const chat = this.getCurrentChat
+        const chat = this.getCurrentChat;
         this.$router.push(`/${chat._id}`);
       } catch (error) {
-        console.error('Error opening chat:', error);
+        console.error("Error opening chat:", error);
       }
     },
-
-    async onButtonClick(senderId, acceptedRequestId) {
-      const { zoomId } = this.currentUser.zoomId;
-      if (!zoomId) {
-        console.log('senderclick: ', senderId);
-        console.log('requestclick: ', acceptedRequestId);
-        const zoomIdObtained = await this.$store.dispatch('auth/ensureZoomId', {
-          senderId,
-          acceptedRequestId,
-        });
-        if (zoomIdObtained) {
-          this.openChat(senderId, acceptedRequestId);
-        }
-      } else {
-        this.openChat(senderId, acceptedRequestId);
-      }
-    },
-
-    handleMessageEvent(event) {
-      console.log('Получены данные с сервера: event.data:', event.data);
-      if (event.data.success) {
-        console.log('sender: ', event.data.senderId);
-        console.log('request: ', event.data.acceptedRequestId);
-        this.openChat(event.data.senderId, event.data.acceptedRequestId);
-      } else {
-        console.error('Ошибка при получении Zoom ID:', event.data.error);
-      }
-    },
-
-
-  },
-  mounted() {
-    // Добавьте обработчик события message
-    window.addEventListener('message', this.handleMessageEvent);
-  },
-
-  beforeDestroy() {
-    // Удалите обработчик события при уничтожении компонента
-    window.removeEventListener('message', this.handleMessageEvent);
   },
 };
 </script>
-  

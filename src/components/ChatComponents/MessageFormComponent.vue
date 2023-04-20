@@ -25,7 +25,7 @@ export default {
     methods: {
       async sendNewMessage() {
         if (!this.newMessage) return;
-        this.$emit('send-message', this.newMessage);
+        this.$emit('send-message', 'text', this.newMessage);
         this.newMessage = '';
       },
     },

@@ -2,7 +2,14 @@
   <div>
     <v-dialog v-model="dialog" width="600" @click:outside="resetForm">
       <template v-slot:activator="{ on, attrs }">
-        <v-btn color="primary" v-bind="attrs" v-on="on" @click="openDialog">{{ getActionButtonText }}</v-btn>
+        <v-btn 
+        color="primary"
+        v-bind="attrs"
+        v-on="on"
+        @click="deal.status === 'confirmed' ? emitSendZoomLink() : openDialog"
+      >
+        {{ getActionButtonText }}
+      </v-btn>
       </template>
 
       <v-card>
@@ -203,7 +210,6 @@ export default {
         this.form1.meetingDuration = null;
         this.form2.meetingDate = null;
         this.form2.meetingTime = null;
-        this.form2.meetingDuration = null;
       }
 
       this.setTabs();
@@ -297,5 +303,3 @@ export default {
     },
 };
 </script>
-
-  

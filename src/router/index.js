@@ -43,13 +43,6 @@ const router = new Router({
       meta: { requiresAuth: true },
     },
     {
-      path: '/:chatId',
-      name: 'Chat',
-      component: () => import('@/views/DealChat.vue'),
-      props: route => ({ chatId: route.params.chatId }),
-      meta: { requiresAuth: true },
-    },    
-    {
       path: '/weak-skill',
       name: 'WeakSkillsPage',
       component: () => import('@/components/ProfileComponents/WeakSkillsPage.vue'),
@@ -62,7 +55,14 @@ const router = new Router({
       component: () => import('@/components/ProfileComponents/StrongSkillsPage.vue'),
       props: true,
       meta: { requiresAuth: true },
-    }
+    },
+    {
+      path: '/:chatId([0-9a-zA-Z-_]+)',
+      name: 'Chat',
+      component: () => import('@/views/DealChat.vue'),
+      props: route => ({ chatId: route.params.chatId }),
+      meta: { requiresAuth: true },
+    }, 
   ],
 })
 

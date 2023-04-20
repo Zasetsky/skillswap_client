@@ -39,7 +39,7 @@ export default {
 
   computed: {
     isMyMessage() {
-      return this.message.sender._id === this.currentUserId;
+      return this.message.sender === this.currentUserId;
     },
 
     isLastDealProposal() {
@@ -57,7 +57,6 @@ export default {
     }
   },
   mounted() {
-    console.log(this.message);
   }
 };
 </script>

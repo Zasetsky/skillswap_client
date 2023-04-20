@@ -83,6 +83,7 @@ export default {
     computed: {
         ...mapState('user', ['userProfile']),
         ...mapGetters('auth', ['currentUser']),
+        ...mapGetters("swapRequests", ["getSwapRequests"]),
 
         myStrongSkillsForUser() {
             const mySkills = this.currentUser.skillsToTeach;
@@ -93,17 +94,17 @@ export default {
                 });
             });
             return skillsForUser;
-            },
+        },
 
         swapRequestId() {
-            if (!this.currentUser) {
+            if (!this.getSwapRequests || this.getSwapRequests.length === 0) {
                 return '';
             }
 
-            const request = this.currentUser.swapRequests.find(
+            const request = this.getSwapRequests.find(
                 (request) =>
-                    request.senderData.id === this.localUserId ||
-                    request.receiverData.id === this.localUserId
+                    request.senderId === this.localUserId ||
+                    request.receiverId === this.localUserId
             );
 
             return request ? request._id : '';
@@ -115,9 +116,9 @@ export default {
 
 
         isSwapRequestAlreadySent() {
-            if (this.currentUser) {
-                return this.currentUser.swapRequests.some(
-                    (request) => request.receiverData.id === this.localUserId
+            if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
+                return this.getSwapRequests.some(
+                    (request) => request.receiverId === this.localUserId
                 );
             } else {
                 return false;
@@ -125,9 +126,9 @@ export default {
         },
 
         isSwapRequestReceived() {
-            if (this.currentUser) {
-                return this.currentUser.swapRequests.some(
-                (request) => request.senderData.id === this.localUserId
+            if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
+                return this.getSwapRequests.some(
+                (request) => request.senderId === this.localUserId
                 );
             } else {
                 return false;
@@ -136,23 +137,13 @@ export default {
 
     },
 
-    async created() {
-        try {
-            await this.fetchUserProfile(this.localUserId);
-        } catch (error) {
-            console.error('Error fetching user profile:', error);
-        }
-    },
-
-
     methods: {
         ...mapActions('user', ['fetchUserProfile']),
         ...mapActions('user', ['fetchCurrentUser']),
-        ...mapActions('swapRequests', ['sendSwapRequest', 'deleteSwapRequest']),
+        ...mapActions('swapRequests', ['sendSwapRequest', 'deleteSwapRequest', 'getAllSwapRequests']),
 
         async proposeSkillExchange() {
             const senderData = {
-                id: this.currentUser._id,
                 avatar: this.currentUser.avatar,
                 firstName: this.currentUser.firstName,
                 lastName: this.currentUser.lastName,
@@ -162,7 +153,6 @@ export default {
             };
 
             const receiverData = {
-                id: this.localUserId,
                 avatar: this.userProfile.avatar,
                 firstName: this.userProfile.firstName,
                 lastName: this.userProfile.lastName,
@@ -170,10 +160,9 @@ export default {
                 skillsToLearn: this.mySkillToLearn,
             };
             try {
-                await this.sendSwapRequest({ senderData, receiverData });
-                await this.fetchCurrentUser();
+                await this.sendSwapRequest({ senderId: this.currentUser._id, receiverId: this.localUserId, senderData, receiverData });
                 localStorage.setItem("weakSkillId", this.mySkillToLearn._id);
-                this.$router.push({ name: 'WeakSkillsPage', params: { skillId: this.mySkillToLearn._id } });
+                this.$router.push({ name: 'WeakSkillsPage' });
             } catch (error) {
                 console.error('Error creating swap request:', error);
             }
@@ -182,12 +171,21 @@ export default {
         async cancelSwapRequest() {
             try {
                 await this.deleteSwapRequest(this.swapRequestId);
-                await this.fetchCurrentUser();
             } catch (error) {
                 console.error('Error creating swap request:', error);
             }
         }
 
     },
+
+    async mounted() {
+        try {
+            await this.fetchUserProfile(this.localUserId);
+            await this.getAllSwapRequests();
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+        }
+    },
+
 };
 </script>

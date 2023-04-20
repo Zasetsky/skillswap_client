@@ -19,15 +19,16 @@
             class="swap-request-chip"
           >
             {{ skill.skill || skill.category || skill.subCategory }}
-            <span v-if="receivedSwapRequests[skill._id]" class="swap-request-counter">
+            <!-- <span v-if="receivedSwapRequests[skill._id]" class="swap-request-counter">
               {{ receivedSwapRequests[skill._id] }}
-            </span>
+            </span> -->
           </v-chip>
         </v-chip-group>
         <v-chip-group>
+          <!-- :color="weakSkillsWithSwapRequests.includes(skill._id) ? 'purple' : 'secondary'" -->
           <v-chip
             label
-            :color="weakSkillsWithSwapRequests.includes(skill._id) ? 'purple' : 'secondary'"
+            :color="'secondary'"
             v-for="(skill, index) in weakSkills"
             :key="index"
             @click="handleOnWeakSkillClick(skill._id)"
@@ -48,33 +49,33 @@ export default {
   computed: {
     ...mapGetters("auth", ["currentUser"]),
 
-    receivedSwapRequests() {
-      if (!this.currentUser || !this.currentUser.swapRequests) return [];
+    // receivedSwapRequests() {
+    //   if (!this.currentUser || !this.currentUser.swapRequests) return [];
 
-      return this.currentUser.swapRequests.reduce((acc, request) => {
-        if (request.status !== "pending") return acc;
+    //   return this.currentUser.swapRequests.reduce((acc, request) => {
+    //     if (request.status !== "pending") return acc;
 
-        request.senderData.skillsToLearn.forEach(skill => {
-          const skillId = skill._id;
-          acc[skillId] = (acc[skillId] || 0) + 1;
-        });
+    //     request.senderData.skillsToLearn.forEach(skill => {
+    //       const skillId = skill._id;
+    //       acc[skillId] = (acc[skillId] || 0) + 1;
+    //     });
 
-        return acc;
-      }, {});
-    },
+    //     return acc;
+    //   }, {});
+    // },
 
 
-    weakSkillsWithSwapRequests() {
-      if (!this.currentUser || !this.currentUser.swapRequests.length) return [];
-      const swapRequests = this.currentUser.swapRequests;
+    // weakSkillsWithSwapRequests() {
+    //   if (!this.currentUser || !this.currentUser.swapRequests.length) return [];
+    //   const swapRequests = this.currentUser.swapRequests;
 
-      return swapRequests.reduce((ids, request) => {
-        if (request.receiverData.skillsToLearn.some(skill => skill._id)) {
-          ids.push(request.receiverData.skillsToLearn[0]._id);
-        }
-        return ids;
-      }, []);
-    },
+    //   return swapRequests.reduce((ids, request) => {
+    //     if (request.receiverData.skillsToLearn.some(skill => skill._id)) {
+    //       ids.push(request.receiverData.skillsToLearn[0]._id);
+    //     }
+    //     return ids;
+    //   }, []);
+    // },
 
     name() {
       if (!this.currentUser || !this.currentUser.firstName || !this.currentUser.lastName) return "NaN NaN";

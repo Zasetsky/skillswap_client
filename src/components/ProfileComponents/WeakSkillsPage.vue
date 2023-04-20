@@ -28,7 +28,7 @@
               v-if="sentRequest.status === 'accepted'"
               class="mt-4"
               color="primary"
-              @click="openChat(sentRequest.receiverData.id, sentRequest._id)"
+              @click="onButtonClick(sentRequest.receiverData.id, sentRequest._id)"
             >
               Открыть чат сделки
             </v-btn>
@@ -95,7 +95,6 @@ export default {
     try {
         await this.fetchCurrentUser();
         this.localSkillId = localStorage.getItem("weakSkillId");
-        console.log(this.filteredSentRequests);
       } catch (error) {
         console.error('Error creating swap request:', error);
       }
@@ -107,7 +106,6 @@ export default {
     ...mapActions('chat', ['createChat']),
 
     async cancelSwapRequest(swapRequestId) {
-      console.log(this.localSkillId);
       try {
         await this.deleteSwapRequest(swapRequestId);
         await this.fetchCurrentUser();
@@ -117,16 +115,16 @@ export default {
     },
 
     async openChat(senderId, acceptedRequestId) {
-        try {
-          await this.createChat({
-            senderId,
-            swapRequestId: acceptedRequestId,
-          });
-          const chat = this.getCurrentChat
-          this.$router.push(`/${chat._id}`);
-        } catch (error) {
-          console.error('Error opening chat:', error);
-        }
+      try {
+        await this.createChat({
+          senderId,
+          swapRequestId: acceptedRequestId,
+        });
+        const chat = this.getCurrentChat
+        this.$router.push(`/${chat._id}`);
+      } catch (error) {
+        console.error('Error opening chat:', error);
+      }
     },
 
     goToMatchingUsers() {

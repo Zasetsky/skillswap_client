@@ -11,14 +11,15 @@
       />
     </div>
     <div class="bottom-bar">
-      <DealFormComponent ref="dealForm" :deal="getCurrentChat.deal" @submit-deal-form="handleDealFormSubmit" @confirm-deal="confirmDeal" />
+      <DealFormComponent ref="dealForm" :deal="getCurrentChat.deal || null" @submit-deal-form="handleDealFormSubmit" @confirm-deal="confirmDeal" />
       <MessageForm @send-message="sendMessage" />
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import io from 'socket.io-client';
+import { mapGetters } from 'vuex';
 import MessageComponent from '@/components/ChatComponents/MessageComponent.vue';
 import MessageForm from '@/components/ChatComponents/MessageFormComponent.vue';
 import DealFormComponent from '@/components/ChatComponents/DealFormComponent.vue';
@@ -34,36 +35,48 @@ export default {
     ...mapGetters('chat', ['getCurrentChat']),
     ...mapGetters('auth', ['currentUser']),
     messages() {
-      return this.getCurrentChat.messages || [];
+      return this.$store.state.chat.currentChat
+        ? this.$store.state.chat.currentChat.messages
+        : [];
     },
   },
 
   methods: {
-    ...mapActions('chat', ['getMessages', 'updateDeal']),
-
-    addMessageToLocalChat(newMessage) {
-      this.getCurrentChat.messages.push(newMessage);
-      this.$nextTick(() => {
-        this.scrollToBottom();
+    async addMessageToLocalChat(newMessage) {
+      await this.$store.dispatch("chat/addMessageToChat", {
+        chatId: this.getCurrentChat._id,
+        message: newMessage,
       });
+      this.scrollToBottom();
     },
 
     scrollToBottom() {
-      const messagesContainer = this.$refs.messagesContainer;
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      this.$nextTick(() => {
+        const messagesContainer = this.$refs.messagesContainer;
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+      });
     },
 
     async sendMessage(type, content) {
-      const newMessage = await this.$store.dispatch('chat/sendMessage', {
-        chatId: this.getCurrentChat._id,
-        type,
-        content,
-      });
-      this.addMessageToLocalChat(newMessage);
+      try {
+        const newMessage = {
+          chatId: this.getCurrentChat._id,
+          type: type || 'text',
+          content,
+          sender: this.currentUser._id
+        };
+
+        await this.$store.dispatch("chat/sendMessage", newMessage);
+      } catch (error) {
+        console.error('Error sending message:', error);
+        throw error;
+      }
     },
 
     async handleDealFormSubmit({ formData1, formData2 }) {
-      const updatedDeal = await this.$store.dispatch("chat/updateDeal", {
+      await this.$store.dispatch("chat/updateDeal", {
         chatId: this.getCurrentChat._id,
         status: 'pending',
         senderId: this.currentUser._id,
@@ -71,26 +84,19 @@ export default {
         formData2,
       });
 
-      this.getCurrentChat.deal = updatedDeal;
-
-      await this.sendMessage("deal_proposal");
+      await this.sendMessage("deal_proposal", " ");
     },
-    
+
     handleOpenDealForm() {
       this.$refs.dealForm.dialog = true;
     },
 
     async confirmDeal() {
       try {
-        const updatedDeal = await this.$store.dispatch("chat/confirmDeal", {
+        await this.$store.dispatch("chat/confirmDeal", {
           chatId: this.getCurrentChat._id,
         });
 
-        // Отправка ссылки на встречу и пароля в чат
-        await this.sendMessage("meeting_details", {
-          meetingLink: updatedDeal.join_url,
-          password: updatedDeal.password,
-        });
       } catch (error) {
         console.error("Error confirming deal:", error);
       }
@@ -100,21 +106,63 @@ export default {
   watch: {
     messages(newVal, oldVal) {
       if (newVal.length > oldVal.length) {
-        this.$nextTick(() => {
-          this.scrollToBottom();
-        });
+        this.scrollToBottom();
       }
     },
   },
 
-  mounted() {
+  async mounted() {
     console.log(this.getCurrentChat);
-    this.getMessages(this.getCurrentChat._id);
-    this.$nextTick(() => {
-      this.scrollToBottom();
-    });
-  },
+    try {
+      const chatId = localStorage.getItem('chatId');
+      const serverUrl = process.env.VUE_APP_SERVER_URL;
+      const socket = io(serverUrl, { withCredentials: true });
+
+      await new Promise((resolve) => {
+        socket.on("connect", () => {
+          console.log("Socket connected:", socket.id);
+          resolve();
+        });
+      });
+
+      if (!chatId) {
+        console.error('No chatId found');
+        return;
+      }
+
+      socket.on("disconnect", () => {
+        console.log("Socket disconnected:", socket.id);
+      });
+
+      // Set the socket in the store
+      await this.$store.dispatch("chat/setSocket", socket);
+
+      // Ensure that the socket is initialized and connected before dispatching actions
+      if (!this.$store.state.chat.socket || !this.$store.state.chat.socket.connected) {
+        throw new Error("Socket not initialized or not connected");
+      }
+
+      await this.$store.dispatch("chat/fetchCurrentChat", chatId);
+
+      socket.on("chat message", (msg) => {
+        this.addMessageToLocalChat(msg);
+      });
+
+      socket.on("messages", (chat) => {
+        // Обновляем текущий чат и сообщения в хранилище
+        this.$store.commit("chat/SET_CURRENT_CHAT", chat);
+        this.scrollToBottom();
+      });
+
+      this.$nextTick(() => {
+        this.scrollToBottom();
+      });
+    } catch (error) {
+      console.error("Error in mounted lifecycle hook:", error);
+    }
+  }
 };
+
 </script>
 
 <style scoped>
@@ -143,3 +191,4 @@ export default {
   box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
 }
 </style>
+
