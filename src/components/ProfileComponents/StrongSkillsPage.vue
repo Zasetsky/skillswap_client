@@ -158,17 +158,6 @@ export default {
 
   },
 
-  async created() {
-    try {
-        await this.fetchCurrentUser();
-        this.localSkillId = localStorage.getItem("strongSkillId");
-        await this.getAllSwapRequests();
-        console.log('hi!', this.localSkillId);
-      } catch (error) {
-        console.error('Error creating swap request:', error);
-      }
-  },
-
   methods: {
     ...mapActions('user', ['fetchCurrentUser']),
     ...mapActions('chat', ['createChat']),
@@ -176,10 +165,10 @@ export default {
 
     async acceptSwapRequest(swapRequestId) {
       try {
+        console.log(swapRequestId);
         await this.$store.dispatch('swapRequests/acceptSwapRequest', {
           swapRequestId,
         });
-        // await this.fetchCurrentUser();
       } catch (error) {
         console.error('Error accepting swap request:', error);
       }
@@ -188,7 +177,6 @@ export default {
     async rejectSwapRequest(swapRequestId) {
       try {
         await this.$store.dispatch('swapRequests/rejectSwapRequest', swapRequestId);
-        // await this.fetchCurrentUser();
       } catch (error) {
         console.error('Error rejecting swap request:', error);
       }
@@ -209,5 +197,15 @@ export default {
       }
     },
   },
+
+  async mounted() {
+    try {
+        await this.fetchCurrentUser();
+        this.localSkillId = localStorage.getItem("strongSkillId");
+        await this.getAllSwapRequests();
+      } catch (error) {
+        console.error('Error creating swap request:', error);
+      }
+  }
 };
 </script>
