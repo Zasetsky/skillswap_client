@@ -25,9 +25,9 @@ const actions = {
     }
   },
 
-  async acceptSwapRequest(context, { swapRequestId }) {
+  async acceptSwapRequest(context, { swapRequestId, chosenSkillToSwap }) {
     try {
-      socket.emit("acceptSwapRequest", { swapRequestId });
+      socket.emit("acceptSwapRequest", { swapRequestId, chosenSkillToSwap });
       socket.on("swapRequestAccepted", () => {
         context.dispatch("getAllSwapRequests");
       });

@@ -3,7 +3,8 @@
     <v-row>
       <v-col cols="12">
         <div class="header-container">
-          <h2>{{ weakSkillObject.skill || weakSkillObject.category || weakSkillObject.subCategory }}</h2>
+          <h2>{{ (weakSkillObject.skill ?? '') || (weakSkillObject.category ?? '') || (weakSkillObject.subCategory ?? '') }}</h2>
+
           <v-btn v-if="filteredSentRequests.length === 0" color="primary" @click="goToMatchingUsers">
             Найти совпадения
           </v-btn>
@@ -21,14 +22,13 @@
             
             <strong>Имя:</strong> {{ sentRequest.receiverData.firstName }} {{ sentRequest.receiverData.lastName }}<br>
             <strong>Описание:</strong> {{ sentRequest.receiverData.bio }}<br>
-            <strong>Хочет изучить:</strong> {{ sentRequest.receiverData.skillsToTeach[0].skill }}<br>
-            <strong>Хочу изучить:</strong> {{ sentRequest.receiverData.skillsToLearn[0].skill }}<br>
+            <strong>Навык для обмена:</strong> {{ sentRequest.status === 'pending' ? '???' : (sentRequest.receiverData.skillsToTeach[0]?.skill ?? '') }}<br>
 
             <v-btn
               v-if="sentRequest.status === 'accepted'"
               class="mt-4"
               color="primary"
-              @click="onButtonClick(sentRequest.receiverData.id, sentRequest._id)"
+              @click="openChat(sentRequest.receiverData.id, sentRequest._id)"
             >
               Открыть чат сделки
             </v-btn>
@@ -71,6 +71,7 @@ export default {
   computed: {
     ...mapGetters("auth", ["currentUser"]),
     ...mapGetters("chat", ["getCurrentChat"]),
+    ...mapGetters("swapRequests", ["getSwapRequests"]),
 
     weakSkillObject() {
       if (!this.currentUser) {
@@ -82,26 +83,22 @@ export default {
     },
 
     filteredSentRequests() {
-      if (!this.currentUser || !this.currentUser.swapRequests) {
+      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
         return [];
       }
-      return this.currentUser.swapRequests.filter(request => {
-        return request.receiverData.skillsToLearn.some(skill => skill._id === this.localSkillId);
+      return this.getSwapRequests.filter(request => {
+        return request.receiverData.skillsToLearn.some(skill => skill._id === this.localSkillId)
+          && request.senderId === this.currentUser._id;
       });
     },
   },
 
-  async created() {
-    try {
-        await this.fetchCurrentUser();
-        this.localSkillId = localStorage.getItem("weakSkillId");
-      } catch (error) {
-        console.error('Error creating swap request:', error);
-      }
+  created() {
+    console.log('obj', this.weakSkillObject);
   },
 
   methods: {
-    ...mapActions("swapRequests", ["deleteSwapRequest"]),
+    ...mapActions('swapRequests', ['deleteSwapRequest', 'getAllSwapRequests']),
     ...mapActions('user', ['fetchCurrentUser']),
     ...mapActions('chat', ['createChat']),
 
@@ -133,8 +130,17 @@ export default {
         query: { skillToLearnId: this.localSkillId },
       });
     },
-
   },
+
+  async mounted() {
+    try {
+        await this.fetchCurrentUser();
+        await this.getAllSwapRequests();
+        this.localSkillId = localStorage.getItem("weakSkillId");
+      } catch (error) {
+        console.error('Error creating swap request:', error);
+    }
+  }
 };
 </script>
 <style scoped>

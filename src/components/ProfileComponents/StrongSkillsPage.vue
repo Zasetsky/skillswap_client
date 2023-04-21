@@ -31,7 +31,7 @@
           </v-card>
           <v-card v-if="acceptedRequests.length === 0">
             <v-card-text>
-              Здесь будет информация об принятых запросах и активных сделок
+              Здесь будет информация об принятых запросах и активных сделках этого навыка
             </v-card-text>
           </v-card>
 
@@ -96,7 +96,7 @@
             </v-card-text>
           </v-card>
           <v-card v-if="pastRequests.length === 0">
-            <v-card-text>Здесь будет информация о прошлых запросах</v-card-text>
+            <v-card-text>Здесь будет информация о прошлых запросах этого навыка</v-card-text>
           </v-card>
         </v-col>
       </v-row>
@@ -165,9 +165,10 @@ export default {
 
     async acceptSwapRequest(swapRequestId) {
       try {
-        console.log(swapRequestId);
+        console.log(this.selectedSkillObject);
         await this.$store.dispatch('swapRequests/acceptSwapRequest', {
           swapRequestId,
+          chosenSkillToSwap: this.selectedSkillObject
         });
       } catch (error) {
         console.error('Error accepting swap request:', error);

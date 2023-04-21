@@ -111,18 +111,14 @@ export default {
   methods: {
     handleOnWeakSkillClick(skill) {
       localStorage.setItem("weakSkillId", skill);
-      this.$router.push({ name: 'WeakSkillsPage', params: { skillId: skill._id } });
+      this.$router.push({ name: 'WeakSkillsPage' });
     },
 
     handleOnStrongSkillClick(skill) {
       localStorage.setItem("strongSkillId", skill);
-      this.$router.push({ name: 'StrongSkillsPage', params: { skillId: skill._id } });
+      this.$router.push({ name: 'StrongSkillsPage' });
     }
   },
-
-  // mounted() {
-  //   console.log('USER: ', this.currentUser);
-  // }
 };
 </script>
 
