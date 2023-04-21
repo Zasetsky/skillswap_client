@@ -50,7 +50,7 @@ const actions = {
   async deleteSwapRequest({ dispatch }, requestId) {
     try {
       socket.emit("deleteSwapRequest", { requestId });
-      socket.once("swapRequestDeleted", () => {
+      socket.on("swapRequestDeleted", () => {
         dispatch("getAllSwapRequests");
       });
     } catch (error) {
@@ -61,9 +61,8 @@ const actions = {
   async getAllSwapRequests({ commit }) {
     try {
       socket.emit("getAllSwapRequests")
-      socket.once("allSwapRequests", (swapRequests) => {
+      socket.on("allSwapRequests", (swapRequests) => {
         commit("setSwapRequests", swapRequests);
-        console.log(swapRequests);
       });
     } catch (error) {
       console.error("Error fetching all swap requests:", error);

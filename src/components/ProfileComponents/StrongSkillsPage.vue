@@ -23,7 +23,7 @@
               <v-btn 
                 class="mt-4"
                 color="primary"
-                @click="openChat(acceptedRequest.senderData.id, acceptedRequest._id)"
+                @click="openChat(acceptedRequest.senderId, acceptedRequest._id)"
               >
                 Открыть чат сделки
               </v-btn>
@@ -192,6 +192,7 @@ export default {
           swapRequestId: acceptedRequestId,
         });
         const chat = this.getCurrentChat;
+        console.log('chat:', chat);
         this.$router.push(`/${chat._id}`);
       } catch (error) {
         console.error("Error opening chat:", error);

@@ -18,7 +18,6 @@
 </template>
 
 <script>
-import io from 'socket.io-client';
 import { mapGetters } from 'vuex';
 import MessageComponent from '@/components/ChatComponents/MessageComponent.vue';
 import MessageForm from '@/components/ChatComponents/MessageFormComponent.vue';
@@ -114,45 +113,8 @@ export default {
   async mounted() {
     console.log(this.getCurrentChat);
     try {
-      const chatId = localStorage.getItem('chatId');
-      const serverUrl = process.env.VUE_APP_SERVER_URL;
-      const socket = io(serverUrl, { withCredentials: true });
-
-      await new Promise((resolve) => {
-        socket.on("connect", () => {
-          console.log("Socket connected:", socket.id);
-          resolve();
-        });
-      });
-
-      if (!chatId) {
-        console.error('No chatId found');
-        return;
-      }
-
-      socket.on("disconnect", () => {
-        console.log("Socket disconnected:", socket.id);
-      });
-
-      // Set the socket in the store
-      await this.$store.dispatch("chat/setSocket", socket);
-
-      // Ensure that the socket is initialized and connected before dispatching actions
-      if (!this.$store.state.chat.socket || !this.$store.state.chat.socket.connected) {
-        throw new Error("Socket not initialized or not connected");
-      }
-
+      const chatId = localStorage.getItem("chatId");
       await this.$store.dispatch("chat/fetchCurrentChat", chatId);
-
-      socket.on("chat message", (msg) => {
-        this.addMessageToLocalChat(msg);
-      });
-
-      socket.on("messages", (chat) => {
-        // Обновляем текущий чат и сообщения в хранилище
-        this.$store.commit("chat/SET_CURRENT_CHAT", chat);
-        this.scrollToBottom();
-      });
 
       this.$nextTick(() => {
         this.scrollToBottom();

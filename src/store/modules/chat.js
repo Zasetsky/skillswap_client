@@ -1,15 +1,17 @@
-import axios from "axios";
+import io from "socket.io-client";
 
-const API_URL = 'http://localhost:3000/api/chat'; 
+const API_URL = 'http://localhost:3000/'; 
+const socket = io(API_URL);
 
 const state = {
     currentChat: null,
-    socket: null,
     chats: [],
 };
 
 const getters = {
     getCurrentChat: (state) => state.currentChat,
+
+    getAllChats: (state) => state.chats
 };
 
 const actions = {
@@ -18,51 +20,62 @@ const actions = {
   },
 
   async createChat({ commit }, { currentUserId, senderId, swapRequestId }) {
-    try {
-      const response = await axios.post(`${API_URL}/create`, { currentUserId, senderId, swapRequestId });
-      commit("SET_CURRENT_CHAT", response.data.chat);
-      return response.data.chat;
-    } catch (error) {
-      console.error("Ошибка создания чата:", error);
-      throw error;
-    }
-  },
+    return new Promise((resolve, reject) => {
+      try {
+        socket.on("chat", (chat) => {
+          console.log(chat);
+          commit("SET_CURRENT_CHAT", chat);
+          resolve();
+        });
+  
+        socket.on("error", (error) => {
+          console.error("Ошибка создания чата:", error);
+          reject(error);
+        });
+  
+        socket.emit("createChat", { currentUserId, senderId, swapRequestId });
+      } catch (error) {
+        console.error("Ошибка создания чата:", error);
+        reject(error);
+      }
+    });
+  },  
   
 
-  fetchCurrentChat({ commit, state }, chatId) {
+  fetchCurrentChat({ commit }, chatId) {
     if (!chatId) return;
   
-    state.socket.emit("fetchCurrentChat", { chatId });
+    socket.emit("fetchCurrentChat", { chatId });
   
-    state.socket.on("chat", (chat) => {
+    socket.on("chat", (chat) => {
       commit("SET_CURRENT_CHAT", chat);
     });
   
-    state.socket.on("error", (error) => {
+    socket.on("error", (error) => {
       console.error("Error getting chat:", error);
     });
   },
 
-  fetchAllChats({ commit, state }) {
-    if (!state.socket) {
+  fetchAllChats({ commit }) {
+    if (!socket) {
       console.error('Socket not connected');
       return;
     }
 
-    state.socket.emit("fetchAllChats");
+    socket.emit("fetchAllChats");
 
-    state.socket.on("allChats", (chats) => {
+    socket.on("allChats", (chats) => {
       commit("SET_ALL_CHATS", chats);
     });
 
-    state.socket.on("error", (error) => {
+    socket.on("error", (error) => {
       console.error("Error getting all chats:", error.message);
     });
   },
 
-  async sendMessage({ commit, state }, { chatId, type, content, sender }) {
+  async sendMessage({ dispatch }, { chatId, type, content, sender }) {
     try {
-      if (!state.socket) {
+      if (!socket) {
         throw new Error("Сокет не инициализирован");
       }
       const newMessage = {
@@ -71,20 +84,19 @@ const actions = {
         content,
         sender
       };
-      state.socket.emit("sendMessage", newMessage);
-      commit("ADD_MESSAGE_TO_CHAT", { chatId, message: newMessage });
+      socket.emit("sendMessage", newMessage);
+
+      socket.on("message", (chatId) => {
+        dispatch("fetchCurrentChat", chatId);
+      });
     } catch (error) {
       console.error("Ошибка отправки сообщения:", error);
       throw error;
     }
   },
 
-  addMessageToChat({ commit }, { chatId, message }) {
-      commit("ADD_MESSAGE_TO_CHAT", { chatId, message });
-  },
-
-  updateDeal({ commit, state }, { chatId, status, senderId, formData1, formData2 }) {
-    const socket = state.socket;
+  updateDeal({ commit }, { chatId, status, senderId, formData1, formData2 }) {
+    const socket = socket;
 
     if (!socket) {
       console.error("Socket not connected");
@@ -106,16 +118,6 @@ const actions = {
 };
 
 const mutations = {
-  SET_SOCKET: (state, socket) => {
-    state.socket = socket;
-  },
-
-  ADD_MESSAGE_TO_CHAT(state, { chatId, message }) {
-    if (state.currentChat && state.currentChat._id === chatId) {
-      state.currentChat.messages.push(message);
-    }
-  },
-
   SET_CURRENT_CHAT: (state, chat) => {
     state.currentChat = chat;
   },
