@@ -43,16 +43,20 @@ const actions = {
   
 
   fetchCurrentChat({ commit }, chatId) {
-    if (!chatId) return;
-  
-    socket.emit("fetchCurrentChat", { chatId });
-  
-    socket.on("chat", (chat) => {
-      commit("SET_CURRENT_CHAT", chat);
-    });
-  
-    socket.on("error", (error) => {
-      console.error("Error getting chat:", error);
+    return new Promise((resolve, reject) => {
+      if (!chatId) {
+        reject("Chat ID is undefined or null");
+        return;
+      }
+      socket.emit("fetchCurrentChat", { chatId });
+      socket.on("chat", (chat) => {
+        commit("SET_CURRENT_CHAT", chat);
+        resolve(chat);
+      });
+      socket.on("error", (error) => {
+        console.error("Error getting chat:", error);
+        reject(error);
+      });
     });
   },
 

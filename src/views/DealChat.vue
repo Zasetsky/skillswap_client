@@ -11,7 +11,12 @@
       />
     </div>
     <div class="bottom-bar">
-      <DealFormComponent ref="dealForm" :deal="getCurrentChat.deal || null" @submit-deal-form="handleDealFormSubmit" @confirm-deal="confirmDeal" />
+      <DealFormComponent
+        ref="dealForm"
+        :deal="getCurrentChat?.deal || null"
+        @submit-deal-form="handleDealFormSubmit"
+        @confirm-deal="confirmDeal"
+      />
       <MessageForm @send-message="sendMessage" />
     </div>
   </div>
@@ -111,7 +116,6 @@ export default {
   },
 
   async mounted() {
-    console.log(this.getCurrentChat);
     try {
       const chatId = localStorage.getItem("chatId");
       await this.$store.dispatch("chat/fetchCurrentChat", chatId);

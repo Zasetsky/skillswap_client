@@ -59,14 +59,18 @@ const actions = {
   },
 
   async getAllSwapRequests({ commit }) {
-    try {
-      socket.emit("getAllSwapRequests")
-      socket.on("allSwapRequests", (swapRequests) => {
-        commit("setSwapRequests", swapRequests);
-      });
-    } catch (error) {
-      console.error("Error fetching all swap requests:", error);
-    }
+    return new Promise((resolve, reject) => {
+      try {
+        socket.emit("getAllSwapRequests");
+        socket.on("allSwapRequests", (swapRequests) => {
+          commit("setSwapRequests", swapRequests);
+          resolve(swapRequests);
+        });
+      } catch (error) {
+        console.error("Error fetching all swap requests:", error);
+        reject(error);
+      }
+    });
   },
 };
 

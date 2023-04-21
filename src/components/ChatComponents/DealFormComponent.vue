@@ -6,7 +6,7 @@
         color="primary"
         v-bind="attrs"
         v-on="on"
-        @click="deal.status === 'confirmed' ? emitSendZoomLink() : openDialog"
+        @click="openDialog"
       >
         {{ getActionButtonText }}
       </v-btn>
@@ -95,7 +95,7 @@
           <v-spacer></v-spacer>
           <v-btn color="blue darken-1" text @click="close">Отмена</v-btn>
           <v-btn 
-            v-if="(!isConfirm || isFormChanged) && deal.status === 'pending'"
+            v-if="deal && (!isConfirm || isFormChanged) && deal.status === 'pending'"
             color="blue darken-1"
             :disabled="!isFormChanged"
             text
@@ -104,7 +104,7 @@
             Отправить
           </v-btn>
           <v-btn 
-            v-else-if="deal.status === 'not_started'"
+            v-else-if="deal && deal.status === 'not_started'"
             color="blue darken-1"
             :disabled="!isBothFormsFilled"
             text
@@ -120,7 +120,7 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
     props: {
@@ -152,26 +152,29 @@ export default {
     computed: {
       ...mapGetters('auth', ['currentUser']),
       ...mapGetters('chat', ['getCurrentChat']),
+      ...mapGetters("swapRequests", ["getSwapRequests"]),
 
       getActionButtonText() {
-          const currentUser = this.currentUser;
-          const deal = this.deal;
-
-          if (!currentUser || !deal) return "Согласовать сделку";
-          if (deal.status === "not_started") return "Согласовать сделку";
-          if (deal.status === "pending" && deal.sender === currentUser._id) return "Изменить предложение";
-          if (deal.status === "pending" && deal.sender !== currentUser._id) return "Подтвердить сделку";
+          if (this.deal && this.deal.status === "pending" && this.deal.sender === this.currentUser._id) return "Изменить предложение";
+          if (this.deal && this.deal.status === "pending" && this.deal.sender !== this.currentUser._id) return "Подтвердить сделку";
+          if (!this.deal || this.deal.status === "not_started") return "Согласовать сделку";
           return "Согласовать сделку";
+
       },
 
       isFormChanged() {
-        return (
-          (this.form1.meetingDate && this.deal.form && this.deal.form.meetingDate && this.form1.meetingDate !== this.deal.form.meetingDate) ||
-          (this.form1.meetingTime && this.deal.form && this.deal.form.meetingTime && this.form1.meetingTime !== this.deal.form.meetingTime) ||
-          (this.form1.meetingDuration && this.deal.form && this.deal.form.meetingDuration && this.form1.meetingDuration !== this.deal.form.meetingDuration) ||
-          (this.form2.meetingDate && this.deal.form2 && this.deal.form2.meetingDate && this.form2.meetingDate !== this.deal.form2.meetingDate) ||
-          (this.form2.meetingTime && this.deal.form2 && this.deal.form2.meetingTime && this.form2.meetingTime !== this.deal.form2.meetingTime)
-        );
+        if (this.deal) {
+          return (
+            (this.form1.meetingDate && this.deal.form && this.deal.form.meetingDate && this.form1.meetingDate !== this.deal.form.meetingDate) ||
+            (this.form1.meetingTime && this.deal.form && this.deal.form.meetingTime && this.form1.meetingTime !== this.deal.form.meetingTime) ||
+            (this.form1.meetingDuration && this.deal.form && this.deal.form.meetingDuration && this.form1.meetingDuration !== this.deal.form.meetingDuration) ||
+            (this.form2.meetingDate && this.deal.form2 && this.deal.form2.meetingDate && this.form2.meetingDate !== this.deal.form2.meetingDate) ||
+            (this.form2.meetingTime && this.deal.form2 && this.deal.form2.meetingTime && this.form2.meetingTime !== this.deal.form2.meetingTime)
+          );
+        } else {
+            return false;
+        }
+        
       },
 
       isBothFormsFilled() {
@@ -197,13 +200,13 @@ export default {
 
     },
 
-    created() {
-      if (this.deal && this.deal.form) {
-        this.form1.meetingDate = this.deal.form.meetingDate || null;
-        this.form1.meetingTime = this.deal.form.meetingTime || null;
-        this.form1.meetingDuration = this.deal.form.meetingDuration || null;
-        this.form2.meetingDate = this.deal.form2.meetingDate || null;
-        this.form2.meetingTime = this.deal.form2.meetingTime || null;
+    async created() {
+      if (this.deal) {
+        this.form1.meetingDate = this.deal.form?.meetingDate || null;
+        this.form1.meetingTime = this.deal.form?.meetingTime || null;
+        this.form1.meetingDuration = this.deal.form?.meetingDuration || null;
+        this.form2.meetingDate = this.deal.form2?.meetingDate || null;
+        this.form2.meetingTime = this.deal.form2?.meetingTime || null;
       } else {
         this.form1.meetingDate = null;
         this.form1.meetingTime = null;
@@ -212,13 +215,30 @@ export default {
         this.form2.meetingTime = null;
       }
 
-      this.setTabs();
+      const chatId = localStorage.getItem('chatId');
+
+      try {
+        await this.fetchCurrentChat(chatId);
+        await this.getAllSwapRequests();
+        this.setTabs();
+      } catch (error) {
+        console.error(error);
+      }
     },
 
+
     methods: {
+      ...mapActions('swapRequests', ['getAllSwapRequests']),
+      ...mapActions('chat', ['fetchCurrentChat']),
+
       setTabs() {
+        if (!this.getCurrentChat) {
+          console.error('Текущий чат не найден');
+          return;
+        }
+
         const swapRequestId = this.getCurrentChat.swapRequestId;
-        const swapRequest = this.currentUser.swapRequests.find((request) => request._id === swapRequestId);
+        const swapRequest = this.getSwapRequests.find((request) => request._id === swapRequestId);
 
         if (swapRequest && swapRequest.senderData && swapRequest.receiverData) {
           const skillsToTeach = swapRequest.senderData.skillsToTeach?.[0]?.skill || swapRequest.receiverData.skillsToTeach?.[0]?.skill;
