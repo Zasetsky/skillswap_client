@@ -1,7 +1,12 @@
 import io from "socket.io-client";
 
 const API_URL = 'http://localhost:3000/'; 
-const socket = io(API_URL);
+const token = localStorage.getItem('token') || '';
+const socket = io(API_URL, {
+  extraHeaders: {
+    Authorization: `Bearer ${token}`,
+  },
+});
 
 const state = {
     currentChat: null,
@@ -23,7 +28,6 @@ const actions = {
     return new Promise((resolve, reject) => {
       try {
         socket.on("chat", (chat) => {
-          console.log(chat);
           commit("SET_CURRENT_CHAT", chat);
           resolve();
         });
@@ -97,27 +101,6 @@ const actions = {
       console.error("Ошибка отправки сообщения:", error);
       throw error;
     }
-  },
-
-  updateDeal({ commit }, { chatId, status, senderId, formData1, formData2 }) {
-    const socket = socket;
-
-    if (!socket) {
-      console.error("Socket not connected");
-      return;
-    }
-
-    const data = { chatId, status, senderId, formData1, formData2 };
-
-    socket.emit("updateDeal", data);
-
-    socket.on("deal", (updatedDeal) => {
-      commit("UPDATE_DEAL", { chatId, deal: updatedDeal });
-    });
-
-    socket.on("error", (error) => {
-      console.error("Error updating deal:", error.message);
-    });
   },
 };
 

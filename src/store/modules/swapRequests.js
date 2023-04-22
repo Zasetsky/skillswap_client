@@ -1,7 +1,12 @@
 import io from "socket.io-client";
 
 const API_URL = "http://localhost:3000/";
-const socket = io(API_URL);
+const token = localStorage.getItem('token') || '';
+const socket = io(API_URL, {
+  extraHeaders: {
+    Authorization: `Bearer ${token}`,
+  },
+});
 
 const state = {
   swapRequests: [],

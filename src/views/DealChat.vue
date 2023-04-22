@@ -13,7 +13,6 @@
     <div class="bottom-bar">
       <DealFormComponent
         ref="dealForm"
-        :deal="getCurrentChat?.deal || null"
         @submit-deal-form="handleDealFormSubmit"
         @confirm-deal="confirmDeal"
       />
@@ -37,6 +36,7 @@ export default {
 
   computed: {
     ...mapGetters('chat', ['getCurrentChat']),
+    ...mapGetters('deal', ['getCurrentDeal']),
     ...mapGetters('auth', ['currentUser']),
     messages() {
       return this.$store.state.chat.currentChat
@@ -80,18 +80,29 @@ export default {
     },
 
     async handleDealFormSubmit({ formData1, formData2 }) {
-      await this.$store.dispatch("chat/updateDeal", {
-        chatId: this.getCurrentChat._id,
+      await this.$store.dispatch("deal/updateDeal", {
+        dealId: this.getCurrentDeal._id,
         status: 'pending',
         senderId: this.currentUser._id,
         formData1,
         formData2,
       });
 
+      await this.$store.dispatch("deal/getCurrentDeal", {
+            chatId: this.getCurrentChat._id,
+          });
+
       await this.sendMessage("deal_proposal", " ");
     },
 
-    handleOpenDealForm() {
+    async handleOpenDealForm() {
+      try {
+          await this.$store.dispatch("deal/getCurrentDeal", {
+            chatId: this.getCurrentChat._id,
+          });
+        } catch (error) {
+          console.error("Error fetching current deal: ", error);
+        }
       this.$refs.dealForm.dialog = true;
     },
 
@@ -119,6 +130,9 @@ export default {
     try {
       const chatId = localStorage.getItem("chatId");
       await this.$store.dispatch("chat/fetchCurrentChat", chatId);
+      await this.$store.dispatch("deal/getCurrentDeal", {
+              chatId: this.getCurrentChat._id,
+            });
 
       this.$nextTick(() => {
         this.scrollToBottom();

@@ -95,7 +95,7 @@
           <v-spacer></v-spacer>
           <v-btn color="blue darken-1" text @click="close">Отмена</v-btn>
           <v-btn 
-            v-if="deal && (!isConfirm || isFormChanged) && deal.status === 'pending'"
+            v-if="getCurrentDeal && (!isConfirm || isFormChanged) && getCurrentDeal.status === 'pending'"
             color="blue darken-1"
             :disabled="!isFormChanged"
             text
@@ -104,7 +104,7 @@
             Отправить
           </v-btn>
           <v-btn 
-            v-else-if="deal && deal.status === 'not_started'"
+            v-else-if="getCurrentDeal && getCurrentDeal.status === 'not_started'"
             color="blue darken-1"
             :disabled="!isBothFormsFilled"
             text
@@ -123,13 +123,6 @@
 import { mapGetters, mapActions } from "vuex";
 
 export default {
-    props: {
-        deal: {
-            type: Object,
-            default: null,
-        },
-    },
-
     data() {
         return {
           dialog: false,
@@ -153,28 +146,39 @@ export default {
       ...mapGetters('auth', ['currentUser']),
       ...mapGetters('chat', ['getCurrentChat']),
       ...mapGetters("swapRequests", ["getSwapRequests"]),
+      ...mapGetters('deal', ['getCurrentDeal']),
 
       getActionButtonText() {
-          if (this.deal && this.deal.status === "pending" && this.deal.sender === this.currentUser._id) return "Изменить предложение";
-          if (this.deal && this.deal.status === "pending" && this.deal.sender !== this.currentUser._id) return "Подтвердить сделку";
-          if (!this.deal || this.deal.status === "not_started") return "Согласовать сделку";
-          return "Согласовать сделку";
+        const currentDeal = this.getCurrentDeal;
 
+        if (currentDeal) {
+          if (currentDeal.status === "pending" && currentDeal.sender === this.currentUser._id) {
+            return "Изменить предложение";
+          } else if (currentDeal.status === "pending" && currentDeal.sender !== this.currentUser._id) {
+            return "Подтвердить сделку";
+          }
+        }
+
+        return "Согласовать сделку";
       },
 
       isFormChanged() {
-        if (this.deal) {
-          return (
-            (this.form1.meetingDate && this.deal.form && this.deal.form.meetingDate && this.form1.meetingDate !== this.deal.form.meetingDate) ||
-            (this.form1.meetingTime && this.deal.form && this.deal.form.meetingTime && this.form1.meetingTime !== this.deal.form.meetingTime) ||
-            (this.form1.meetingDuration && this.deal.form && this.deal.form.meetingDuration && this.form1.meetingDuration !== this.deal.form.meetingDuration) ||
-            (this.form2.meetingDate && this.deal.form2 && this.deal.form2.meetingDate && this.form2.meetingDate !== this.deal.form2.meetingDate) ||
-            (this.form2.meetingTime && this.deal.form2 && this.deal.form2.meetingTime && this.form2.meetingTime !== this.deal.form2.meetingTime)
-          );
+        if (this.getCurrentDeal) {
+          const deal = this.getCurrentDeal;
+
+          // Проверяем каждую форму
+          const form1Changed = Object.entries(this.form1).some(([key, value]) => {
+            return value !== deal.form[key];
+          });
+          const form2Changed = Object.entries(this.form2).some(([key, value]) => {
+            return value !== deal.form2[key];
+          });
+
+          // Возвращаем true, если хотя бы одна из форм изменена
+          return form1Changed || form2Changed;
         } else {
-            return false;
+          return false;
         }
-        
       },
 
       isBothFormsFilled() {
@@ -188,7 +192,7 @@ export default {
       },
 
       isConfirm() {
-        const deal = this.deal;
+        const deal = this.getCurrentDeal;
         const currentUser = this.currentUser;
 
         return (
@@ -200,36 +204,36 @@ export default {
 
     },
 
-    async created() {
-      if (this.deal) {
-        this.form1.meetingDate = this.deal.form?.meetingDate || null;
-        this.form1.meetingTime = this.deal.form?.meetingTime || null;
-        this.form1.meetingDuration = this.deal.form?.meetingDuration || null;
-        this.form2.meetingDate = this.deal.form2?.meetingDate || null;
-        this.form2.meetingTime = this.deal.form2?.meetingTime || null;
-      } else {
-        this.form1.meetingDate = null;
-        this.form1.meetingTime = null;
-        this.form1.meetingDuration = null;
-        this.form2.meetingDate = null;
-        this.form2.meetingTime = null;
-      }
-
-      const chatId = localStorage.getItem('chatId');
-
-      try {
-        await this.fetchCurrentChat(chatId);
-        await this.getAllSwapRequests();
-        this.setTabs();
-      } catch (error) {
-        console.error(error);
-      }
+    watch: {
+      getCurrentDeal: {
+        handler(newValue) {
+          if (newValue) {
+            if (newValue.form) {
+              this.form1.meetingDate = newValue.form.meetingDate || null;
+              this.form1.meetingTime = newValue.form.meetingTime || null;
+              this.form1.meetingDuration = newValue.form.meetingDuration || null;
+            } else {
+              this.form1.meetingDate = null;
+              this.form1.meetingTime = null;
+              this.form1.meetingDuration = null;
+            }
+            if (newValue.form2) {
+              this.form2.meetingDate = newValue.form2.meetingDate || null;
+              this.form2.meetingTime = newValue.form2.meetingTime || null;
+            } else {
+              this.form2.meetingDate = null;
+              this.form2.meetingTime = null;
+            }
+          }
+        },
+        deep: true,
+      },
     },
-
 
     methods: {
       ...mapActions('swapRequests', ['getAllSwapRequests']),
       ...mapActions('chat', ['fetchCurrentChat']),
+      ...mapActions('deal', ['createOrGetCurrentDeal']),
 
       setTabs() {
         if (!this.getCurrentChat) {
@@ -254,7 +258,17 @@ export default {
         }
       },
 
-      openDialog() {
+      async openDialog() {
+        try {
+          await this.createOrGetCurrentDeal({
+            participants: this.getCurrentChat.participants,
+            chatId: this.getCurrentChat._id,
+            swapRequestId: this.getCurrentChat.swapRequestId,
+          });
+        } catch (error) {
+          console.error("Ошибка при создании сделки: ", error);
+        }
+
         this.dialog = true;
       },
 
@@ -292,11 +306,12 @@ export default {
       },
 
       close() {
-        this.resetForm();
         this.dialog = false;
+        this.resetForm();
       },
 
       resetForm() {
+        this.dialog = false;
         if (!this.deal || !this.deal.form) {
           this.form1 = {
             meetingDate: null,
@@ -318,8 +333,34 @@ export default {
             meetingTime: this.deal.form2.meetingTime || null,
           };
         }
-        this.dialog = false;
       },
+    },
+
+    async mounted() {
+      if (this.getCurrentDeal) {
+        this.form1.meetingDate = this.getCurrentDeal.form.meetingDate || null;
+        this.form1.meetingTime = this.getCurrentDeal.form.meetingTime || null;
+        this.form1.meetingDuration = this.getCurrentDeal.form.meetingDuration || null;
+        this.form2.meetingDate = this.getCurrentDeal.form2.meetingDate || null;
+        this.form2.meetingTime = this.getCurrentDeal.form2.meetingTime || null;
+      } else {
+        this.form1.meetingDate = null;
+        this.form1.meetingTime = null;
+        this.form1.meetingDuration = null;
+        this.form2.meetingDate = null;
+        this.form2.meetingTime = null;
+      }
+
+      const chatId = localStorage.getItem('chatId');
+
+      try {
+        await this.fetchCurrentChat(chatId);
+        await this.getAllSwapRequests();
+        this.setTabs();
+        this.dataLoaded = true;
+      } catch (error) {
+        console.error(error);
+      }
     },
 };
 </script>
