@@ -5,6 +5,9 @@ import store from './store';
 import vuetify from './plugins/vuetify';
 import Vuelidate from 'vuelidate';
 import '@/assets/styles/main.scss';
+import AsyncComputed from "vue-async-computed";
+
+Vue.use(AsyncComputed);
 
 Vue.use(Vuelidate);
 

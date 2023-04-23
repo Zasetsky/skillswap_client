@@ -9,6 +9,7 @@ const state = {
 };
 
 const getters = {
+  getUserProfile: state => state.userProfile,
   getAvatarUrl: state => state.userProfile.avatarUrl,
 };
 
@@ -98,6 +99,7 @@ const actions = {
   async fetchUserProfile({ commit }, userId) {
     try {
       const response = await axios.get(`${API_URL}/current/${userId}`);
+      
       commit('setUserProfile', response.data.user);
     } catch (error) {
       console.error('Error fetching user profile:', error);

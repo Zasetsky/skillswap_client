@@ -10,7 +10,7 @@
         </v-list-item-content>
       </v-list-item>
 
-      <v-list-item @click="$router.push('/DealChat')">
+      <v-list-item @click="$router.push('/chats')">
         <v-list-item-icon>
           <v-icon>mdi-chat</v-icon>
         </v-list-item-icon>

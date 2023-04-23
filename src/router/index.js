@@ -56,6 +56,12 @@ const router = new Router({
       meta: { requiresAuth: true },
     },
     {
+      path: '/chats',
+      name: 'Chats_Page',
+      component: () => import('@/views/ChatsPage.vue'),
+      meta: { requiresAuth: true },
+    }, 
+    {
       path: '/:chatId([0-9a-zA-Z-_]+)',
       name: 'Chat',
       component: () => import('@/views/DealChat.vue'),
