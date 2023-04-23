@@ -4,7 +4,6 @@ import store from '@/store'
 import jwtDecode from 'jwt-decode';
 
 import Home from '@/views/HomePage.vue'
-import MatchingUsers from '@/views/MatchingUsers.vue'
 
 Vue.use(Router)
 
@@ -32,7 +31,7 @@ const router = new Router({
     {
       path: '/matching',
       name: 'MatchingUsers',
-      component: MatchingUsers,
+      component: () => import('@/views/MatchingUsers.vue'),
       meta: { requiresAuth: true },
     },
     {

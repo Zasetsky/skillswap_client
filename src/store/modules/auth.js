@@ -1,5 +1,6 @@
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
+import { connectSocket } from "../../soket";
 
 const API_URL = 'http://localhost:3000/api/auth'; 
 
@@ -46,6 +47,9 @@ const actions = {
       // Сохраняем информацию о пользователе в state
       commit('setUser', user);
 
+      // Подключаем сокет после успешной регистрации
+      connectSocket(token);
+
       return response.data;
     } catch (error) {
       console.error('Error during registration:', error);
@@ -69,6 +73,9 @@ const actions = {
       
       // Сохраняем информацию о пользователе в state
       commit('setUser', user);
+
+      // Подключаем сокет после успешной авторизации
+      connectSocket(token);
 
       return response.data;
     } catch (error) {
@@ -103,6 +110,10 @@ const actions = {
 
       try {
         const response = await axios.get(`${API_URL}/user`);
+
+        // Подключаем сокет после автоматической авторизации
+        connectSocket(token);
+
         commit('setUser', response.data.user);
 
       } catch (error) {

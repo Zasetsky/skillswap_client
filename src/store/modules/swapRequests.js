@@ -1,12 +1,4 @@
-import io from "socket.io-client";
-
-const API_URL = "http://localhost:3000/";
-const token = localStorage.getItem('token') || '';
-const socket = io(API_URL, {
-  extraHeaders: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+import { getSocket } from "../../soket";
 
 const state = {
   swapRequests: [],
@@ -21,6 +13,8 @@ const getters = {
 const actions = {
   async sendSwapRequest(context, { senderId, receiverId, senderData, receiverData }) {
     try {
+      const socket = getSocket();
+
       socket.emit("sendSwapRequest", { senderId, receiverId, senderData, receiverData });
       socket.on("swapRequestSent", () => {
         context.dispatch("getAllSwapRequests");
@@ -32,6 +26,8 @@ const actions = {
 
   async acceptSwapRequest(context, { swapRequestId, chosenSkillToSwap }) {
     try {
+      const socket = getSocket();
+
       socket.emit("acceptSwapRequest", { swapRequestId, chosenSkillToSwap });
       socket.on("swapRequestAccepted", () => {
         context.dispatch("getAllSwapRequests");
@@ -43,6 +39,8 @@ const actions = {
 
   async rejectSwapRequest({ dispatch }, swapRequestId) {
     try {
+      const socket = getSocket();
+
       socket.emit("rejectSwapRequest", { swapRequestId });
       socket.on("swapRequestRejected", () => {
         dispatch("getAllSwapRequests");
@@ -54,6 +52,8 @@ const actions = {
 
   async deleteSwapRequest({ dispatch }, requestId) {
     try {
+      const socket = getSocket();
+
       socket.emit("deleteSwapRequest", { requestId });
       socket.on("swapRequestDeleted", () => {
         dispatch("getAllSwapRequests");
@@ -66,6 +66,8 @@ const actions = {
   async getAllSwapRequests({ commit }) {
     return new Promise((resolve, reject) => {
       try {
+        const socket = getSocket();
+
         socket.emit("getAllSwapRequests");
         socket.on("allSwapRequests", (swapRequests) => {
           commit("setSwapRequests", swapRequests);

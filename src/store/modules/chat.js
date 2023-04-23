@@ -1,12 +1,4 @@
-import io from "socket.io-client";
-
-const API_URL = 'http://localhost:3000/'; 
-const token = localStorage.getItem('token') || '';
-const socket = io(API_URL, {
-  extraHeaders: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+import { getSocket } from "../../soket";
 
 const state = {
     currentChat: null,
@@ -27,6 +19,8 @@ const actions = {
   async createChat({ commit }, { currentUserId, senderId, swapRequestId }) {
     return new Promise((resolve, reject) => {
       try {
+        const socket = getSocket();
+
         socket.on("chat", (chat) => {
           commit("SET_CURRENT_CHAT", chat);
           resolve();
@@ -48,6 +42,8 @@ const actions = {
 
   fetchCurrentChat({ commit }, chatId) {
     return new Promise((resolve, reject) => {
+      const socket = getSocket();
+
       if (!chatId) {
         reject("Chat ID is undefined or null");
         return;
@@ -65,6 +61,8 @@ const actions = {
   },
 
   fetchAllChats({ commit }) {
+    const socket = getSocket();
+
     if (!socket) {
       console.error('Socket not connected');
       return;
@@ -83,6 +81,8 @@ const actions = {
 
   async sendMessage({ dispatch }, { chatId, type, content, sender }) {
     try {
+      const socket = getSocket();
+
       if (!socket) {
         throw new Error("Сокет не инициализирован");
       }

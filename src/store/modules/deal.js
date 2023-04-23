@@ -1,12 +1,4 @@
-import io from "socket.io-client";
-
-const API_URL = "http://localhost:3000/";
-const token = localStorage.getItem('token') || '';
-const socket = io(API_URL, {
-  extraHeaders: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+import { getSocket } from "../../soket";
 
 const state = {
   deals: [],
@@ -22,9 +14,9 @@ const actions = {
   createOrGetCurrentDeal({ commit }, { participants, chatId, swapRequestId }) {
     const data = { participants, chatId, swapRequestId };
 
-    console.log('Sending createOrGetCurrentDeal event');
-  
     return new Promise((resolve, reject) => {
+      const socket = getSocket();
+
       socket.emit("createOrGetCurrentDeal", data);
   
       socket.once("deal", (newDeal) => {
@@ -41,6 +33,8 @@ const actions = {
 
   getCurrentDeal({ commit }, chatId) {
     return new Promise((resolve, reject) => {
+      const socket = getSocket();
+
       socket.emit("getCurrentDeal", chatId);
   
       socket.once("currentDeal", (deal) => {
@@ -58,6 +52,8 @@ const actions = {
   updateDeal({ commit }, { dealId, status, senderId, formData1, formData2 }) {
       const data = { dealId, status, senderId, formData1, formData2 };
 
+      const socket = getSocket();
+
       socket.emit("updateDeal", data);
 
       socket.on("deal", (updatedDeal) => {
@@ -72,11 +68,13 @@ const actions = {
   async getAllDeals({ commit }) {
       return new Promise((resolve, reject) => {
       try {
-          socket.emit("getAllDeals");
-          socket.on("allDeals", (deals) => {
+        const socket = getSocket();
+
+        socket.emit("getAllDeals");
+        socket.on("allDeals", (deals) => {
           commit("SET_DEALS", deals);
           resolve(deals);
-          });
+        });
       } catch (error) {
           console.error("Error fetching all deals:", error);
           reject(error);
