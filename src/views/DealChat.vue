@@ -11,7 +11,7 @@
       />
     </div>
     <div class="bottom-bar">
-      <DealFormComponent
+      <DealComponent
         ref="dealForm"
         @submit-deal-form="handleDealFormSubmit"
         @confirm-deal="confirmDeal"
@@ -25,13 +25,13 @@
 import { mapGetters } from 'vuex';
 import MessageComponent from '@/components/ChatComponents/MessageComponent.vue';
 import MessageForm from '@/components/ChatComponents/MessageFormComponent.vue';
-import DealFormComponent from '@/components/ChatComponents/DealFormComponent.vue';
+import DealComponent from '@/components/ChatComponents/DealComponent.vue';
 
 export default {
   components: {
     MessageComponent,
     MessageForm,
-    DealFormComponent,
+    DealComponent,
   },
 
   computed: {
@@ -80,9 +80,15 @@ export default {
     },
 
     async handleDealFormSubmit({ formData1, formData2 }) {
+      let computedStatus = this.getCurrentDeal.status;
+      if (computedStatus === 'pending') {
+        computedStatus = 'pending_update'
+      } else {
+        computedStatus = 'pending'
+      }
       await this.$store.dispatch("deal/updateDeal", {
         dealId: this.getCurrentDeal._id,
-        status: 'pending',
+        status: computedStatus,
         senderId: this.currentUser._id,
         formData1,
         formData2,
@@ -108,8 +114,8 @@ export default {
 
     async confirmDeal() {
       try {
-        await this.$store.dispatch("chat/confirmDeal", {
-          chatId: this.getCurrentChat._id,
+        await this.$store.dispatch("deal/confirmDeal", {
+          dealId: this.getCurrentDeal._id,
         });
 
       } catch (error) {

@@ -17,7 +17,7 @@
               <strong>Имя:</strong> {{ acceptedRequest.senderData.firstName }} {{ acceptedRequest.senderData.lastName }}<br>
               <strong>Описание:</strong> {{ acceptedRequest.senderData.bio }}<br>
 
-              <strong>Хочу изучить:</strong> {{ acceptedRequest.senderData.skillsToLearn[0].skill }}<br>
+              <strong>Хочет изучить:</strong> {{ acceptedRequest.senderData.skillsToLearn[0].skill }}<br>
               <strong>Навык для обмена:</strong> {{ acceptedRequest.senderData.skillsToTeach[0].skill }}<br>
 
               <v-btn 
@@ -45,7 +45,7 @@
               <strong>Имя:</strong> {{ receivedRequest.senderData.firstName }} {{ receivedRequest.senderData.lastName }}<br>
               <strong>Описание:</strong> {{ receivedRequest.senderData.bio }}<br>
   
-              <strong>Хочу изучить:</strong> {{ receivedRequest.senderData.skillsToLearn[0].skill }}<br>
+              <strong>Хочет изучить:</strong> {{ receivedRequest.senderData.skillsToLearn[0].skill }}<br>
               <v-select
                 v-model="selectedSkillObject"
                 :items="receivedRequest.senderData.skillsToTeach"
@@ -86,7 +86,7 @@
               <strong>Имя:</strong> {{ pastRequest.senderData.firstName }} {{ pastRequest.senderData.lastName }}<br>
               <strong>Описание:</strong> {{ pastRequest.senderData.bio }}<br>
 
-              <strong>Хочу изучить:</strong> {{ pastRequest.senderData.skillsToLearn[0].skill }}<br>
+              <strong>Хочтел изучить:</strong> {{ pastRequest.senderData.skillsToLearn[0].skill }}<br>
               <strong>Навыки для обмена:</strong>
               <span v-for="(skillToTeach, index) in pastRequest.senderData.skillsToTeach" :key="index">
                 {{ skillToTeach.skill }}<span v-if="index < pastRequest.senderData.skillsToTeach.length - 1">, </span>
@@ -192,13 +192,13 @@ export default {
       }
     },
 
-    async openChat(senderId, acceptedRequestId) {
+    async openChat(senderId, requestId) {
       try {
         // Создать новый чат
         await this.$store.dispatch("chat/createChat", {
-          currentUserId: this.currentUser._id,
+          receiverId: this.currentUser._id,
           senderId,
-          swapRequestId: acceptedRequestId,
+          swapRequestId: requestId,
         });
         const chat = this.getCurrentChat;
         localStorage.setItem("chatId", chat._id);

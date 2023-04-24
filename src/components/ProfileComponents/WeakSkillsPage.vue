@@ -107,12 +107,12 @@ export default {
       }
     },
 
-    async openChat(senderId, acceptedRequestId) {
+    async openChat(receiverId, requestId) {
       try {
         await this.createChat({
-          currentUserId: this.currentUser._id,
-          senderId,
-          swapRequestId: acceptedRequestId,
+          receiverId: receiverId,
+          senderId: this.currentUser._id,
+          swapRequestId: requestId,
         });
         const chat = this.getCurrentChat;
         localStorage.setItem("chatId", chat._id);

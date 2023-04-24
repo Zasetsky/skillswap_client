@@ -58,7 +58,7 @@ const router = new Router({
     {
       path: '/chats',
       name: 'Chats_Page',
-      component: () => import('@/views/ChatsPage.vue'),
+      component: () => import('@/views/AllChatsPage.vue'),
       meta: { requiresAuth: true },
     }, 
     {

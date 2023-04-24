@@ -16,7 +16,7 @@ const actions = {
     commit('SET_SOCKET', socket);
   },
 
-  async createChat({ commit }, { currentUserId, senderId, swapRequestId }) {
+  async createChat({ commit }, { receiverId, senderId, swapRequestId }) {
     return new Promise((resolve, reject) => {
       try {
         const socket = getSocket();
@@ -31,7 +31,7 @@ const actions = {
           reject(error);
         });
   
-        socket.emit("createChat", { currentUserId, senderId, swapRequestId });
+        socket.emit("createChat", { receiverId, senderId, swapRequestId });
       } catch (error) {
         console.error("Ошибка создания чата:", error);
         reject(error);

@@ -132,6 +132,7 @@ const actions = {
 const mutations = {
   setUser(state, user) {
     state.user = user;
+    console.log(user);
   },
   setToken(state, token) {
     state.token = token;

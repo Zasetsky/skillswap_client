@@ -81,6 +81,21 @@ const actions = {
       }
       });
   },
+
+  confirmDeal({ commit }, dealId) {
+    console.log(dealId);
+    const socket = getSocket();
+
+    socket.emit("confirmDeal", dealId);
+
+    socket.on("dealConfirmed", (deal) => {
+    commit("UPDATE_DEAL", deal);
+    });
+
+    socket.on("error", (error) => {
+    console.error("Error confirming deal:", error.message);
+    });
+  },
 };
 
 const mutations = {
