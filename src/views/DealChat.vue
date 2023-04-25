@@ -17,6 +17,7 @@
         @confirm-deal="confirmDeal"
       />
       <MessageForm @send-message="sendMessage" />
+      <!-- <CancelDealButton :is-enabled="getCurrentDeal.status === 'pending'" @cancel-deal="handleCancelDeal" /> -->
     </div>
   </div>
 </template>
@@ -26,12 +27,14 @@ import { mapGetters } from 'vuex';
 import MessageComponent from '@/components/ChatComponents/MessageComponent.vue';
 import MessageForm from '@/components/ChatComponents/MessageFormComponent.vue';
 import DealComponent from '@/components/ChatComponents/DealComponent.vue';
+// import CancelDealButton from '@/components/ChatComponents/CancelDealButton.vue';
 
 export default {
   components: {
     MessageComponent,
     MessageForm,
     DealComponent,
+    // CancelDealButton,
   },
 
   computed: {
@@ -46,23 +49,6 @@ export default {
   },
 
   methods: {
-    async addMessageToLocalChat(newMessage) {
-      await this.$store.dispatch("chat/addMessageToChat", {
-        chatId: this.getCurrentChat._id,
-        message: newMessage,
-      });
-      this.scrollToBottom();
-    },
-
-    scrollToBottom() {
-      this.$nextTick(() => {
-        const messagesContainer = this.$refs.messagesContainer;
-        if (messagesContainer) {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-      });
-    },
-
     async sendMessage(type, content) {
       try {
         const newMessage = {
@@ -77,6 +63,15 @@ export default {
         console.error('Error sending message:', error);
         throw error;
       }
+    },
+
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const messagesContainer = this.$refs.messagesContainer;
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+      });
     },
 
     async handleDealFormSubmit({ formData1, formData2 }) {
@@ -116,11 +111,34 @@ export default {
       this.$refs.dealForm.dialog = true;
     },
 
+    getMeetingDetails() {
+      const deal = this.getCurrentDeal;
+
+      if (deal.update && deal.update.form) {
+        return deal.update.form;
+      } else if (deal.form) {
+        return deal.form;
+      } else {
+        return null;
+      }
+    },
+
     async confirmDeal() {
       try {
         await this.$store.dispatch("deal/confirmDeal", {
           dealId: this.getCurrentDeal._id,
         });
+
+        const meetingDetails = this.getMeetingDetails();
+        if (meetingDetails) {
+          await this.sendMessage("meeting_details", {
+            meetingLink: "your-meeting-link",
+            password: "your-password",
+            ...meetingDetails,
+          });
+        } else {
+          console.warn("No meeting details found");
+        }
       } catch (error) {
         console.error("Error confirming deal:", error);
       }

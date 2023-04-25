@@ -188,27 +188,6 @@ export default {
     }
   },
 
-  watch: {
-    getCurrentDeal: {
-      handler(newValue) {
-        if (newValue) {
-          if (newValue.status === "pending_update") {
-            this.fillForm(this.form1, newValue.update.form);
-            this.fillForm(this.form2, newValue.update.form2);
-          } else {
-            this.fillForm(this.form1, newValue.form || {});
-            this.fillForm(this.form2, newValue.form2 || {});
-          }
-        } else {
-          this.fillForm(this.form1, {});
-          this.fillForm(this.form2, {});
-        }
-      },
-      deep: true,
-      immediate: true,
-    },
-  },
-
   methods: {
     ...mapActions("swapRequests", ["getAllSwapRequests"]),
     ...mapActions("chat", ["fetchCurrentChat"]),
@@ -327,6 +306,27 @@ export default {
           meetingTime: this.getCurrentDeal.form2.meetingTime || null,
         };
       }
+    },
+  },
+
+  watch: {
+    getCurrentDeal: {
+      handler(newValue) {
+        if (newValue) {
+          if (newValue.status === "pending_update") {
+            this.fillForm(this.form1, newValue.update.form);
+            this.fillForm(this.form2, newValue.update.form2);
+          } else {
+            this.fillForm(this.form1, newValue.form || {});
+            this.fillForm(this.form2, newValue.form2 || {});
+          }
+        } else {
+          this.fillForm(this.form1, {});
+          this.fillForm(this.form2, {});
+        }
+      },
+      deep: true,
+      immediate: true,
     },
   },
 

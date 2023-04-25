@@ -7,12 +7,16 @@
         </template>
         <template v-else-if="message.type === 'deal_proposal'">
           Предложены параметры сделки: 
-          <v-btn v-if="isLastDealProposal" color="primary" small @click="openDealForm">Открыть</v-btn>
+          <v-btn v-if="isLastDealProposal && !hasMeetingDetails" color="primary" small @click="openDealForm">Открыть</v-btn>
         </template>
         <template v-else-if="message.type === 'meeting_details'">
-          <a :href="message.content.meetingLink" target="_blank">Ссылка на встречу</a><br>
-          Пароль: <b>{{ message.content.password }}</b>
+          Ссылка: <b><a :href="message.content.meetingLink" target="_blank">{{ message.content.meetingLink }}</a></b><br>
+          Пароль: <b>{{ message.content.password }}</b><br>
+          Дата встречи: <b>{{ message.content.meetingDate }}</b><br>
+          Время встречи: <b>{{ message.content.meetingTime }}</b><br>
+          Продолжительность встречи: <b>{{ message.content.meetingDuration }}</b>
         </template>
+
       </v-card-text>
     </v-card>
   </div>
@@ -40,6 +44,10 @@ export default {
   computed: {
     isMyMessage() {
       return this.message.sender === this.currentUserId;
+    },
+
+    hasMeetingDetails() {
+      return this.allMessages.some(msg => msg.type === 'meeting_details');
     },
 
     isLastDealProposal() {
