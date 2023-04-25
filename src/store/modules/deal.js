@@ -39,7 +39,6 @@ const actions = {
   
       socket.on("currentDeal", (deal) => {
         commit("SET_CURRENT_DEAL", deal);
-        console.log('vuex', deal.sender);
         resolve(deal);
       });
   
@@ -59,7 +58,6 @@ const actions = {
 
       socket.on("deal", (deal) => {
         commit("SET_CURRENT_DEAL", deal);
-        console.log('vuex', deal.sender);
       // commit("UPDATE_DEAL", { dealId, deal });
       });
 
@@ -92,7 +90,7 @@ const actions = {
     socket.emit("confirmDeal", dealId);
 
     socket.on("dealConfirmed", (deal) => {
-    commit("UPDATE_DEAL", deal);
+    commit("SET_CURRENT_DEAL", deal);
     });
 
     socket.on("error", (error) => {

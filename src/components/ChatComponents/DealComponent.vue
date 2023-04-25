@@ -3,7 +3,6 @@
     <v-dialog v-model="dialog" width="600" @click:outside="resetForm">
       <template v-slot:activator="{ on, attrs }">
         <v-btn
-          v-if="!getCurrentDeal || (getCurrentDeal && getCurrentDeal.status !== 'confirmed')"
           color="primary"
           v-bind="attrs"
           v-on="on"
@@ -38,7 +37,7 @@
           <v-spacer></v-spacer>
           <v-btn color="blue darken-1" text @click="close">Отмена</v-btn>
           <v-btn 
-            v-if="!isConfirm || isFormChanged"
+            v-if="isConfirm && isFormChanged"
             color="blue darken-1"
             :disabled="!isFormChanged"
             text
@@ -100,13 +99,13 @@ export default {
       const currentUser = this.currentUser;
 
       if (
-        deal &&
-        deal.status === "pending_update" &&
-        currentUser._id !== deal.sender &&
-        deal.update &&
-        deal.update.form &&
-        deal.update.form2
-      ) {
+          deal &&
+          deal.status === "pending_update" &&
+          currentUser._id !== deal.sender &&
+          deal.update &&
+          deal.update.form &&
+          deal.update.form2
+        ) {
         const form1Highlights = {};
         const form2Highlights = {};
 
@@ -124,13 +123,16 @@ export default {
       }
     },
 
+    
     isFormChanged() {
-      if (this.getCurrentDeal) {
+      if (this.getCurrentDeal && this.getCurrentDeal.form && this.getCurrentDeal.form2) {
         const deal = this.getCurrentDeal;
 
         // Определяем, с какими формами следует сравнивать
-        const referenceForm1 = deal.status === 'pending_update' ? deal.update.form : deal.form;
-        const referenceForm2 = deal.status === 'pending_update' ? deal.update.form2 : deal.form2;
+        const referenceForm1 =
+          deal.status === "pending_update" ? deal.update.form : deal.form;
+        const referenceForm2 =
+          deal.status === "pending_update" ? deal.update.form2 : deal.form2;
 
         // Проверяем каждую форму
         const form1Changed = Object.entries(this.form1).some(([key, value]) => {
@@ -178,10 +180,12 @@ export default {
           return "Изменить предложение";
         } else if ((deal.status === "pending" || deal.status === "pending_update") && deal.sender !== currentUser._id) {
           return "Подтвердить сделку";
+        } else if (deal.status === "confirmed") {
+          return "Предложить перенос";
         }
       }
       return "Согласовать сделку";
-    },
+    }
   },
 
   watch: {
@@ -218,23 +222,32 @@ export default {
 
     setTabs() {
       if (!this.getCurrentChat) {
-        console.error('Текущий чат не найден');
+        console.error("Текущий чат не найден");
         return;
       }
 
       const swapRequestId = this.getCurrentChat.swapRequestId;
-      const swapRequest = this.getSwapRequests.find((request) => request._id === swapRequestId);
+      const swapRequest = this.getSwapRequests.find(
+        (request) => request._id === swapRequestId
+      );
 
-      if (swapRequest && swapRequest.senderData && swapRequest.receiverData) {
-        const skillsToTeach = swapRequest.senderData.skillsToTeach?.[0]?.skill || swapRequest.receiverData.skillsToTeach?.[0]?.skill;
-        const skillsToLearn = swapRequest.senderData.skillsToLearn?.[0]?.skill || swapRequest.receiverData.skillsToLearn?.[0]?.skill;
+      if (
+        swapRequest &&
+        swapRequest.senderData &&
+        swapRequest.receiverData
+      ) {
+        const skillsToTeach =
+          swapRequest.senderData.skillsToTeach?.[0]?.skill ||
+          swapRequest.receiverData.skillsToLearn?.[0]?.skill;
+        const skillsToLearn =
+          swapRequest.senderData.skillsToLearn?.[0]?.skill ||
+          swapRequest.receiverData.skillsToTeach?.[0]?.skill;
 
         if (skillsToTeach && skillsToLearn) {
-          this.tabs.push(skillsToLearn);
-          this.tabs.push(skillsToTeach);
+          this.tabs = [skillsToLearn, skillsToTeach];
           this.activeTab = 0;
         } else {
-          console.error('Не удалось найти данные навыков');
+          console.error("Не удалось найти данные навыков");
         }
       }
     },
@@ -293,7 +306,7 @@ export default {
 
     resetForm() {
       this.dialog = false;
-      if (!this.deal || !this.deal.form) {
+      if (!this.getCurrentDeal || !this.getCurrentDeal.form) {
         this.form1 = {
           meetingDate: null,
           meetingTime: null,
@@ -305,30 +318,29 @@ export default {
         };
       } else {
         this.form1 = {
-          meetingDate: this.deal.form.meetingDate || null,
-          meetingTime: this.deal.form.meetingTime || null,
-          meetingDuration: this.deal.form.meetingDuration || null,
+          meetingDate: this.getCurrentDeal.form.meetingDate || null,
+          meetingTime: this.getCurrentDeal.form.meetingTime || null,
+          meetingDuration: this.getCurrentDeal.form.meetingDuration || null,
         };
         this.form2 = {
-          meetingDate: this.deal.form2.meetingDate || null,
-          meetingTime: this.deal.form2.meetingTime || null,
+          meetingDate: this.getCurrentDeal.form2.meetingDate || null,
+          meetingTime: this.getCurrentDeal.form2.meetingTime || null,
         };
       }
     },
   },
 
   async mounted() {
-    console.log('user', this.currentUser._id);
     const chatId = localStorage.getItem('chatId');
 
     try {
       await this.fetchCurrentChat(chatId);
       await this.getAllSwapRequests();
       this.setTabs();
-      this.dataLoaded = true;
     } catch (error) {
       console.error(error);
     }
   },
 };
 </script>
+<style scoped>
