@@ -81,25 +81,29 @@ export default {
 
     async handleDealFormSubmit({ formData1, formData2 }) {
       let computedStatus = this.getCurrentDeal.status;
-      if (computedStatus === 'pending') {
-        computedStatus = 'pending_update'
+      if (computedStatus === 'pending' || computedStatus === 'pending_update') {
+        computedStatus = 'pending_update';
       } else {
-        computedStatus = 'pending'
+        computedStatus = 'pending';
       }
-      await this.$store.dispatch("deal/updateDeal", {
-        dealId: this.getCurrentDeal._id,
-        status: computedStatus,
-        senderId: this.currentUser._id,
-        formData1,
-        formData2,
-      });
-
-      await this.$store.dispatch("deal/getCurrentDeal", {
-            chatId: this.getCurrentChat._id,
-          });
-
-      await this.sendMessage("deal_proposal", " ");
+      this.$refs.dealForm.isSubmitting = true;
+      try {
+        await this.$store.dispatch("deal/updateDeal", {
+          dealId: this.getCurrentDeal._id,
+          status: computedStatus,
+          senderId: this.currentUser._id,
+          formData1,
+          formData2,
+        });
+        
+        await this.sendMessage("deal_proposal", " ");
+      } catch (error) {
+          console.error("Error during async submit:", error);
+      } finally {
+        this.$refs.dealForm.isSubmitting = false;
+      }
     },
+
 
     async handleOpenDealForm() {
       try {
@@ -108,7 +112,7 @@ export default {
           });
         } catch (error) {
           console.error("Error fetching current deal: ", error);
-        }
+        } 
       this.$refs.dealForm.dialog = true;
     },
 
@@ -117,7 +121,6 @@ export default {
         await this.$store.dispatch("deal/confirmDeal", {
           dealId: this.getCurrentDeal._id,
         });
-
       } catch (error) {
         console.error("Error confirming deal:", error);
       }

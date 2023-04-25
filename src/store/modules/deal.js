@@ -37,8 +37,9 @@ const actions = {
 
       socket.emit("getCurrentDeal", chatId);
   
-      socket.once("currentDeal", (deal) => {
+      socket.on("currentDeal", (deal) => {
         commit("SET_CURRENT_DEAL", deal);
+        console.log('vuex', deal.sender);
         resolve(deal);
       });
   
@@ -56,8 +57,10 @@ const actions = {
 
       socket.emit("updateDeal", data);
 
-      socket.on("deal", (updatedDeal) => {
-      commit("UPDATE_DEAL", { dealId, deal: updatedDeal });
+      socket.on("deal", (deal) => {
+        commit("SET_CURRENT_DEAL", deal);
+        console.log('vuex', deal.sender);
+      // commit("UPDATE_DEAL", { dealId, deal });
       });
 
       socket.on("error", (error) => {
@@ -99,12 +102,12 @@ const actions = {
 };
 
 const mutations = {
-  UPDATE_DEAL(state, { dealId, deal }) {
-    const index = state.deals.findIndex((d) => d._id === dealId);
-    if (index !== -1) {
-      state.deals.splice(index, 1, deal);
-    }
-  },
+  // UPDATE_DEAL(state, { dealId, deal }) {
+  //   const index = state.deals.findIndex((d) => d._id === dealId);
+  //   if (index !== -1) {
+  //     state.deals.splice(index, 1, deal);
+  //   }
+  // },
 
   SET_CURRENT_DEAL: (state, deal) => {
     state.currentDeal = deal;

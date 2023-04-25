@@ -11,15 +11,6 @@
         >
           {{ getActionButtonText }}
         </v-btn>
-        <v-btn
-          v-else
-          color="primary"
-          v-bind="attrs"
-          v-on="on"
-          @click="openDialog"
-        >
-          Предложить перенос
-        </v-btn>
       </template>
 
       <v-card>
@@ -47,7 +38,7 @@
           <v-spacer></v-spacer>
           <v-btn color="blue darken-1" text @click="close">Отмена</v-btn>
           <v-btn 
-            v-if="(getCurrentDeal && (!isConfirm || isFormChanged) && getCurrentDeal.status === 'pending') || (getCurrentDeal && (!isConfirm || isFormChanged) && getCurrentDeal.status === 'pending_update')"
+            v-if="!isConfirm || isFormChanged"
             color="blue darken-1"
             :disabled="!isFormChanged"
             text
@@ -79,9 +70,12 @@ export default {
   components: {
     DealForm,
   },
+
   data() {
     return {
       dialog: false,
+      isSubmitting: false,
+      actionButtonText: "",
       activeTab: 0,
       tabs: [],
       form1: {
@@ -130,20 +124,6 @@ export default {
       }
     },
 
-    getActionButtonText() {
-      const currentDeal = this.getCurrentDeal;
-
-      if (currentDeal) {
-        if (currentDeal.status === "pending" || currentDeal.status === "pending_update" && currentDeal.sender === this.currentUser._id) {
-          return "Изменить предложение";
-        } else if (currentDeal.status === "pending" || currentDeal.status === "pending_update" && currentDeal.sender !== this.currentUser._id) {
-          return "Подтвердить сделку";
-        }
-      }
-
-      return "Согласовать сделку";
-    },
-
     isFormChanged() {
       if (this.getCurrentDeal) {
         const deal = this.getCurrentDeal;
@@ -183,9 +163,24 @@ export default {
 
       return (
         deal &&
-        (deal.status === "pending" || 
-        (deal.status === "pending_update" && deal.sender !== currentUser._id))
+        ((deal.status === "pending" || 
+        deal.status === "pending_update") && deal.sender !== currentUser._id)
       );
+    },
+
+    getActionButtonText() {
+      const deal = this.getCurrentDeal;
+      const currentUser = this.currentUser;
+      if (deal) {
+        if (this.isSubmitting) {
+          return "Отправка...";
+        } else if ((deal.status === "pending" || deal.status === "pending_update") && deal.sender === currentUser._id) {
+          return "Изменить предложение";
+        } else if ((deal.status === "pending" || deal.status === "pending_update") && deal.sender !== currentUser._id) {
+          return "Подтвердить сделку";
+        }
+      }
+      return "Согласовать сделку";
     },
   },
 
@@ -323,6 +318,7 @@ export default {
   },
 
   async mounted() {
+    console.log('user', this.currentUser._id);
     const chatId = localStorage.getItem('chatId');
 
     try {
