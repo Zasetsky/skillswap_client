@@ -6,6 +6,7 @@
           color="primary"
           v-bind="attrs"
           v-on="on"
+          :disabled="disabled"
           @click="openDialog"
         >
           {{ getActionButtonText }}
@@ -35,9 +36,9 @@
         </v-tabs-items>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="close">Отмена</v-btn>
+          <!-- <v-btn color="blue darken-1" text @click="close">Закрыть</v-btn> -->
           <v-btn 
-            v-if="isConfirm && isFormChanged"
+            v-if="!isConfirm || isFormChanged"
             color="blue darken-1"
             :disabled="!isFormChanged"
             text
@@ -68,6 +69,13 @@ import DealForm from "./DealForm.vue";
 export default {
   components: {
     DealForm,
+  },
+
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   data() {
@@ -179,7 +187,7 @@ export default {
         } else if ((deal.status === "pending" || deal.status === "pending_update") && deal.sender === currentUser._id) {
           return "Изменить предложение";
         } else if ((deal.status === "pending" || deal.status === "pending_update") && deal.sender !== currentUser._id) {
-          return "Подтвердить сделку";
+          return "посмотреть предложение";
         } else if (deal.status === "confirmed") {
           return "Предложить перенос";
         }
@@ -232,16 +240,6 @@ export default {
     },
 
     async openDialog() {
-      try {
-        await this.createOrGetCurrentDeal({
-          participants: this.getCurrentChat.participants,
-          chatId: this.getCurrentChat._id,
-          swapRequestId: this.getCurrentChat.swapRequestId,
-        });
-      } catch (error) {
-        console.error("Ошибка при создании сделки: ", error);
-      }
-
       this.dialog = true;
     },
 

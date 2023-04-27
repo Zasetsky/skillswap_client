@@ -8,16 +8,28 @@
         :allMessages="messages"
         :currentUserId="currentUser._id"
         @open-deal-form="handleOpenDealForm"
+        @approve-cancellation="handleApproveCancellation"
+        @reject-cancellation="handleRejectCancellation"
       />
     </div>
     <div class="bottom-bar">
-      <DealComponent
-        ref="dealForm"
-        @submit-deal-form="handleDealFormSubmit"
-        @confirm-deal="confirmDeal"
+      <div style="display: flex; justify-content: space-between;">
+        <DealComponent
+          ref="dealForm"
+          :disabled="!showCancelButton"
+          @submit-deal-form="handleDealFormSubmit"
+          @confirm-deal="confirmDeal"
+        />
+        <CancelDealButton
+          v-if="!isCancelButtonCloseToDeadline && showCancelButton"
+          :disabled="!newMessage"
+          @cancel-deal="handleCancelDeal"
+        />
+      </div>
+      <MessageForm
+        v-model="newMessage" 
+        @send-message="sendMessage"
       />
-      <MessageForm @send-message="sendMessage" />
-      <!-- <CancelDealButton :is-enabled="getCurrentDeal.status === 'pending'" @cancel-deal="handleCancelDeal" /> -->
     </div>
   </div>
 </template>
@@ -27,25 +39,74 @@ import { mapGetters } from 'vuex';
 import MessageComponent from '@/components/ChatComponents/MessageComponent.vue';
 import MessageForm from '@/components/ChatComponents/MessageFormComponent.vue';
 import DealComponent from '@/components/ChatComponents/DealComponent.vue';
-// import CancelDealButton from '@/components/ChatComponents/CancelDealButton.vue';
+import CancelDealButton from '@/components/ChatComponents/CancelDealButton.vue';
 
 export default {
   components: {
     MessageComponent,
     MessageForm,
     DealComponent,
-    // CancelDealButton,
+    CancelDealButton,
+  },
+
+  data() {
+    return {
+      newMessage: "",
+    };
   },
 
   computed: {
     ...mapGetters('chat', ['getCurrentChat']),
     ...mapGetters('deal', ['getCurrentDeal']),
     ...mapGetters('auth', ['currentUser']),
+
     messages() {
       return this.$store.state.chat.currentChat
         ? this.$store.state.chat.currentChat.messages
         : [];
     },
+
+    showCancelButton() {
+      const currentDeal = this.getCurrentDeal;
+
+      if (!currentDeal?.cancellation) {
+        return true;
+      }
+
+      const cancellationStatus = currentDeal.cancellation.status;
+      const isRejected = currentDeal.cancellation.status === 'rejected';
+
+      return !cancellationStatus || isRejected;
+    },
+
+    isCancelButtonCloseToDeadline() {
+      const deal = this.getCurrentDeal;
+      if (!deal || deal.status !== 'confirmed') {
+        return false;
+      }
+
+      const form = deal.update && deal.update.form ? deal.update.form : deal.form;
+      if (!form || !form.meetingDate || !form.meetingTime) {
+        return false;
+      }
+
+      const meetingDate = new Date(form.meetingDate);
+      const meetingTime = form.meetingTime.split(':');
+      const deadline = new Date(
+        meetingDate.getFullYear(),
+        meetingDate.getMonth(),
+        meetingDate.getDate(),
+        parseInt(meetingTime[0]),
+        parseInt(meetingTime[1])
+      );
+
+      const now = new Date();
+      const remainingTimeInMilliseconds = deadline - now;
+      const threeHoursInMilliseconds = 3 * 60 * 60 * 1000;
+
+      return remainingTimeInMilliseconds <= threeHoursInMilliseconds;
+    },
+
   },
 
   methods: {
@@ -86,7 +147,6 @@ export default {
         await this.$store.dispatch("deal/updateDeal", {
           dealId: this.getCurrentDeal._id,
           status: computedStatus,
-          senderId: this.currentUser._id,
           formData1,
           formData2,
         });
@@ -108,11 +168,46 @@ export default {
         } catch (error) {
           console.error("Error fetching current deal: ", error);
         } 
-      this.$refs.dealForm.dialog = true;
+      this.$refs.dealForm.openDialog();
+    },
+
+    async handleCancelDeal() {
+      const reason = this.newMessage;
+      try {
+        await this.sendMessage("cancellation_request", { reason });
+        await this.$store.dispatch("deal/requestCancellation", {
+          dealId: this.getCurrentDeal._id,
+          reason,
+          timestamp: new Date(),
+        });
+        this.newMessage = "";
+      } catch (error) {
+        console.error("Error requesting cancellation:", error);
+      }
+    },
+
+    async handleApproveCancellation() {
+      try {
+        await this.$store.dispatch("deal/approveCancellation", {
+          dealId: this.getCurrentDeal._id,
+        });
+      } catch (error) {
+        console.error("Error approving cancellation:", error);
+      }
+    },
+
+    async handleRejectCancellation() {
+      try {
+        await this.$store.dispatch("deal/rejectCancellation", {
+          dealId: this.getCurrentDeal._id,
+        });
+      } catch (error) {
+        console.error("Error rejecting cancellation:", error);
+      }
     },
 
     getMeetingDetails() {
-      const deal = this.getCurrentDeal;
+      const deal = this.newMessage;
 
       if (deal.update && deal.update.form) {
         return deal.update.form;
@@ -160,7 +255,7 @@ export default {
       await this.$store.dispatch("deal/getCurrentDeal", {
               chatId: this.getCurrentChat._id,
             });
-
+            console.log(this.showCancelButton);
       this.$nextTick(() => {
         this.scrollToBottom();
       });

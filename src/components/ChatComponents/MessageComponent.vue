@@ -16,7 +16,15 @@
           Время встречи: <b>{{ message.content.meetingTime }}</b><br>
           Продолжительность встречи: <b>{{ message.content.meetingDuration }}</b>
         </template>
-
+        <template v-else-if="message.type === 'cancellation_request'">
+          <b>Запрос на отмену сделки:</b>
+          <br><b>Причина:</b> {{ message.content.reason }}<br>
+          <v-btn v-if="!isMyMessage && !hasCancellationResponse" color="success" small @click="$emit('approve-cancellation')">Подтвердить</v-btn>
+          <v-btn v-if="!isMyMessage && !hasCancellationResponse" color="error" small @click="$emit('reject-cancellation')">Отклонить</v-btn>
+          <br>
+          <span v-if="!isMyMessage" style="color: red;">Если вы не примете решение в течение 24 часов, ваша карма подпортится, и сделка всё равно будет отменена.</span>
+          <span v-if="isMyMessage" style="color: red;">Если пользователь не примет решение в течение 24 часов, сделка всё равно будет отменена.</span>
+        </template>
       </v-card-text>
     </v-card>
   </div>

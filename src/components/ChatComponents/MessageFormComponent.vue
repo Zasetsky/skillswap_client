@@ -21,11 +21,27 @@
 </template>
 
 <script>
-export default {
+export default { 
+  props: {
+    value: {
+      type: String,
+      default: "",
+    },
+  },
+
   data() {
     return {
-      newMessage: "",
+      newMessage: this.value,
     };
+  },
+
+  watch: {
+    value(newValue) {
+      this.newMessage = newValue;
+    },
+    newMessage(newValue) {
+      this.$emit("input", newValue);
+    },
   },
 
   methods: {

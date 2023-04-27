@@ -49,8 +49,8 @@ const actions = {
     });
   },
 
-  updateDeal({ commit }, { dealId, status, senderId, formData1, formData2 }) {
-      const data = { dealId, status, senderId, formData1, formData2 };
+  updateDeal({ commit }, { dealId, status, formData1, formData2 }) {
+      const data = { dealId, status, formData1, formData2 };
 
       const socket = getSocket();
 
@@ -84,19 +84,48 @@ const actions = {
   },
 
   confirmDeal({ commit }, dealId) {
-    console.log(dealId);
     const socket = getSocket();
 
     socket.emit("confirmDeal", dealId);
 
     socket.on("dealConfirmed", (deal) => {
-    commit("SET_CURRENT_DEAL", deal);
+      commit("SET_CURRENT_DEAL", deal);
     });
 
     socket.on("error", (error) => {
     console.error("Error confirming deal:", error.message);
     });
   },
+
+
+  // Отмена
+  requestCancellation({ commit }, { dealId, reason, timestamp }) {
+    const socket = getSocket();
+
+    const data = { dealId, reason, timestamp };
+
+    socket.emit("requestCancellation", data);
+
+    socket.on("cancellationRequested", (deal) => {
+      commit("SET_CURRENT_DEAL", deal);
+    });
+  
+    socket.on("error", (error) => {
+      console.error("Error during send request cancellation deal:", error.message);
+    });
+  },
+
+  // approveCancellation({ commit }, { dealId }) {
+  //   const socket = getSocket();
+
+  //   socket.emit("approveCancellation", { dealId });
+  // },
+
+  // rejectCancellation({ commit }, { dealId }) {
+  //   const socket = getSocket();
+
+  //   socket.emit("rejectCancellation", { dealId });
+  // },
 };
 
 const mutations = {

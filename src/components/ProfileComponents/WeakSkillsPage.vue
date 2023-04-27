@@ -114,6 +114,11 @@ export default {
           senderId: this.currentUser._id,
           swapRequestId: requestId,
         });
+        await this.$store.dispatch('deal/createOrGetCurrentDeal', {
+          participants: this.getCurrentChat.participants,
+          chatId: this.getCurrentChat._id,
+          swapRequestId: this.getCurrentChat.swapRequestId,
+        });
         const chat = this.getCurrentChat;
         localStorage.setItem("chatId", chat._id);
         this.$router.push(`/${chat._id}`);
