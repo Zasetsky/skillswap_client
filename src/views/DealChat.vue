@@ -136,29 +136,35 @@ export default {
     },
 
     async handleDealFormSubmit({ formData1, formData2 }) {
-      let computedStatus = this.getCurrentDeal.status;
-      if (computedStatus === 'pending' || computedStatus === 'pending_update') {
-        computedStatus = 'pending_update';
-      } else {
-        computedStatus = 'pending';
-      }
       this.$refs.dealForm.isSubmitting = true;
+
+      const statusesOfReschedule = ["confirmed", "reschedule_offer", "reschedule_offer_update"];
       try {
-        await this.$store.dispatch("deal/updateDeal", {
-          dealId: this.getCurrentDeal._id,
-          status: computedStatus,
-          formData1,
-          formData2,
-        });
-        
-        await this.sendMessage("deal_proposal", " ");
+        if (!statusesOfReschedule.includes(this.getCurrentDeal.status)) {
+          await this.$store.dispatch("deal/updateDeal", {
+            dealId: this.getCurrentDeal._id,
+            formData1,
+            formData2,
+          });
+
+          await this.sendMessage("deal_proposal", " ");
+
+        } else {
+          await this.$store.dispatch("deal/proposeRescheduleDeal", {
+            dealId: this.getCurrentDeal._id,
+            rescheduleFormData1: formData1,
+            rescheduleFormData2: formData2,
+          });
+
+          await this.sendMessage("reschedule_proposal", " ");
+        }
+
       } catch (error) {
           console.error("Error during async submit:", error);
       } finally {
         this.$refs.dealForm.isSubmitting = false;
       }
     },
-
 
     async handleOpenDealForm() {
       try {
@@ -207,7 +213,7 @@ export default {
     },
 
     getMeetingDetails() {
-      const deal = this.newMessage;
+      const deal = this.getCurrentDeal;
 
       if (deal.update && deal.update.form) {
         return deal.update.form;
@@ -220,16 +226,16 @@ export default {
 
     async confirmDeal() {
       try {
-        await this.$store.dispatch("deal/confirmDeal", {
-          dealId: this.getCurrentDeal._id,
-        });
-
         const meetingDetails = this.getMeetingDetails();
+
         if (meetingDetails) {
           await this.sendMessage("meeting_details", {
             meetingLink: "your-meeting-link",
             password: "your-password",
             ...meetingDetails,
+          });
+          await this.$store.dispatch("deal/confirmDeal", {
+            dealId: this.getCurrentDeal._id,
           });
         } else {
           console.warn("No meeting details found");

@@ -7,7 +7,11 @@
         </template>
         <template v-else-if="message.type === 'deal_proposal'">
           Предложены параметры сделки: 
-          <v-btn v-if="isLastDealProposal && !hasMeetingDetails" color="primary" small @click="openDealForm">Открыть</v-btn>
+          <v-btn v-if="isLastDealProposal && !hasMeetingDetails && !hasCancellationRequest" color="primary" small @click="openDealForm">Открыть</v-btn>
+        </template>
+        <template v-else-if="message.type === 'reschedule_proposal'">
+          Предложены параметры переноса сделки: 
+          <v-btn v-if="isLastRescheduleProposal && !hasCancellationRequest" color="primary" small @click="openDealForm">Открыть</v-btn>
         </template>
         <template v-else-if="message.type === 'meeting_details'">
           Ссылка: <b><a :href="message.content.meetingLink" target="_blank">{{ message.content.meetingLink }}</a></b><br>
@@ -19,8 +23,8 @@
         <template v-else-if="message.type === 'cancellation_request'">
           <b>Запрос на отмену сделки:</b>
           <br><b>Причина:</b> {{ message.content.reason }}<br>
-          <v-btn v-if="!isMyMessage && !hasCancellationResponse" color="success" small @click="$emit('approve-cancellation')">Подтвердить</v-btn>
-          <v-btn v-if="!isMyMessage && !hasCancellationResponse" color="error" small @click="$emit('reject-cancellation')">Отклонить</v-btn>
+          <v-btn v-if="!isMyMessage" color="success" small @click="$emit('approve-cancellation')">Подтвердить</v-btn>
+          <v-btn v-if="!isMyMessage" color="error" small @click="$emit('reject-cancellation')">Отклонить</v-btn>
           <br>
           <span v-if="!isMyMessage" style="color: red;">Если вы не примете решение в течение 24 часов, ваша карма подпортится, и сделка всё равно будет отменена.</span>
           <span v-if="isMyMessage" style="color: red;">Если пользователь не примет решение в течение 24 часов, сделка всё равно будет отменена.</span>
@@ -56,6 +60,18 @@ export default {
 
     hasMeetingDetails() {
       return this.allMessages.some(msg => msg.type === 'meeting_details');
+    },
+
+    hasCancellationRequest() {
+      return this.allMessages.some(msg => msg.type === 'cancellation_request');
+    },
+
+    isLastRescheduleProposal() {
+      const lastRescheduleProposal = this.allMessages
+        .slice()
+        .reverse()
+        .find((msg) => msg.type === 'reschedule_proposal');
+      return this.message._id === lastRescheduleProposal._id;
     },
 
     isLastDealProposal() {

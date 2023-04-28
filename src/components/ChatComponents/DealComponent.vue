@@ -37,25 +37,31 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <!-- <v-btn color="blue darken-1" text @click="close">Закрыть</v-btn> -->
-          <v-btn 
-            v-if="!isConfirm || isFormChanged"
+          <v-btn
+            v-if="sendButtonState.visible && (isFormChanged || !isConfirmButtonVisible)"
             color="blue darken-1"
-            :disabled="!isFormChanged"
+            :disabled="!sendButtonState.enabled"
             text
             @click="submitForm"
           >
             Отправить
           </v-btn>
-          <v-btn 
-            v-else-if="getCurrentDeal && getCurrentDeal.status === 'not_started'"
+          <v-btn
+            v-if="isConfirmButtonVisible"
             color="blue darken-1"
-            :disabled="!isBothFormsFilled"
+            text
+            @click="emitConfirmDeal"
+          >
+            Подтвердить
+          </v-btn>
+          <v-btn
+            v-if="!sendButtonState.visible"
+            color="blue darken-1"
             text
             @click="submitForm"
           >
-            Отправить
+            Предложить
           </v-btn>
-          <v-btn v-else color="blue darken-1" text @click="emitConfirmDeal">Подтвердить</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -96,6 +102,7 @@ export default {
       },
     };
   },
+
   computed: {
     ...mapGetters("auth", ["currentUser"]),
     ...mapGetters("chat", ["getCurrentChat"]),
@@ -107,35 +114,53 @@ export default {
       const currentUser = this.currentUser;
 
       if (
-          deal &&
-          deal.status === "pending_update" &&
-          currentUser._id !== deal.sender &&
-          deal.update &&
-          deal.update.form &&
-          deal.update.form2
-        ) {
+        deal &&
+        (deal.status === "pending_update" || deal.status === "reschedule_offer" || deal.status === "reschedule_offer_update") &&
+        currentUser._id !== deal.sender
+      ) {
+        let form1Source, form2Source;
+
+        if (deal.status === "pending_update") {
+          form1Source = deal.form;
+          form2Source = deal.form2;
+        } else if (deal.status === "reschedule_offer") {
+          form1Source = deal.form;
+          form2Source = deal.form2;
+        } else if (deal.status === "reschedule_offer_update") {
+          form1Source = deal.update.form;
+          form2Source = deal.update.form2;
+        }
+
         const form1Highlights = {};
         const form2Highlights = {};
 
-        Object.keys(this.form1).forEach((field) => {
-          form1Highlights[field] = deal.form[field] !== deal.update.form[field];
-        });
+        if (deal.status === "pending_update") {
+          Object.keys(this.form1).forEach((field) => {
+            form1Highlights[field] = deal.form[field] !== deal.update.form[field];
+          });
 
-        Object.keys(this.form2).forEach((field) => {
-          form2Highlights[field] = deal.form2[field] !== deal.update.form2[field];
-        });
+          Object.keys(this.form2).forEach((field) => {
+            form2Highlights[field] = deal.form2[field] !== deal.update.form2[field];
+          });
+        } else {
+          Object.keys(this.form1).forEach((field) => {
+            form1Highlights[field] = form1Source[field] !== deal.reschedule.form[field];
+          });
+
+          Object.keys(this.form2).forEach((field) => {
+            form2Highlights[field] = form2Source[field] !== deal.reschedule.form2[field];
+          });
+        }
 
         return { form1: form1Highlights, form2: form2Highlights };
       } else {
         return { form1: {}, form2: {} };
       }
     },
-
     
     isFormChanged() {
       if (this.getCurrentDeal && this.getCurrentDeal.form && this.getCurrentDeal.form2) {
         const deal = this.getCurrentDeal;
-
         // Определяем, с какими формами следует сравнивать
         const referenceForm1 =
           deal.status === "pending_update" ? deal.update.form : deal.form;
@@ -158,6 +183,7 @@ export default {
     },
 
     isBothFormsFilled() {
+      console.log(this.form2.meetingTime);
       return (
         this.form1.meetingDate &&
         this.form1.meetingTime &&
@@ -178,16 +204,57 @@ export default {
       );
     },
 
+    sendButtonState() {
+      const deal = this.getCurrentDeal;
+      const currentUser = this.currentUser;
+
+      if (!deal) {
+        return { visible: false, enabled: false };
+      }
+
+      const isSender = deal.sender === currentUser._id;
+      const isReceiver = !isSender;
+      const formChanged = this.isFormChanged;
+      const bothFormsFilled = this.isBothFormsFilled;
+      const dealNotStarted = deal.status === "not_started";
+      const dealPendingOrUpdate = deal.status === "pending_update" || deal.status === "pending";
+
+      const visible =
+        (isSender && dealPendingOrUpdate) ||
+        (isReceiver && (dealNotStarted || dealPendingOrUpdate && this.isConfirm));
+
+      const enabled =
+        (isSender && formChanged) ||
+        (isReceiver && dealNotStarted && bothFormsFilled) ||
+        (isReceiver && dealPendingOrUpdate && formChanged);
+
+      return { visible, enabled };
+    },
+
+    isConfirmButtonVisible() {
+      const deal = this.getCurrentDeal;
+      const currentUser = this.currentUser;
+
+      // Если пользователь не является отправителем и статус сделки "pending_update" или "pending" и ни одна из форм не была изменена
+      return (
+        deal &&
+        (deal.status === "pending_update" || deal.status === "pending") &&
+        deal.sender !== currentUser._id &&
+        !this.isFormChanged
+      );
+    },
+
     getActionButtonText() {
       const deal = this.getCurrentDeal;
       const currentUser = this.currentUser;
+      const changeOffers = ["pending_update", "pending", "reschedule_offer", "reschedule_offer_update"];
       if (deal) {
         if (this.isSubmitting) {
           return "Отправка...";
-        } else if ((deal.status === "pending" || deal.status === "pending_update") && deal.sender === currentUser._id) {
+        } else if (changeOffers.includes(this.getCurrentDeal.status) && deal.sender === currentUser._id) {
           return "Изменить предложение";
-        } else if ((deal.status === "pending" || deal.status === "pending_update") && deal.sender !== currentUser._id) {
-          return "посмотреть предложение";
+        } else if (changeOffers.includes(this.getCurrentDeal.status) && deal.sender !== currentUser._id) {
+          return "Посмотреть предложения";
         } else if (deal.status === "confirmed") {
           return "Предложить перенос";
         }
@@ -314,6 +381,9 @@ export default {
           if (newValue.status === "pending_update") {
             this.fillForm(this.form1, newValue.update.form);
             this.fillForm(this.form2, newValue.update.form2);
+          } else if (newValue.status === "reschedule_offer" || newValue.status === "reschedule_offer_update") {
+            this.fillForm(this.form1, newValue.reschedule.form);
+            this.fillForm(this.form2, newValue.reschedule.form2);
           } else {
             this.fillForm(this.form1, newValue.form || {});
             this.fillForm(this.form2, newValue.form2 || {});
@@ -341,4 +411,3 @@ export default {
   },
 };
 </script>
-<style scoped>

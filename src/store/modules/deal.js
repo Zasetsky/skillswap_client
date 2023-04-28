@@ -49,8 +49,8 @@ const actions = {
     });
   },
 
-  updateDeal({ commit }, { dealId, status, formData1, formData2 }) {
-      const data = { dealId, status, formData1, formData2 };
+  updateDeal({ commit }, { dealId, formData1, formData2 }) {
+      const data = { dealId, formData1, formData2 };
 
       const socket = getSocket();
 
@@ -64,6 +64,25 @@ const actions = {
       socket.on("error", (error) => {
       console.error("Error updating deal:", error.message);
       });
+  },
+
+  proposeRescheduleDeal({ commit }, { dealId, rescheduleFormData1, rescheduleFormData2 }) {
+    return new Promise((resolve, reject) => {
+      const socket = getSocket();
+
+      const data = { dealId, rescheduleFormData1, rescheduleFormData2 };
+      socket.emit("proposeReschedule", data);
+
+      socket.on("deal", (deal) => {
+        commit("SET_CURRENT_DEAL", deal);
+        resolve(deal);
+      });
+
+      socket.once("error", (error) => {
+        console.error("Error proposing reschedule:", error.message);
+        reject(error);
+      });
+    });
   },
   
   async getAllDeals({ commit }) {
