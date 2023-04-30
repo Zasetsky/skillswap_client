@@ -55,12 +55,27 @@
             Подтвердить
           </v-btn>
           <v-btn
-            v-if="!sendButtonState.visible"
+            v-if="proposeButtonState.visible"
             color="blue darken-1"
+            :disabled="!proposeButtonState.enabled"
             text
             @click="submitForm"
           >
             Предложить
+          </v-btn>
+          <v-btn
+            v-if="showAcceptRejectButtons"
+            color="green darken-1"
+            text
+          >
+            Принять
+          </v-btn>
+          <v-btn
+            v-if="showAcceptRejectButtons"
+            color="red darken-1"
+            text
+          >
+            Отклонить
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -159,31 +174,45 @@ export default {
     },
     
     isFormChanged() {
-      if (this.getCurrentDeal && this.getCurrentDeal.form && this.getCurrentDeal.form2) {
-        const deal = this.getCurrentDeal;
-        // Определяем, с какими формами следует сравнивать
-        const referenceForm1 =
-          deal.status === "pending_update" ? deal.update.form : deal.form;
-        const referenceForm2 =
-          deal.status === "pending_update" ? deal.update.form2 : deal.form2;
-
-        // Проверяем каждую форму
-        const form1Changed = Object.entries(this.form1).some(([key, value]) => {
-          return value !== referenceForm1[key];
-        });
-        const form2Changed = Object.entries(this.form2).some(([key, value]) => {
-          return value !== referenceForm2[key];
-        });
-
-        // Возвращаем true, если хотя бы одна из форм изменена
-        return form1Changed || form2Changed;
-      } else {
+      const deal = this.getCurrentDeal;
+      if (!deal || !deal.form || !deal.form2) {
         return false;
       }
+
+      let referenceForm1, referenceForm2;
+
+      // Определяем, с какими формами следует сравнивать
+      if (deal.status === "pending_update") {
+        referenceForm1 = deal.update.form;
+        referenceForm2 = deal.update.form2;
+      } else if (deal.status === "reschedule_offer") {
+        referenceForm1 = deal.reschedule.form;
+        referenceForm2 = deal.reschedule.form2;
+      } else if (deal.status === "reschedule_offer_update") {
+        referenceForm1 = deal.reschedule.form;
+        referenceForm2 = deal.reschedule.form2;
+      } else {
+        referenceForm1 = deal.form;
+        referenceForm2 = deal.form2;
+      }
+
+      if (!referenceForm1 || !referenceForm2) {
+        return false;
+      }
+
+      // Проверяем каждую форму
+      const form1Changed = Object.entries(this.form1).some(([key, value]) => {
+        return value !== referenceForm1[key];
+      });
+      const form2Changed = Object.entries(this.form2).some(([key, value]) => {
+        return value !== referenceForm2[key];
+      });
+
+      // Возвращаем true, если хотя бы одна из форм изменена
+      return form1Changed || form2Changed;
     },
 
     isBothFormsFilled() {
-      console.log(this.form2.meetingTime);
       return (
         this.form1.meetingDate &&
         this.form1.meetingTime &&
@@ -213,7 +242,6 @@ export default {
       }
 
       const isSender = deal.sender === currentUser._id;
-      const isReceiver = !isSender;
       const formChanged = this.isFormChanged;
       const bothFormsFilled = this.isBothFormsFilled;
       const dealNotStarted = deal.status === "not_started";
@@ -221,12 +249,43 @@ export default {
 
       const visible =
         (isSender && dealPendingOrUpdate) ||
-        (isReceiver && (dealNotStarted || dealPendingOrUpdate && this.isConfirm));
+        (dealNotStarted || dealPendingOrUpdate && this.isConfirm);
 
       const enabled =
-        (isSender && formChanged) ||
-        (isReceiver && dealNotStarted && bothFormsFilled) ||
-        (isReceiver && dealPendingOrUpdate && formChanged);
+        (formChanged) ||
+        (dealNotStarted && bothFormsFilled);
+
+      return { visible, enabled };
+    },
+
+    showAcceptRejectButtons() {
+      const deal = this.getCurrentDeal;
+      if (!deal) {
+        return false;
+      }
+
+      const isSender = deal.sender === this.currentUser._id;
+      return (
+        !isSender &&
+        (deal.status === "reschedule_offer" || deal.status === "reschedule_offer_update") &&
+        !this.isFormChanged
+      );
+    },
+
+    proposeButtonState() {
+      const deal = this.getCurrentDeal;
+      const currentUser = this.currentUser;
+
+      if (!deal) {
+        return { visible: false, enabled: false };
+      }
+
+      const isSender = deal.sender === currentUser._id;
+      const formChanged = this.isFormChanged;
+      const statusesOfReschedule = ["reschedule_offer", "reschedule_offer_update"];
+
+      const visible = ((isSender || formChanged) && statusesOfReschedule.includes(this.getCurrentDeal.status) || deal.status === "confirmed");
+      const enabled = formChanged;
 
       return { visible, enabled };
     },
@@ -349,7 +408,6 @@ export default {
     },
 
     resetForm() {
-      this.dialog = false;
       if (!this.getCurrentDeal || !this.getCurrentDeal.form) {
         this.form1 = {
           meetingDate: null,
@@ -360,16 +418,15 @@ export default {
           meetingDate: null,
           meetingTime: null,
         };
-      } else {
-        this.form1 = {
-          meetingDate: this.getCurrentDeal.form.meetingDate || null,
-          meetingTime: this.getCurrentDeal.form.meetingTime || null,
-          meetingDuration: this.getCurrentDeal.form.meetingDuration || null,
-        };
-        this.form2 = {
-          meetingDate: this.getCurrentDeal.form2.meetingDate || null,
-          meetingTime: this.getCurrentDeal.form2.meetingTime || null,
-        };
+      } if (this.getCurrentDeal.status === "pending_update") {
+          this.fillForm(this.form1, this.getCurrentDeal.update.form);
+          this.fillForm(this.form2, this.getCurrentDeal.update.form2);
+        } else if (this.getCurrentDeal.status === "reschedule_offer" || this.getCurrentDeal.status === "reschedule_offer_update") {
+          this.fillForm(this.form1, this.getCurrentDeal.reschedule.form);
+          this.fillForm(this.form2, this.getCurrentDeal.reschedule.form2);
+        } else {
+          this.fillForm(this.form1, this.getCurrentDeal.form || {});
+          this.fillForm(this.form2, this.getCurrentDeal.form2 || {});
       }
     },
   },

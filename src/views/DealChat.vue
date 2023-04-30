@@ -261,7 +261,6 @@ export default {
       await this.$store.dispatch("deal/getCurrentDeal", {
               chatId: this.getCurrentChat._id,
             });
-            console.log(this.showCancelButton);
       this.$nextTick(() => {
         this.scrollToBottom();
       });
