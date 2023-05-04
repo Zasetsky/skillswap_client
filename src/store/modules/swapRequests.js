@@ -2,12 +2,16 @@ import { getSocket } from "../../soket";
 
 const state = {
   swapRequests: [],
+  currentSwapRequest: null,
 };
 
 const getters = {
   getSwapRequests: (state) => {
     return state.swapRequests;
   },
+  getCurrentSwapRequest: (state) => {
+    return state.currentSwapRequest;
+  }
 };
 
 const actions = {
@@ -79,11 +83,31 @@ const actions = {
       }
     });
   },
+
+  async getCurrentSwapRequest({ commit }, swapRequestId) {
+    return new Promise((resolve, reject) => {
+      try {
+        const socket = getSocket();
+
+        socket.emit("getCurrentSwapRequest", { swapRequestId });
+        socket.once("currentSwapRequest", (swapRequest) => {
+          commit("setCurrentSwapRequest", swapRequest);
+          resolve(swapRequest);
+        });
+      } catch (error) {
+        console.error("Error fetching all swap requests:", error);
+        reject(error);
+      }
+    });
+  },
 };
 
 const mutations = {
   setSwapRequests(state, swapRequests) {
     state.swapRequests = swapRequests;
+  },
+  setCurrentSwapRequest(state, swapRequest) {
+    state.currentSwapRequest = swapRequest;
   },
 };
 

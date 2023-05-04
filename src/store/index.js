@@ -8,6 +8,7 @@ import user from './modules/user';
 import matching from './modules/matching';
 import chat from './modules/chat'
 import deal from './modules/deal';
+import review from './modules/review';
 
 Vue.use(Vuex);
 
@@ -20,5 +21,6 @@ export default new Vuex.Store({
     matching,
     chat,
     deal,
+    review,
   }
 });

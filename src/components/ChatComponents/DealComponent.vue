@@ -252,7 +252,7 @@ export default {
         (dealNotStarted || dealPendingOrUpdate && this.isConfirm);
 
       const enabled =
-        (formChanged) ||
+        (formChanged && !dealNotStarted) ||
         (dealNotStarted && bothFormsFilled);
 
       return { visible, enabled };

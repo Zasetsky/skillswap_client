@@ -20,6 +20,10 @@
           @submit-deal-form="handleDealFormSubmit"
           @confirm-deal="confirmDeal"
         />
+        <ReviewForm
+          v-if="showReviewForm"
+          @review-submitted="onReviewSubmitted"
+        />
         <CancelDealButton
           v-if="!isCancelButtonCloseToDeadline && showCancelButton"
           :disabled="!newMessage"
@@ -40,6 +44,7 @@ import MessageComponent from '@/components/ChatComponents/MessageComponent.vue';
 import MessageForm from '@/components/ChatComponents/MessageFormComponent.vue';
 import DealComponent from '@/components/ChatComponents/DealComponent.vue';
 import CancelDealButton from '@/components/ChatComponents/CancelDealButton.vue';
+import ReviewForm from '@/components/ChatComponents/ReviewForm.vue';
 
 export default {
   components: {
@@ -47,6 +52,7 @@ export default {
     MessageForm,
     DealComponent,
     CancelDealButton,
+    ReviewForm,
   },
 
   data() {
@@ -59,6 +65,7 @@ export default {
     ...mapGetters('chat', ['getCurrentChat']),
     ...mapGetters('deal', ['getCurrentDeal']),
     ...mapGetters('auth', ['currentUser']),
+    ...mapGetters('swapRequests', ['getCurrentSwapRequest']),
 
     messages() {
       return this.$store.state.chat.currentChat
@@ -69,12 +76,22 @@ export default {
     showCancelButton() {
       const currentDeal = this.getCurrentDeal;
 
-      if (!currentDeal?.cancellation) {
+      if (!currentDeal) {
+        return false;
+      }
+
+      const isCompleted = currentDeal.status === 'completed';
+
+      if (isCompleted) {
+        return false;
+      }
+
+      if (!currentDeal.cancellation) {
         return true;
       }
 
       const cancellationStatus = currentDeal.cancellation.status;
-      const isRejected = currentDeal.cancellation.status === 'rejected';
+      const isRejected = cancellationStatus === 'rejected';
 
       return !cancellationStatus || isRejected;
     },
@@ -107,6 +124,22 @@ export default {
       return remainingTimeInMilliseconds <= threeHoursInMilliseconds;
     },
 
+    showReviewForm() {
+      const deal = this.getCurrentDeal;
+      const swapRequest = this.getCurrentSwapRequest;
+
+      if (!swapRequest) {
+        return false;
+      }
+
+      const isSender = swapRequest.senderId === this.currentUser._id;
+      const isReceiver = swapRequest.receiverId === this.currentUser._id;
+
+      const isHalfCompleted = deal.status === 'half_completed' || deal.status === 'half_completed_confirmed_reschedule';
+      const isFormCompleted = (deal.completedForm === 'form' && isSender) || (deal.completedForm === 'form2' && isReceiver);
+
+      return (isHalfCompleted || deal.status === 'completed') && isFormCompleted;
+    }
   },
 
   methods: {
@@ -133,6 +166,14 @@ export default {
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
       });
+    },
+
+    onReviewSubmitted() {
+      // Здесь вы можете обработать успешную отправку отзыва, например:
+      // 1. Вывести уведомление или сообщение об успешной отправке отзыва
+      // 2. Очистить и закрыть форму отзыва
+      // 3. Обновить чат или список отзывов
+      console.log("Review submitted successfully");
     },
 
     async handleDealFormSubmit({ formData1, formData2 }) {
@@ -259,11 +300,14 @@ export default {
       const chatId = localStorage.getItem("chatId");
       await this.$store.dispatch("chat/fetchCurrentChat", chatId);
       await this.$store.dispatch("deal/getCurrentDeal", {
-              chatId: this.getCurrentChat._id,
-            });
+        chatId: this.getCurrentChat._id,
+      });
+      await this.$store.dispatch("swapRequests/getCurrentSwapRequest", this.getCurrentDeal.swapRequestId);
+      console.log(this.getCurrentSwapRequest);
       this.$nextTick(() => {
         this.scrollToBottom();
       });
+      console.log(this.showReviewForm);
     } catch (error) {
       console.error("Error in mounted lifecycle hook:", error);
     }
