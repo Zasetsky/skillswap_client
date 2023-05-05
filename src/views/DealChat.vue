@@ -66,6 +66,7 @@ export default {
     ...mapGetters('deal', ['getCurrentDeal']),
     ...mapGetters('auth', ['currentUser']),
     ...mapGetters('swapRequests', ['getCurrentSwapRequest']),
+    ...mapGetters('review', ['getCurrentDealReviews']),
 
     messages() {
       return this.$store.state.chat.currentChat
@@ -136,13 +137,29 @@ export default {
       const isReceiver = swapRequest.receiverId === this.currentUser._id;
 
       const isHalfCompleted = deal.status === 'half_completed' || deal.status === 'half_completed_confirmed_reschedule';
-      const isFormCompleted = (deal.completedForm === 'form' && isSender) || (deal.completedForm === 'form2' && isReceiver);
 
-      return (isHalfCompleted || deal.status === 'completed') && isFormCompleted;
+      const isForm1Completed = deal.completedForm.includes('form');
+      const isForm2Completed = deal.completedForm.includes('form2');
+
+      const showForm1Button = isForm1Completed && isSender && !this.isReviewSubmitted('form');
+      const showForm2Button = isForm2Completed && isReceiver && !this.isReviewSubmitted('form2');
+
+      return (isHalfCompleted || deal.status === 'completed') && (showForm1Button || showForm2Button);
     }
   },
 
   methods: {
+    isReviewSubmitted(formType) {
+      const currentUserId = this.currentUser._id;
+      const reviews = this.getCurrentDealReviews || [];
+
+      return reviews.some(
+        (review) =>
+          review.sender.toString() === currentUserId &&
+          review.formType === formType
+      );
+    },
+
     async sendMessage(type, content) {
       try {
         const newMessage = {
@@ -298,16 +315,17 @@ export default {
   async mounted() {
     try {
       const chatId = localStorage.getItem("chatId");
+
       await this.$store.dispatch("chat/fetchCurrentChat", chatId);
       await this.$store.dispatch("deal/getCurrentDeal", {
         chatId: this.getCurrentChat._id,
       });
       await this.$store.dispatch("swapRequests/getCurrentSwapRequest", this.getCurrentDeal.swapRequestId);
-      console.log(this.getCurrentSwapRequest);
+      await this.$store.dispatch("review/getCurrentDealReviews", this.getCurrentDeal._id);
+
       this.$nextTick(() => {
         this.scrollToBottom();
       });
-      console.log(this.showReviewForm);
     } catch (error) {
       console.error("Error in mounted lifecycle hook:", error);
     }
