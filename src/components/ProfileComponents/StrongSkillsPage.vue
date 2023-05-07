@@ -152,7 +152,7 @@ export default {
         return [];
       }
       return this.getSwapRequests.filter(request => {
-        return ["rejected", "finished", "dealRejected"].includes(request.status) && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) && request.receiverId === this.currentUser._id;
+        return ["rejected", "cancelled", "completed"].includes(request.status) && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) && request.receiverId === this.currentUser._id;
       });
     },
 
