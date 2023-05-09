@@ -145,6 +145,47 @@ const actions = {
 
   //   socket.emit("rejectCancellation", { dealId });
   // },
+
+  // продолжение
+  requestContinuation({ commit }, dealId) {
+    const socket = getSocket();
+
+    socket.emit("requestContinuation", dealId);
+
+    socket.on("continuationRequested", (deal) => {
+      commit("SET_CURRENT_DEAL", deal);
+    });
+  
+    socket.on("error", (error) => {
+      console.error("Error during send request continuation deal:", error.message);
+    });
+  },
+
+    // approveCancellation({ commit }, { dealId }) {
+  //   const socket = getSocket();
+
+  //   socket.emit("approveCancellation", { dealId });
+  // },
+
+  // rejectCancellation({ commit }, { dealId }) {
+  //   const socket = getSocket();
+
+  //   socket.emit("rejectCancellation", { dealId });
+  // },
+
+  rejectContinuation({ commit }, { dealId }) {
+    const socket = getSocket();
+
+    socket.emit("rejectContinuation", { dealId });
+
+    socket.on("continuationRejected", (deal) => {
+      commit("SET_CURRENT_DEAL", deal);
+    });
+
+    socket.on("error", (error) => {
+      console.error("Error during reject request continuation deal:", error.message);
+    });
+  },
 };
 
 const mutations = {

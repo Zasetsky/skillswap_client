@@ -5,13 +5,35 @@
         <template v-if="message.type === 'text'">
           {{ message.content }}
         </template>
+        <template v-else-if="message.type === 'details'">
+          <b>{{ message.content }}</b>
+        </template>
         <template v-else-if="message.type === 'deal_proposal'">
           Предложены параметры сделки: 
-          <v-btn v-if="isLastDealProposal && !hasMeetingDetails && !hasCancellationRequest" color="primary" small @click="openDealForm">Открыть</v-btn>
+          <v-btn v-if="
+            isLastDealProposal &&
+            !hasMeetingDetails &&
+            !hasCancellationRequest &&
+            !hasContinuationRequest"
+            color="primary"
+            small
+            @click="openDealForm"
+          >
+            Открыть
+          </v-btn>
         </template>
         <template v-else-if="message.type === 'reschedule_proposal'">
           Предложены параметры переноса сделки: 
-          <v-btn v-if="isLastRescheduleProposal && !hasCancellationRequest" color="primary" small @click="openDealForm">Открыть</v-btn>
+          <v-btn v-if="
+            isLastRescheduleProposal &&
+            !hasCancellationRequest &&
+            !hasContinuationRequest"
+            color="primary"
+            small
+            @click="openDealForm"
+          >
+            Открыть
+          </v-btn>
         </template>
         <template v-else-if="message.type === 'meeting_details'">
           Ссылка: <b><a :href="message.content.meetingLink" target="_blank">{{ message.content.meetingLink }}</a></b><br>
@@ -29,12 +51,19 @@
           <span v-if="!isMyMessage" style="color: red;">Если вы не примете решение в течение 24 часов, ваша карма подпортится, и сделка всё равно будет отменена.</span>
           <span v-if="isMyMessage" style="color: red;">Если пользователь не примет решение в течение 24 часов, сделка всё равно будет отменена.</span>
         </template>
+        <template v-else-if="message.type === 'continuation_request'">
+          Запрос на продолжение сделки:
+          <v-btn v-if="!isMyMessage && hasContinuationRequest" color="success" small @click="$emit('approve-continuation')">Подтвердить</v-btn>
+          <v-btn v-if="!isMyMessage && hasContinuationRequest" color="error" small @click="$emit('reject-continuation')">Отклонить</v-btn>
+        </template>
       </v-card-text>
     </v-card>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   props: {
     message: {
@@ -54,6 +83,8 @@ export default {
   },
 
   computed: {
+    ...mapGetters('deal', ['getCurrentDeal']),
+
     isMyMessage() {
       return this.message.sender === this.currentUserId;
     },
@@ -64,6 +95,10 @@ export default {
 
     hasCancellationRequest() {
       return this.allMessages.some(msg => msg.type === 'cancellation_request');
+    },
+
+    hasContinuationRequest() {
+      return this.allMessages.some(msg => msg.type === 'continuation_request') && this.getCurrentDeal?.continuation?.status === "true";
     },
 
     isLastRescheduleProposal() {
@@ -86,7 +121,19 @@ export default {
   methods: {
     openDealForm() {
       this.$emit('open-deal-form', this.message.content);
-    }
+    },
+    approveContinuation() {
+      this.$emit('approve-continuation', this.message._id);
+    },
+    rejectContinuation() {
+      this.$emit('reject-continuation', this.message._id);
+    },
+    approveCancellation() {
+      this.$emit('approve-cancellation', this.message._id);
+    },
+    rejectCancellation() {
+      this.$emit('reject-cancellation', this.message._id);
+    },
   },
   mounted() {
   }

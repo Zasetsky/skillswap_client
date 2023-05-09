@@ -10,6 +10,8 @@
         @open-deal-form="handleOpenDealForm"
         @approve-cancellation="handleApproveCancellation"
         @reject-cancellation="handleRejectCancellation"
+        @approve-continuation="handleApproveContinuation"
+        @reject-continuation="handleRejectContinuation"
       />
     </div>
     <div class="bottom-bar">
@@ -19,6 +21,10 @@
           :disabled="!showCancelButton"
           @submit-deal-form="handleDealFormSubmit"
           @confirm-deal="confirmDeal"
+        />
+        <ContinuationButton
+          v-if="showContinuationButton"
+          @propose-continuation="handleRequestContinuation"
         />
         <ReviewForm
           v-if="showReviewForm"
@@ -44,6 +50,7 @@ import MessageComponent from '@/components/ChatComponents/MessageComponent.vue';
 import MessageForm from '@/components/ChatComponents/MessageFormComponent.vue';
 import DealComponent from '@/components/ChatComponents/DealComponent.vue';
 import CancelDealButton from '@/components/ChatComponents/CancelDealButton.vue';
+import ContinuationButton from '@/components/ChatComponents/ContinuationButton.vue';
 import ReviewForm from '@/components/ChatComponents/ReviewForm.vue';
 
 export default {
@@ -52,6 +59,7 @@ export default {
     MessageForm,
     DealComponent,
     CancelDealButton,
+    ContinuationButton,
     ReviewForm,
   },
 
@@ -94,7 +102,36 @@ export default {
       const cancellationStatus = currentDeal.cancellation.status;
       const isRejected = cancellationStatus === 'rejected';
 
+      // Проверка завершенности форм
+      const isFormCompleted = currentDeal.form && currentDeal.form.isCompleted;
+      const isForm2Completed = currentDeal.form2 && currentDeal.form2.isCompleted;
+
+      // Если одна из форм завершена, то кнопка не должна отображаться
+      if (isFormCompleted || isForm2Completed) {
+        return false;
+      }
+
       return !cancellationStatus || isRejected;
+    },
+
+    showContinuationButton() {
+      const currentDeal = this.getCurrentDeal;
+
+      if (!currentDeal) {
+        return false;
+      }
+
+      if (currentDeal.status !== 'completed') {
+        return false;
+      }
+
+      if (!currentDeal.continuation) {
+        return true;
+      }
+
+      const isRejected = currentDeal.continuation.status === 'false';
+
+      return isRejected;
     },
 
     isCancelButtonCloseToDeadline() {
@@ -250,6 +287,18 @@ export default {
       }
     },
 
+    async handleRequestContinuation() {
+      try {
+        await this.sendMessage("continuation_request", " ");
+        await this.$store.dispatch("deal/requestContinuation", {
+          dealId: this.getCurrentDeal._id
+        });
+        this.newMessage = "";
+      } catch (error) {
+        console.error("Error requesting continuation:", error);
+      }
+    },
+
     async handleApproveCancellation() {
       try {
         await this.$store.dispatch("deal/approveCancellation", {
@@ -260,6 +309,16 @@ export default {
       }
     },
 
+    async handleApproveContinuation() {
+      try {
+        await this.$store.dispatch("deal/approveContinuation", {
+          dealId: this.getCurrentDeal._id,
+        });
+      } catch (error) {
+        console.error("Error approving continuation:", error);
+      }
+    },
+
     async handleRejectCancellation() {
       try {
         await this.$store.dispatch("deal/rejectCancellation", {
@@ -267,6 +326,17 @@ export default {
         });
       } catch (error) {
         console.error("Error rejecting cancellation:", error);
+      }
+    },
+
+    async handleRejectContinuation() {
+      try {
+        await this.$store.dispatch("deal/rejectContinuation", {
+          dealId: this.getCurrentDeal._id,
+        });
+        await this.sendMessage("details", "Предложение о продолжении отвергнуто.");
+      } catch (error) {
+        console.error("Error rejecting continuation:", error);
       }
     },
 
