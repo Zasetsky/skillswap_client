@@ -1,112 +1,89 @@
 <template>
-    <v-container>
-      <v-row>
-        <v-col cols="12">
-          <h2>{{ strongSkillObject.skill || strongSkillObject.category || strongSkillObject.subCategory }}</h2>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12" sm="6">
-          <h3>Принятые запросы и начатые сделки</h3>
-          <v-card v-for="acceptedRequest in acceptedRequests" :key="acceptedRequest._id" class="mb-4">
-            <v-card-text>
-              <v-avatar size="64" class="mb-2">
-                <img :src="acceptedRequest.senderData.avatar || 'https://via.placeholder.com/64'" alt="User avatar">
-              </v-avatar>
+  <v-container>
+    <v-row>
+      <v-col cols="12">
+        <h2>{{ strongSkillObject.skill || strongSkillObject.category || strongSkillObject.subCategory }}</h2>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12" sm="6">
+        <h3>Принятые запросы и начатые сделки</h3>
+        <skill-card
+          v-for="acceptedRequest in acceptedRequests"
+          :key="acceptedRequest._id"
+          :request="acceptedRequest"
+          @open-chat="openChat"
+        >
+        </skill-card>
+        <v-card v-if="acceptedRequests.length === 0">
+          <v-card-text>
+            Здесь будет информация об принятых запросах и активных сделках этого навыка
+          </v-card-text>
+        </v-card>
 
-              <strong>Имя:</strong> {{ acceptedRequest.senderData.firstName }} {{ acceptedRequest.senderData.lastName }}<br>
-              <strong>Описание:</strong> {{ acceptedRequest.senderData.bio }}<br>
-
-              <strong>Хочет изучить:</strong> {{ acceptedRequest.senderData.skillsToLearn[0].skill }}<br>
-              <strong>Навык для обмена:</strong> {{ acceptedRequest.senderData.skillsToTeach[0].skill }}<br>
-
-              <v-btn 
-                class="mt-4"
-                color="primary"
-                @click="openChat(acceptedRequest.senderId, acceptedRequest._id)"
-              >
-                Открыть чат сделки
-              </v-btn>
-            </v-card-text>
-          </v-card>
-          <v-card v-if="acceptedRequests.length === 0">
-            <v-card-text>
-              Здесь будет информация об принятых запросах и активных сделках этого навыка
-            </v-card-text>
-          </v-card>
-
-          <h3>Полученные запросы на обмен</h3>
-          <v-card v-for="receivedRequest in filteredReceivedRequests" :key="receivedRequest._id" class="mb-4">
-            <v-card-text>
-              <v-avatar size="64" class="mb-2">
-                <img :src="receivedRequest.senderData.avatar || 'https://via.placeholder.com/64'" alt="User avatar">
-              </v-avatar>
-  
-              <strong>Имя:</strong> {{ receivedRequest.senderData.firstName }} {{ receivedRequest.senderData.lastName }}<br>
-              <strong>Описание:</strong> {{ receivedRequest.senderData.bio }}<br>
-  
-              <strong>Хочет изучить:</strong> {{ receivedRequest.senderData.skillsToLearn[0].skill }}<br>
-              <v-select
-                v-model="selectedSkillObject"
-                :items="receivedRequest.senderData.skillsToTeach"
-                label="Выберите навык для обучения"
-                class="mt-4"
-                item-text="skill"
-                item-value="item"
-                return-object
-              >
-              </v-select>
-              <v-btn 
-                class="mt-4"
-                color="primary"
-                :disabled="!selectedSkillObject.skill"
-                @click="acceptSwapRequest(receivedRequest._id)"
-              >
-                Принять запрос
-              </v-btn>
-              <v-btn class="mt-4 ml-2" color="error" @click="rejectSwapRequest(receivedRequest._id)">
-                Отклонить запрос
-              </v-btn>
-            </v-card-text>
-          </v-card>
-          <v-card v-if="filteredReceivedRequests.length === 0">
-            <v-card-text>
-              Здесь будет информация о полученных запросах на обмен этого навыка
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col cols="12" sm="6">
-          <h3>История запросов и сделок</h3>
-          <v-card v-for="pastRequest in pastRequests" :key="pastRequest._id" class="mb-4">
-            <v-card-text>
-              <v-avatar size="64" class="mb-2">
-                <img :src="pastRequest.senderData.avatar || 'https://via.placeholder.com/64'" alt="User avatar">
-              </v-avatar>
-
-              <strong>Имя:</strong> {{ pastRequest.senderData.firstName }} {{ pastRequest.senderData.lastName }}<br>
-              <strong>Описание:</strong> {{ pastRequest.senderData.bio }}<br>
-
-              <strong>Хочтел изучить:</strong> {{ pastRequest.senderData.skillsToLearn[0].skill }}<br>
-              <strong>Навыки для обмена:</strong>
-              <span v-for="(skillToTeach, index) in pastRequest.senderData.skillsToTeach" :key="index">
-                {{ skillToTeach.skill }}<span v-if="index < pastRequest.senderData.skillsToTeach.length - 1">, </span>
-              </span><br>
-
-              <strong>Статус:</strong> {{ pastRequest.status }}
-            </v-card-text>
-          </v-card>
-          <v-card v-if="pastRequests.length === 0">
-            <v-card-text>Здесь будет информация о прошлых запросах этого навыка</v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
+        <h3>Полученные запросы на обмен</h3>
+        <skill-card
+          v-for="receivedRequest in filteredReceivedRequests"
+          :key="receivedRequest._id"
+          :request="receivedRequest"
+        >
+          <v-select
+            v-model="selectedSkillObject"
+            :items="receivedRequest.senderData.skillsToTeach"
+            label="Выберите навык для обучения"
+            class="mt-4"
+            item-text="skill"
+            item-value="item"
+            return-object
+          >
+          </v-select>
+          <v-btn 
+            class="mt-4"
+            color="primary"
+            :disabled="!selectedSkillObject.skill"
+            @click="acceptSwapRequest(receivedRequest._id)"
+          >
+            Принять запрос
+          </v-btn>
+          <v-btn class="mt-4 ml-2" color="error" @click="rejectSwapRequest(receivedRequest._id)">
+            Отклонить запрос
+          </v-btn>
+        </skill-card>
+        <v-card v-if="filteredReceivedRequests.length === 0">
+          <v-card-text>
+            Здесь будет информация о полученных запросах на обмен этого навыка
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" sm="6">
+        <h3>История запросов и сделок</h3>
+        <skill-card
+          class="skill-card"
+          v-for="pastRequest in pastRequests"
+          :key="pastRequest._id"
+          :request="pastRequest"
+          @open-chat="openChat"
+        >
+          <strong>Статус:</strong> {{ pastRequest.status }}
+        </skill-card>
+        <v-card v-if="pastRequests.length === 0">
+          <v-card-text>Здесь будет информация о прошлых запросах этого навыка</v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
   
 <script>
+import SkillCard from "./SkillCard.vue";
+
 import { mapGetters, mapActions } from "vuex";
 
 export default {
+  components: {
+    SkillCard,
+  },
+
   data() {
     return {
       localSkillId: '',
@@ -170,7 +147,6 @@ export default {
 
   methods: {
     ...mapActions('user', ['fetchCurrentUser']),
-    ...mapActions('chat', ['createChat']),
     ...mapActions('swapRequests', ['getAllSwapRequests']),
 
     async acceptSwapRequest(swapRequestId) {
@@ -195,7 +171,7 @@ export default {
     async openChat(senderId, requestId) {
       try {
         // Создать новый чат
-        await this.$store.dispatch("chat/createChat", {
+        await this.$store.dispatch("chat/createOrGetCurrentChat", {
           receiverId: this.currentUser._id,
           senderId,
           swapRequestId: requestId,

@@ -6,37 +6,14 @@
           cols="12"
           v-for="chat in computedChats"
           :key="chat._id"
-          @click="openChat(chat._id)"
         >
-          <v-hover>
-            <v-card slot-scope="{ hover }" :class="{ 'hover': hover }">
-              <v-card-title>
-                <span>{{ chat.partner }}</span>
-              </v-card-title>
-              <v-card-subtitle>
-                <span v-if="isSender(chat)"><b>Учиться: {{ chat.skillToLearn.skill }}</b></span>
-                <span v-else><b>Учить: {{ chat.skillToLearn.skill }}</b></span><br>
-                <span v-if="isSender(chat)">Учить: {{ chat.skillToTeach.skill }}</span>
-                <span v-else>Учиться: {{ chat.skillToTeach.skill }}</span>
-              </v-card-subtitle>
-              <v-card-text>
-                <span>{{ chat.message }}</span>
-                <div style="margin-left: 20px;">{{ chat.messageTime }}</div>
-              </v-card-text>
-              <v-card-text>
-                <div v-if="isReceived(chat)">
-                  <v-chip color="primary" small>Принятый</v-chip>
-                </div>
-                <div v-else>
-                  <v-chip color="secondary" small>Отправленный</v-chip>
-                </div>
-              </v-card-text>
-              <!-- <v-card-actions>
-                <v-btn color="primary" text small
-                  >Открыть чат</v-btn>
-              </v-card-actions> -->
-            </v-card>
-          </v-hover>
+          <ChatCard
+            class="chat-card"
+            :chat="chat"
+            :is-sender="isSender(chat)"
+            :is-received="isReceived(chat)"
+            @open-chat="openChat"
+          />
         </v-col>
       </v-row>
     </v-container>
@@ -46,8 +23,13 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import AsyncComputed from "vue-async-computed";
+import ChatCard from "@/components/ChatComponents/ChatCard.vue";
 
 export default {
+  components: {
+    ChatCard,
+  },
+
   mixins: [AsyncComputed],
 
   data() {
@@ -57,7 +39,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters("chat", ["getAllChats"]),
+    ...mapGetters("chat", ["getAllChats", "getCurrentChat"]),
     ...mapGetters("auth", ["currentUser"]),
     ...mapGetters("swapRequests", ["getSwapRequests"]),
     ...mapGetters("user", ["getUserProfile"]),
@@ -95,7 +77,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("chat", ["fetchAllChats"]),
+    ...mapActions('chat', ['fetchAllChats']),
     ...mapActions('swapRequests', ['getAllSwapRequests']),
     ...mapActions('user', ['fetchUserProfile']),
 
@@ -138,26 +120,63 @@ export default {
       const swapRequest = this.getSwapRequests.find(
         (sr) => sr._id === chat.swapRequestId
       );
-      return swapRequest && swapRequest.receiverId === this.currentUser._id;
+      return swapRequest ? swapRequest.receiverId === this.currentUser._id : false;
     },
 
     isSender(chat) {
       const swapRequest = this.getSwapRequests.find(
         (sr) => sr._id === chat.swapRequestId
       );
-      return swapRequest && swapRequest.senderId === this.currentUser._id;
+      return swapRequest ? swapRequest.senderId === this.currentUser._id : false;
     },
-    openChat(chatId) {
-      // Открыть чат с помощью роутера или другого способа
-      this.$router.push(`/${chatId}`);
+
+    async openChat(receiverId, requestId) {
+      try {
+        // Создайте чат, если его еще не существует
+        await this.$store.dispatch('chat/createOrGetCurrentChat', {
+          receiverId: receiverId,
+          senderId: this.currentUser._id,
+          swapRequestId: requestId,
+        });
+
+        // Получите текущий чат, возможно, используя внутренний метод
+        const chat = this.getCurrentChat;
+
+        // Check if chat is defined
+        if (!chat) {
+          console.error("Chat not found");
+          return;
+        }
+
+        // Создайте или получите текущую сделку
+        await this.$store.dispatch('deal/createOrGetCurrentDeal', {
+          participants: chat.participants,
+          chatId: chat._id,
+          swapRequestId: chat.swapRequestId,
+        });
+
+        // Сохраните chatId в локальное хранилище
+        localStorage.setItem("chatId", chat._id);
+
+        // Перейдите к странице чата с использованием роутера
+        this.$router.push(`/${chat._id}`);
+      } catch (error) {
+        console.error('Error opening chat:', error);
+      }
     },
+
   },
 };
 </script>
 <style scoped>
-.hover {
+.chat-card {
   cursor: pointer;
-  background-color: rgba(0, 0, 0, 0.05);
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+}
+
+.chat-card:hover {
+  /* transform: scale(1.005); */
+  background-color: rgba(0, 0, 0, 0.05);;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 </style>

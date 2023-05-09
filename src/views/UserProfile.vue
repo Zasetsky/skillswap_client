@@ -118,23 +118,22 @@ export default {
         isSwapRequestAlreadySent() {
             if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
                 return this.getSwapRequests.some(
-                    (request) => request.receiverId === this.localUserId
+                (request) => request.receiverId === this.localUserId && (request.status === 'pending' || request.status === 'accepted')
                 );
             } else {
                 return false;
             }
         },
 
-        isSwapRequestReceived() {
+            isSwapRequestReceived() {
             if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
                 return this.getSwapRequests.some(
-                (request) => request.senderId === this.localUserId
+                (request) => request.senderId === this.localUserId && (request.status === 'pending' || request.status === 'accepted')
                 );
             } else {
                 return false;
             }
         },
-
     },
 
     methods: {

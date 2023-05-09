@@ -5,7 +5,7 @@
         <div class="header-container">
           <h2>{{ (weakSkillObject.skill ?? '') || (weakSkillObject.category ?? '') || (weakSkillObject.subCategory ?? '') }}</h2>
 
-          <v-btn v-if="filteredSentRequests.length === 0" color="primary" @click="goToMatchingUsers">
+          <v-btn v-if="filteredActiveRequests.length === 0" color="primary" @click="goToMatchingUsers">
             Найти совпадения
           </v-btn>
         </div>
@@ -14,35 +14,22 @@
     <v-row>
       <v-col cols="12" sm="6">
         <h3>Активный запрос</h3>
-        <v-card v-for="sentRequest in filteredSentRequests" :key="sentRequest._id" class="mb-4">
-          <v-card-text>
-            <v-avatar size="64" class="mb-2">
-              <img :src="sentRequest.receiverData.avatar || 'https://via.placeholder.com/64'" alt="User avatar">
-            </v-avatar>
-            
-            <strong>Имя:</strong> {{ sentRequest.receiverData.firstName }} {{ sentRequest.receiverData.lastName }}<br>
-            <strong>Описание:</strong> {{ sentRequest.receiverData.bio }}<br>
-            <strong>Навык для обмена:</strong> {{ sentRequest.status === 'pending' ? '???' : (sentRequest.receiverData.skillsToTeach[0]?.skill ?? '') }}<br>
-
-            <v-btn
-              v-if="sentRequest.status === 'accepted'"
-              class="mt-4"
-              color="primary"
-              @click="openChat(sentRequest.receiverId, sentRequest._id)"
-            >
-              Открыть чат сделки
-            </v-btn>
-            <v-btn
-              v-else
-              class="mt-4"
-              color="primary"
-              @click="cancelSwapRequest(sentRequest._id)"
-            >
-              Отменить запрос
-            </v-btn>
-          </v-card-text>
-        </v-card>
-        <v-card v-if="filteredSentRequests.length === 0">
+        <skill-card
+          v-for="sentRequest in filteredActiveRequests"
+          :key="sentRequest._id"
+          :sentRequest="sentRequest"
+          @open-chat="openChat"
+        >
+          <v-btn
+            v-if="sentRequest.status !== 'accepted'"
+            class="mt-4"
+            color="primary"
+            @click="cancelSwapRequest(sentRequest._id)"
+          >
+            Отменить запрос
+          </v-btn>
+        </skill-card>
+        <v-card v-if="filteredActiveRequests.length === 0">
           <v-card-text>
             Здесь будет информация об активных запросов этого навыка
           </v-card-text>
@@ -50,7 +37,14 @@
       </v-col>
       <v-col cols="12" sm="6">
         <h3>История запросов и выполненных сделок</h3>
-        <v-card>
+        <skill-card
+          v-for="pastRequest in filteredPastRequests"
+          :key="pastRequest._id"
+          :sentRequest="pastRequest"
+          :is-past-request="true"
+          @open-chat="openChat"
+        ></skill-card>
+        <v-card v-if="filteredPastRequests.length === 0">
           <v-card-text>Здесь будет информация об активной сделке</v-card-text>
         </v-card>
       </v-col>
@@ -59,9 +53,14 @@
 </template>
 
 <script>
+import SkillCard from "./SkillCard.vue";
 import { mapGetters, mapActions } from "vuex";
 
 export default {
+  components: {
+      SkillCard,
+  },
+
   data() {
     return {
       localSkillId: '',
@@ -82,13 +81,29 @@ export default {
       return this.currentUser.skillsToLearn.find(skill => skill._id === skillId) || {};
     },
 
-    filteredSentRequests() {
+    filteredActiveRequests() {
       if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
         return [];
       }
       return this.getSwapRequests.filter(request => {
-        return request.receiverData.skillsToLearn.some(skill => skill._id === this.localSkillId)
-          && request.senderId === this.currentUser._id;
+        return (
+          request.receiverData.skillsToLearn.some(skill => skill._id === this.localSkillId) &&
+          request.senderId === this.currentUser._id &&
+          (request.status === "pending" || request.status === "accepted")
+        );
+      });
+    },
+
+    filteredPastRequests() {
+      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
+        return [];
+      }
+      return this.getSwapRequests.filter(request => {
+        return (
+          request.receiverData.skillsToLearn.some(skill => skill._id === this.localSkillId) &&
+          request.senderId === this.currentUser._id &&
+          (request.status !== "pending" && request.status !== "accepted")
+        );
       });
     },
   },
@@ -96,7 +111,6 @@ export default {
   methods: {
     ...mapActions('swapRequests', ['deleteSwapRequest', 'getAllSwapRequests']),
     ...mapActions('user', ['fetchCurrentUser']),
-    ...mapActions('chat', ['createChat']),
 
     async cancelSwapRequest(swapRequestId) {
       try {
@@ -109,7 +123,7 @@ export default {
 
     async openChat(receiverId, requestId) {
       try {
-        await this.createChat({
+        await this.$store.dispatch("chat/createOrGetCurrentChat", {
           receiverId: receiverId,
           senderId: this.currentUser._id,
           swapRequestId: requestId,
