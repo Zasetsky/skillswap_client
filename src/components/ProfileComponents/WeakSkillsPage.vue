@@ -43,7 +43,9 @@
           :sentRequest="pastRequest"
           :is-past-request="true"
           @open-chat="openChat"
-        ></skill-card>
+        >
+          <strong>Статус:</strong> {{ pastRequest.status }}
+        </skill-card>
         <v-card v-if="filteredPastRequests.length === 0">
           <v-card-text>Здесь будет информация об активной сделке</v-card-text>
         </v-card>

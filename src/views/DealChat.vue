@@ -89,9 +89,12 @@ export default {
         return false;
       }
 
-      const isCompleted = currentDeal.status === 'completed';
+      // Проверка завершенности форм
+      const isFormCompleted = currentDeal.form && currentDeal.form.isCompleted;
+      const isForm2Completed = currentDeal.form2 && currentDeal.form2.isCompleted;
 
-      if (isCompleted) {
+      // Если одна из форм завершена, то кнопка не должна отображаться
+      if (isFormCompleted || isForm2Completed) {
         return false;
       }
 
@@ -102,12 +105,9 @@ export default {
       const cancellationStatus = currentDeal.cancellation.status;
       const isRejected = cancellationStatus === 'rejected';
 
-      // Проверка завершенности форм
-      const isFormCompleted = currentDeal.form && currentDeal.form.isCompleted;
-      const isForm2Completed = currentDeal.form2 && currentDeal.form2.isCompleted;
+      const isCompleted = currentDeal.status === 'completed';
 
-      // Если одна из форм завершена, то кнопка не должна отображаться
-      if (isFormCompleted || isForm2Completed) {
+      if (isCompleted) {
         return false;
       }
 
@@ -129,9 +129,9 @@ export default {
         return true;
       }
 
-      const isRejected = currentDeal.continuation.status === 'false';
+      const isRejectedOrApproved = currentDeal.continuation.status === 'false' || currentDeal.continuation.status === 'approved';
 
-      return isRejected;
+      return isRejectedOrApproved;
     },
 
     isCancelButtonCloseToDeadline() {
@@ -173,15 +173,13 @@ export default {
       const isSender = swapRequest.senderId === this.currentUser._id;
       const isReceiver = swapRequest.receiverId === this.currentUser._id;
 
-      const isHalfCompleted = deal.status === 'half_completed' || deal.status === 'half_completed_confirmed_reschedule';
-
       const isForm1Completed = deal.completedForm.includes('form');
       const isForm2Completed = deal.completedForm.includes('form2');
 
       const showForm1Button = isForm1Completed && isSender && !this.isReviewSubmitted('form');
       const showForm2Button = isForm2Completed && isReceiver && !this.isReviewSubmitted('form2');
 
-      return (isHalfCompleted || deal.status === 'completed') && (showForm1Button || showForm2Button);
+      return showForm1Button || showForm2Button;
     }
   },
 

@@ -6,7 +6,8 @@
           {{ message.content }}
         </template>
         <template v-else-if="message.type === 'details'">
-          <b>{{ message.content }}</b>
+          <b v-if="!isMyMessage">{{ message.content }}</b>
+          <b v-if="isMyMessage">Вы отвергли предложение о продолжении.</b>
         </template>
         <template v-else-if="message.type === 'deal_proposal'">
           Предложены параметры сделки: 
@@ -53,8 +54,8 @@
         </template>
         <template v-else-if="message.type === 'continuation_request'">
           Запрос на продолжение сделки:
-          <v-btn v-if="!isMyMessage && hasContinuationRequest" color="success" small @click="$emit('approve-continuation')">Подтвердить</v-btn>
-          <v-btn v-if="!isMyMessage && hasContinuationRequest" color="error" small @click="$emit('reject-continuation')">Отклонить</v-btn>
+          <v-btn v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest" color="success" small @click="$emit('approve-continuation')">Подтвердить</v-btn>
+          <v-btn v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest" color="error" small @click="$emit('reject-continuation')">Отклонить</v-btn>
         </template>
       </v-card-text>
     </v-card>
@@ -116,6 +117,15 @@ export default {
         .find((msg) => msg.type === 'deal_proposal');
       return this.message._id === lastDealProposal._id;
     },
+
+    isLastContinuationRequest() {
+      const lastContinuationRequest = this.allMessages
+        .slice()
+        .reverse()
+        .find((msg) => msg.type === 'continuation_request');
+      return this.message._id === lastContinuationRequest._id;
+    },
+
   },
 
   methods: {

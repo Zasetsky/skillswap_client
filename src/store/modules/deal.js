@@ -146,21 +146,6 @@ const actions = {
   //   socket.emit("rejectCancellation", { dealId });
   // },
 
-  // продолжение
-  requestContinuation({ commit }, dealId) {
-    const socket = getSocket();
-
-    socket.emit("requestContinuation", dealId);
-
-    socket.on("continuationRequested", (deal) => {
-      commit("SET_CURRENT_DEAL", deal);
-    });
-  
-    socket.on("error", (error) => {
-      console.error("Error during send request continuation deal:", error.message);
-    });
-  },
-
     // approveCancellation({ commit }, { dealId }) {
   //   const socket = getSocket();
 
@@ -173,6 +158,21 @@ const actions = {
   //   socket.emit("rejectCancellation", { dealId });
   // },
 
+  // продолжение
+  requestContinuation({ commit }, dealId) {
+    const socket = getSocket();
+
+    socket.emit("requestContinuation", dealId);
+
+    socket.on("continuationRequested", (deal) => {
+      commit("SET_CURRENT_DEAL", deal);
+    });
+  
+    socket.on("error", (error) => {
+      console.error("Error during sending request continuation deal:", error.message);
+    });
+  },
+
   rejectContinuation({ commit }, { dealId }) {
     const socket = getSocket();
 
@@ -183,7 +183,21 @@ const actions = {
     });
 
     socket.on("error", (error) => {
-      console.error("Error during reject request continuation deal:", error.message);
+      console.error("Error during rejecting request continuation deal:", error.message);
+    });
+  },
+
+  approveContinuation({ commit }, { dealId }) {
+    const socket = getSocket();
+
+    socket.emit("approveContinuation", { dealId });
+
+    socket.on("continuationApproved", (deal) => {
+      commit("SET_CURRENT_DEAL", deal);
+    });
+
+    socket.on("error", (error) => {
+      console.error("Error during approving request continuation deal:", error.message);
     });
   },
 };
