@@ -41,7 +41,6 @@
           v-for="pastRequest in filteredPastRequests"
           :key="pastRequest._id"
           :sentRequest="pastRequest"
-          :is-past-request="true"
           @open-chat="openChat"
         >
           <strong>Статус:</strong> {{ pastRequest.status }}
@@ -87,10 +86,17 @@ export default {
       if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
         return [];
       }
-      return this.getSwapRequests.filter(request => {
+
+      // Найти навык с localSkillId и isActive в списке skillsToLearn текущего пользователя
+      const currentUserActiveSkill = this.currentUser.skillsToLearn.find(
+        (skill) => skill._id === this.localSkillId && skill.isActive
+      );
+
+      return this.getSwapRequests.filter((request) => {
         return (
-          request.receiverData.skillsToLearn.some(skill => skill._id === this.localSkillId) &&
-          request.senderId === this.currentUser._id &&
+          (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
+          request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
+          currentUserActiveSkill &&
           (request.status === "pending" || request.status === "accepted")
         );
       });
@@ -103,7 +109,6 @@ export default {
       return this.getSwapRequests.filter(request => {
         return (
           request.receiverData.skillsToLearn.some(skill => skill._id === this.localSkillId) &&
-          request.senderId === this.currentUser._id &&
           (request.status !== "pending" && request.status !== "accepted")
         );
       });

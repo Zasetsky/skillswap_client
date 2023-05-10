@@ -2,6 +2,7 @@
   <v-card
     :key="request._id || sentRequest._id"
     class="mb-4 skill_card"
+    :class="{skill_card_pending: request.status === 'pending' || sentRequest.status === 'pending'}"
     @click="handleClick"
   >
     <v-card-text>
@@ -38,10 +39,6 @@ export default {
       type: Object,
       default: () => ({}),
     },
-    isPastRequest: {
-      type: Boolean,
-      default: false,
-    },
   },
   computed: {
     getAvatarUrl() {
@@ -73,6 +70,10 @@ export default {
 .skill_card {
   cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.skill_card_pending {
+  cursor: default;
 }
 
 .skill_card:hover {

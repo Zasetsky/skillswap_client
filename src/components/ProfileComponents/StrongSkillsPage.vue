@@ -120,7 +120,11 @@ export default {
         return [];
       }
       return this.getSwapRequests.filter(request => {
-        return (request.status === "accepted" || request.status === "active") && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) && request.receiverId === this.currentUser._id;
+        return (
+          (request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) ||
+          request.senderData.skillsToTeach.some(skill => skill._id === this.localSkillId)) &&
+          request.status === "accepted"
+        );
       });
     },
 
