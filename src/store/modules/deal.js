@@ -103,19 +103,22 @@ const actions = {
   },
 
   confirmDeal({ commit }, dealId) {
-    const socket = getSocket();
-
-    socket.emit("confirmDeal", dealId);
-
-    socket.on("dealConfirmed", (deal) => {
-      commit("SET_CURRENT_DEAL", deal);
-    });
-
-    socket.on("error", (error) => {
-    console.error("Error confirming deal:", error.message);
+    return new Promise((resolve, reject) => {
+      const socket = getSocket();
+  
+      socket.emit("confirmDeal", dealId);
+  
+      socket.on("dealConfirmed", (deal) => {
+        commit("SET_CURRENT_DEAL", deal);
+        resolve(deal);
+      });
+  
+      socket.on("error", (error) => {
+        console.error("Error confirming deal:", error.message);
+        reject(error);
+      });
     });
   },
-
 
   // Отмена
   requestCancellation({ commit }, { dealId, reason, timestamp }) {

@@ -340,11 +340,13 @@ export default {
 
     getMeetingDetails() {
       const deal = this.getCurrentDeal;
+      if (deal.form && deal.form2) {
+        // Извлекаем дату и время из форм
+        const form1DateTime = new Date(`${deal.form.meetingDate}T${deal.form.meetingTime}`);
+        const form2DateTime = new Date(`${deal.form2.meetingDate}T${deal.form2.meetingTime}`);
 
-      if (deal.update && deal.update.form) {
-        return deal.update.form;
-      } else if (deal.form) {
-        return deal.form;
+        // Возвращаем форму с ближайшей датой и временем
+        return form1DateTime < form2DateTime ? deal.form : deal.form2;
       } else {
         return null;
       }
@@ -352,16 +354,15 @@ export default {
 
     async confirmDeal() {
       try {
+        await this.$store.dispatch("deal/confirmDeal", {
+          dealId: this.getCurrentDeal._id,
+        });
+
         const meetingDetails = this.getMeetingDetails();
 
         if (meetingDetails) {
           await this.sendMessage("meeting_details", {
-            meetingLink: "your-meeting-link",
-            password: "your-password",
             ...meetingDetails,
-          });
-          await this.$store.dispatch("deal/confirmDeal", {
-            dealId: this.getCurrentDeal._id,
           });
         } else {
           console.warn("No meeting details found");
@@ -369,7 +370,7 @@ export default {
       } catch (error) {
         console.error("Error confirming deal:", error);
       }
-    },
+    }
   },
 
   watch: {

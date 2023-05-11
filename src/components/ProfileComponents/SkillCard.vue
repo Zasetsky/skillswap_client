@@ -29,6 +29,8 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+
 export default {
   props: {
     request: {
@@ -41,6 +43,8 @@ export default {
     },
   },
   computed: {
+    ...mapGetters("auth", ["currentUser"]),
+
     getAvatarUrl() {
       if (this.request.senderData) {
         return this.request.senderData.avatar || 'https://via.placeholder.com/64';
@@ -61,7 +65,16 @@ export default {
   },
   methods: {
     handleClick() {
-      this.$emit('open-chat', this.request.senderId || this.sentRequest.senderId, this.request._id || this.sentRequest._id);
+      let userId;
+      if (this.currentUser._id === this.request.senderId || this.currentUser._id === this.sentRequest.senderId) {
+        // Current user is the sender, so we want the receiver's ID
+        userId = this.request.receiverId || this.sentRequest.receiverId;
+      } else {
+        // Current user is the receiver, so we want the sender's ID
+        userId = this.request.senderId || this.sentRequest.senderId;
+      }
+      
+      this.$emit('open-chat', userId, this.request._id || this.sentRequest._id);
     },
   }
 };

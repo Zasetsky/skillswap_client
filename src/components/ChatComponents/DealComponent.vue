@@ -22,21 +22,22 @@
           <v-tab-item :value="0">
             <deal-form
               :highlight-mismatched-fields="highlightMismatchedFields.form1"
-              :form="form1"
+              :form="{...form1, meetingDuration: form1MeetingDuration}"
               @update:form="form1 = $event"
+              @update:meetingDuration="form1MeetingDuration = $event"
             />
           </v-tab-item>
           <v-tab-item :value="1">
             <deal-form
               :highlight-mismatched-fields="highlightMismatchedFields.form2"
-              :form="{...form2, meetingDuration: form1.meetingDuration}"
+              :form="{...form2, meetingDuration: form2MeetingDuration}"
               @update:form="form2 = $event"
+              @update:meetingDuration="form2MeetingDuration = $event"
             />
           </v-tab-item>
         </v-tabs-items>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <!-- <v-btn color="blue darken-1" text @click="close">Закрыть</v-btn> -->
           <v-btn
             v-if="sendButtonState.visible && (isFormChanged || !isConfirmButtonVisible)"
             color="blue darken-1"
@@ -105,11 +106,13 @@ export default {
       isSubmitting: false,
       actionButtonText: "",
       activeTab: 0,
+      skillsToTeach: null,
+      skillsToLearn: null,
       tabs: [],
+      commonMeetingDuration: null,
       form1: {
         meetingDate: null,
         meetingTime: null,
-        meetingDuration: null,
       },
       form2: {
         meetingDate: null,
@@ -123,6 +126,24 @@ export default {
     ...mapGetters("chat", ["getCurrentChat"]),
     ...mapGetters("swapRequests", ["getSwapRequests"]),
     ...mapGetters("deal", ["getCurrentDeal"]),
+
+    form1MeetingDuration: {
+      get() {
+        return this.commonMeetingDuration;
+      },
+      set(value) {
+        this.commonMeetingDuration = value;
+      }
+    },
+
+    form2MeetingDuration: {
+      get() {
+        return this.commonMeetingDuration;
+      },
+      set(value) {
+        this.commonMeetingDuration = value;
+      }
+    },
 
     highlightMismatchedFields() {
       const deal = this.getCurrentDeal;
@@ -349,15 +370,15 @@ export default {
         swapRequest.senderData &&
         swapRequest.receiverData
       ) {
-        const skillsToTeach =
+        this.skillsToTeach =
           swapRequest.senderData.skillsToTeach?.[0]?.skill ||
           swapRequest.receiverData.skillsToLearn?.[0]?.skill;
-        const skillsToLearn =
+        this.skillsToLearn =
           swapRequest.senderData.skillsToLearn?.[0]?.skill ||
           swapRequest.receiverData.skillsToTeach?.[0]?.skill;
 
-        if (skillsToTeach && skillsToLearn) {
-          this.tabs = [skillsToLearn, skillsToTeach];
+        if (this.skillsToTeach && this.skillsToLearn) {
+          this.tabs = [this.skillsToLearn, this.skillsToTeach];
           this.activeTab = 0;
         } else {
           console.error("Не удалось найти данные навыков");
@@ -385,12 +406,12 @@ export default {
         formData1: {
           meetingDate: this.form1.meetingDate,
           meetingTime: this.form1.meetingTime,
-          meetingDuration: this.form1.meetingDuration,
+          meetingDuration: this.commonMeetingDuration
         },
         formData2: {
           meetingDate: this.form2.meetingDate,
           meetingTime: this.form2.meetingTime,
-          meetingDuration: this.form1.meetingDuration,
+          meetingDuration: this.commonMeetingDuration
         },
       });
 

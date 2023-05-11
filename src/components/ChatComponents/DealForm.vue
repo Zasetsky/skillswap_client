@@ -41,7 +41,7 @@
         type="number"
         min="30"
         :class="{ 'highlight-field': highlightMismatchedFields.meetingDuration }"
-        @input="updateForm('meetingDuration', localForm.meetingDuration)"
+        @input="updateMeetingDuration"
       ></v-text-field>
     </v-col>
   </v-row>
@@ -73,6 +73,9 @@ export default {
     updateForm(key, value) {
       this.$emit("update:form", { ...this.form, [key]: value });
     },
+    updateMeetingDuration() {
+      this.$emit('update:meetingDuration', this.localForm.meetingDuration);
+    }
   },
   watch: {
     form: {

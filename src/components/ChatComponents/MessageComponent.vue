@@ -37,8 +37,7 @@
           </v-btn>
         </template>
         <template v-else-if="message.type === 'meeting_details'">
-          Ссылка: <b><a :href="message.content.meetingLink" target="_blank">{{ message.content.meetingLink }}</a></b><br>
-          Пароль: <b>{{ message.content.password }}</b><br>
+          Навык: <b>{{ message.content.skill }}</b><br>
           Дата встречи: <b>{{ message.content.meetingDate }}</b><br>
           Время встречи: <b>{{ message.content.meetingTime }}</b><br>
           Продолжительность встречи: <b>{{ message.content.meetingDuration }}</b>
