@@ -237,7 +237,7 @@ export default {
       return (
         this.form1.meetingDate &&
         this.form1.meetingTime &&
-        this.form1.meetingDuration &&
+        this.commonMeetingDuration &&
         this.form2.meetingDate &&
         this.form2.meetingTime
       );
@@ -406,12 +406,14 @@ export default {
         formData1: {
           meetingDate: this.form1.meetingDate,
           meetingTime: this.form1.meetingTime,
-          meetingDuration: this.commonMeetingDuration
+          meetingDuration: this.commonMeetingDuration,
+          skill: this.skillsToLearn
         },
         formData2: {
           meetingDate: this.form2.meetingDate,
           meetingTime: this.form2.meetingTime,
-          meetingDuration: this.commonMeetingDuration
+          meetingDuration: this.commonMeetingDuration,
+          skill: this.skillsToTeach
         },
       });
 

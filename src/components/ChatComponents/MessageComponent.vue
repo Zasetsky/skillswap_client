@@ -37,7 +37,7 @@
           </v-btn>
         </template>
         <template v-else-if="message.type === 'meeting_details'">
-          Навык: <b>{{ message.content.skill }}</b><br>
+          Навык: <b>{{ message.content.skill }}</b><br><br>
           Дата встречи: <b>{{ message.content.meetingDate }}</b><br>
           Время встречи: <b>{{ message.content.meetingTime }}</b><br>
           Продолжительность встречи: <b>{{ message.content.meetingDuration }}</b>
