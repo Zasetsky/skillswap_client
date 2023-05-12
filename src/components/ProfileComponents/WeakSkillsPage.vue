@@ -87,9 +87,8 @@ export default {
         return [];
       }
 
-      // Найти навык с localSkillId и isActive в списке skillsToLearn текущего пользователя
       const currentUserActiveSkill = this.currentUser.skillsToLearn.find(
-        (skill) => skill._id === this.localSkillId && skill.isActive
+        (skill) => skill._id === this.localSkillId && !skill.isActive
       );
 
       return this.getSwapRequests.filter((request) => {
@@ -106,17 +105,24 @@ export default {
       if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
         return [];
       }
+
+      const currentUserActiveSkill = this.currentUser.skillsToLearn.find(
+        (skill) => skill._id === this.localSkillId && skill.isActive
+      );
+
       return this.getSwapRequests.filter(request => {
         return (
-          request.receiverData.skillsToLearn.some(skill => skill._id === this.localSkillId) &&
-          (request.status !== "pending" && request.status !== "accepted")
+          (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
+          request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
+          currentUserActiveSkill &&
+          (request.status !== "pending" || request.status !== "accepted")
         );
       });
     },
   },
 
   methods: {
-    ...mapActions('swapRequests', ['deleteSwapRequest', 'getAllSwapRequests']),
+    ...mapActions('swapRequests', ['deleteSwapRequest', 'getAllSwapRequests', 'listenForSwapRequestUpdates']),
     ...mapActions('user', ['fetchCurrentUser']),
 
     async cancelSwapRequest(swapRequestId) {
@@ -161,6 +167,7 @@ export default {
         await this.fetchCurrentUser();
         await this.getAllSwapRequests();
         this.localSkillId = localStorage.getItem("weakSkillId");
+        await this.listenForSwapRequestUpdates();
       } catch (error) {
         console.error('Error creating swap request:', error);
     }

@@ -133,7 +133,11 @@ export default {
         return [];
       }
       return this.getSwapRequests.filter(request => {
-        return ["rejected", "cancelled", "completed"].includes(request.status) && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) && request.receiverId === this.currentUser._id;
+        return (
+          (request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) ||
+          request.senderData.skillsToTeach.some(skill => skill._id === this.localSkillId)) &&
+          ["rejected", "cancelled", "completed"].includes(request.status)
+        );
       });
     },
 
@@ -144,6 +148,7 @@ export default {
         await this.fetchCurrentUser();
         this.localSkillId = localStorage.getItem("strongSkillId");
         await this.getAllSwapRequests();
+        await this.listenForSwapRequestUpdates();
       } catch (error) {
         console.error('Error creating swap request:', error);
     }
@@ -151,7 +156,7 @@ export default {
 
   methods: {
     ...mapActions('user', ['fetchCurrentUser']),
-    ...mapActions('swapRequests', ['getAllSwapRequests']),
+    ...mapActions('swapRequests', ['getAllSwapRequests', 'listenForSwapRequestUpdates']),
 
     async acceptSwapRequest(swapRequestId) {
       try {

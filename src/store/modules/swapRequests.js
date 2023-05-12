@@ -100,6 +100,14 @@ const actions = {
       }
     });
   },
+
+  listenForSwapRequestUpdates({ commit }) {
+    const socket = getSocket();
+
+    socket.on("swapRequestUpdated", (updatedSwapRequest) => {
+      commit("updateSwapRequest", updatedSwapRequest);
+    });
+  },
 };
 
 const mutations = {
@@ -108,6 +116,15 @@ const mutations = {
   },
   setCurrentSwapRequest(state, swapRequest) {
     state.currentSwapRequest = swapRequest;
+  },
+  updateSwapRequest(state, updatedSwapRequest) {
+    const index = state.swapRequests.findIndex((request) => request._id === updatedSwapRequest._id);
+
+    if (index !== -1) {
+      state.swapRequests.splice(index, 1, updatedSwapRequest);
+    } else {
+      console.warn("Swap request to update not found in state");
+    }
   },
 };
 
