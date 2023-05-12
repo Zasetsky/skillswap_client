@@ -49,6 +49,18 @@ const actions = {
     });
   },
 
+  listenForDealUpdates({ commit }) {
+    const socket = getSocket();
+
+    socket.on('dealUpdated', (updatedDeal) => {
+      commit('SET_CURRENT_DEAL', updatedDeal);
+    });
+
+    socket.on('error', (error) => {
+      console.error('Error while listening for deal updates:', error.message);
+    });
+  },
+
   updateDeal({ commit }, { dealId, formData1, formData2 }) {
       const data = { dealId, formData1, formData2 };
 

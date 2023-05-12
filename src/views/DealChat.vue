@@ -391,6 +391,7 @@ export default {
       });
       await this.$store.dispatch("swapRequests/getCurrentSwapRequest", this.getCurrentDeal.swapRequestId);
       await this.$store.dispatch("review/getCurrentDealReviews", this.getCurrentDeal._id);
+      await this.$store.dispatch("deal/listenForDealUpdates");
 
       this.$nextTick(() => {
         this.scrollToBottom();
