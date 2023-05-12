@@ -1,5 +1,6 @@
 import axios from 'axios';
 import store from '@/store';
+import { getSocket } from "../../soket";
 
 const API_URL = 'http://localhost:3000/api/profile'
 
@@ -113,6 +114,14 @@ const actions = {
     } catch (error) {
       console.error('Error fetching current user:', error);
     }
+  },
+
+  listenForUserUpdates() {
+    const socket = getSocket();
+
+    socket.on("userUpdated", (updatedUser) => {
+      store.commit('auth/setUser', updatedUser, { root: true });
+    });
   },
 
 };

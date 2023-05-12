@@ -79,7 +79,9 @@ export default {
       }
 
       const skillId = this.localSkillId;
-      return this.currentUser.skillsToLearn.find(skill => skill._id === skillId) || {};
+      const weakSkill = this.currentUser.skillsToLearn.find(skill => skill._id === skillId) || {};
+
+      return weakSkill;
     },
 
     filteredActiveRequests() {
@@ -87,18 +89,20 @@ export default {
         return [];
       }
 
-      const currentUserActiveSkill = this.currentUser.skillsToLearn.find(
-        (skill) => skill._id === this.localSkillId && !skill.isActive
+      const currentActiveSkill = this.currentUser.skillsToLearn.find(
+        (skill) => skill._id === this.localSkillId && skill.isActive
       );
 
-      return this.getSwapRequests.filter((request) => {
+      const filteredRequests = this.getSwapRequests.filter((request) => {
         return (
           (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
           request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
-          currentUserActiveSkill &&
+          currentActiveSkill &&
           (request.status === "pending" || request.status === "accepted")
         );
       });
+
+      return filteredRequests;
     },
 
     filteredPastRequests() {
@@ -106,24 +110,26 @@ export default {
         return [];
       }
 
-      const currentUserActiveSkill = this.currentUser.skillsToLearn.find(
-        (skill) => skill._id === this.localSkillId && skill.isActive
+      const currentNotActiveSkill = this.currentUser.skillsToLearn.find(
+        (skill) => skill._id === this.localSkillId && !skill.isActive
       );
 
-      return this.getSwapRequests.filter(request => {
+      const filteredRequests = this.getSwapRequests.filter(request => {
         return (
           (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
           request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
-          currentUserActiveSkill &&
+          currentNotActiveSkill &&
           (request.status !== "pending" || request.status !== "accepted")
         );
       });
+  
+      return filteredRequests;
     },
   },
 
   methods: {
     ...mapActions('swapRequests', ['deleteSwapRequest', 'getAllSwapRequests', 'listenForSwapRequestUpdates']),
-    ...mapActions('user', ['fetchCurrentUser']),
+    ...mapActions('user', ['fetchCurrentUser', 'listenForUserUpdates']),
 
     async cancelSwapRequest(swapRequestId) {
       try {
@@ -164,10 +170,12 @@ export default {
 
   async mounted() {
     try {
-        await this.fetchCurrentUser();
-        await this.getAllSwapRequests();
-        this.localSkillId = localStorage.getItem("weakSkillId");
-        await this.listenForSwapRequestUpdates();
+      this.localSkillId = localStorage.getItem("weakSkillId");
+
+      await this.fetchCurrentUser();
+      await this.getAllSwapRequests();
+      await this.listenForSwapRequestUpdates();
+      await this.listenForUserUpdates();
       } catch (error) {
         console.error('Error creating swap request:', error);
     }

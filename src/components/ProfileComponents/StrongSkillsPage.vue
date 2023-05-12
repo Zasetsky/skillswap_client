@@ -145,9 +145,11 @@ export default {
 
   async created() {
     try {
-        await this.fetchCurrentUser();
         this.localSkillId = localStorage.getItem("strongSkillId");
+
+        await this.fetchCurrentUser();
         await this.getAllSwapRequests();
+        await this.listenForUserUpdates();
         await this.listenForSwapRequestUpdates();
       } catch (error) {
         console.error('Error creating swap request:', error);
@@ -155,7 +157,7 @@ export default {
   },
 
   methods: {
-    ...mapActions('user', ['fetchCurrentUser']),
+    ...mapActions('user', ['fetchCurrentUser', 'listenForUserUpdates']),
     ...mapActions('swapRequests', ['getAllSwapRequests', 'listenForSwapRequestUpdates']),
 
     async acceptSwapRequest(swapRequestId) {
