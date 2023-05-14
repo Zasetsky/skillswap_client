@@ -392,12 +392,16 @@ export default {
 
     submitForm() {
       // Проверяем, заполнены ли обе формы
-      if (!this.form1.meetingDate || !this.form1.meetingTime || !this.form1.meetingDuration) {
+      if (!this.form1.meetingDate || !this.form1.meetingTime) {
         alert('Пожалуйста, заполните все поля для первой формы');
         return;
       }
       if (!this.form2.meetingDate || !this.form2.meetingTime) {
         alert('Пожалуйста, заполните все поля для второй формы');
+        return;
+      }
+      if (!this.commonMeetingDuration) {
+        alert('Пожалуйста, заполните продолжительность сделки');
         return;
       }
 
@@ -461,16 +465,20 @@ export default {
           if (newValue.status === "pending_update") {
             this.fillForm(this.form1, newValue.update.form);
             this.fillForm(this.form2, newValue.update.form2);
+            this.commonMeetingDuration = newValue.update.form.meetingDuration;
           } else if (newValue.status === "reschedule_offer" || newValue.status === "reschedule_offer_update") {
             this.fillForm(this.form1, newValue.reschedule.form);
             this.fillForm(this.form2, newValue.reschedule.form2);
+            this.commonMeetingDuration = newValue.reschedule.form.meetingDuration;
           } else {
             this.fillForm(this.form1, newValue.form || {});
             this.fillForm(this.form2, newValue.form2 || {});
+            this.commonMeetingDuration = newValue.form.meetingDuration || null;
           }
         } else {
           this.fillForm(this.form1, {});
           this.fillForm(this.form2, {});
+          this.commonMeetingDuration = null;
         }
       },
       deep: true,
@@ -488,6 +496,7 @@ export default {
     } catch (error) {
       console.error(error);
     }
+    console.log(this.getCurrentDeal);
   },
 };
 </script>
