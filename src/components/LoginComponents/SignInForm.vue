@@ -131,7 +131,11 @@ export default {
           this.$v.$reset();
 
           // Обработка входа, например, перенаправление на другую страницу
-          this.$router.push('/profile_setup'); // Измените на маршрут, на который хотите перенаправить пользователя после входа
+          if (this.$store.state.auth.user.isPreSetup) {
+            this.$router.push('/home');
+          } else {
+            this.$router.push('/profile_setup');
+          }
 
         } catch (error) {
           // Обработка ошибок входа, например, показ сообщения об ошибке

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
+import store from '@/store';
 import { connectSocket, getSocket } from "../../soket";
 
 const API_URL = 'http://localhost:3000/api/auth'; 
@@ -50,10 +51,6 @@ const actions = {
       // Подключаем сокет после успешной регистрации
       connectSocket(token);
 
-      // Вызываем событие user_online
-      const socket = getSocket();
-      socket.emit('user_online');
-
       return response.data;
     } catch (error) {
       console.error('Error during registration:', error);
@@ -81,10 +78,6 @@ const actions = {
       // Подключаем сокет после успешной авторизации
       connectSocket(token);
 
-      // Вызываем событие user_online
-      const socket = getSocket();
-      socket.emit('user_online');
-
       return response.data;
     } catch (error) {
       console.error('Error during login:', error);
@@ -93,13 +86,20 @@ const actions = {
   },
 
   logout({ commit }) {
-    // Удаление токена из localStorage и очистка состояния
+    // Очистка состояния модуля авторизации
     localStorage.removeItem('token');
-    commit('logout');
-
+    commit('auth/logout', null, { root: true });
+    store.commit('chat/logout', null, { root: true });
+    store.commit('deal/logout', null, { root: true });
+    store.commit('matching/logout', null, { root: true });
+    store.commit('review/logout', null, { root: true });
+    store.commit('skills/logout', null, { root: true });
+    store.commit('swapRequests/logout', null, { root: true });
+    store.commit('user/logout', null, { root: true });
+  
     const socket = getSocket();
     socket.disconnect();
-
+  
     // Удаление заголовка авторизации для всех будущих запросов
     delete axios.defaults.headers.common['Authorization'];
   },
@@ -124,10 +124,6 @@ const actions = {
 
         // Подключаем сокет после автоматической авторизации
         connectSocket(token);
-
-        // Вызываем событие user_online
-        const socket = getSocket();
-        socket.emit('user_online');
 
         commit('setUser', response.data.user);
 

@@ -119,6 +119,11 @@ const mutations = {
       state.chats[chatIndex].deal = deal;
     }
   },
+
+  logout(state) {
+    state.currentChat = null;
+    state.chats = [];
+  },
 };
 
 export default {

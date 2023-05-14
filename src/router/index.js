@@ -14,7 +14,7 @@ const router = new Router({
       path: '/',
       name: 'Login',
       component: () => import('@/views/LoginPage.vue'),
-      meta: { public: true },
+      meta: { requiresAuth: false },
     },
     {
       path: '/profile_setup',
@@ -71,7 +71,7 @@ const router = new Router({
   ],
 })
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach((to, from, next) => {
   const token = store.state.auth.token;
   let loggedIn = false;
   if (token) {
@@ -84,25 +84,33 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const isPublic = to.matched.some(record => record.meta.public);
-  const isProfileSetup = store.state.auth.user?.availability;
+  const isProfilePresetup = store.state.auth.user?.isPreSetup;
 
-  try {
-    if (requiresAuth && !loggedIn) {
-      throw new Error('Unauthorized');
-    } else if (isPublic && loggedIn && !isProfileSetup) {
-      await router.push('/profile_setup');
-    } else if (to.name === 'ProfileSetup' && isProfileSetup) {
-      await router.push('/home');
-    } else if (to.name === 'Login' && loggedIn) { // Добавьте эту проверку
-      await router.push('/home');
+  if (!loggedIn && requiresAuth) {
+    next('/');
+  } 
+
+  else if (loggedIn) {
+    if (!isProfilePresetup) {
+      if (to.path !== '/profile_setup') {
+        next({ path: '/profile_setup', replace: true });
+      } else {
+        next();
+      }
     } else {
-      next();
+      if (to.path === '/profile_setup') {
+        next({ path: '/home', replace: true });
+      } else if (to.path === '/') {
+        next({ path: '/home', replace: true });
+      } else {
+        next();
+      }
     }
-  } catch (error) {
-    console.error(error);
-    await router.push('/');
+  } else {
+    next();
   }
 });
+
+
 
 export default router

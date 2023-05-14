@@ -34,6 +34,7 @@ export default {
 
   data() {
     return {
+      isLoading: true,
       computedChats: [],
     };
   },
@@ -68,11 +69,14 @@ export default {
   },
 
   async created() {
+    this.isLoading = true;
     try {
       await this.fetchAllChats();
       await this.getAllSwapRequests();
     } catch (error) {
       console.error("Error getting all chats:", error);
+    } finally {
+      this.isLoading = false;
     }
   },
 

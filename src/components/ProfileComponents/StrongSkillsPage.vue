@@ -1,5 +1,8 @@
 <template>
-  <v-container>
+  <v-container v-if="isLoading">
+    Загрузка...
+  </v-container>
+  <v-container v-else>
     <v-row>
       <v-col cols="12">
         <h2>{{ strongSkillObject.skill || strongSkillObject.category || strongSkillObject.subCategory }}</h2>
@@ -86,6 +89,7 @@ export default {
 
   data() {
     return {
+      isLoading: true,
       localSkillId: '',
       selectedSkillObject: {},
     }
@@ -144,15 +148,18 @@ export default {
   },
 
   async created() {
+    this.isLoading = true;
     try {
-        this.localSkillId = localStorage.getItem("strongSkillId");
+      this.localSkillId = localStorage.getItem("strongSkillId");
 
-        await this.fetchCurrentUser();
-        await this.getAllSwapRequests();
-        await this.listenForUserUpdates();
-        await this.listenForSwapRequestUpdates();
-      } catch (error) {
-        console.error('Error creating swap request:', error);
+      await this.fetchCurrentUser();
+      await this.getAllSwapRequests();
+      await this.listenForUserUpdates();
+      await this.listenForSwapRequestUpdates();
+    } catch (error) {
+      console.error('Error creating swap request:', error);
+    } finally {
+      this.isLoading = false;
     }
   },
 

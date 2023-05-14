@@ -162,7 +162,8 @@ export default {
     async goToNextStep() {
       if (this.weakSkills.length >= this.minSkillsRequired) {
         await this.addWeakSkills(this.weakSkills);
-        this.$emit("go-to-next-step");
+        await this.$store.dispatch('user/isPreSetupToggle');
+        this.$emit('finish-profile-setup');
       }
     },
 

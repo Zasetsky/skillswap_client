@@ -232,6 +232,11 @@ const mutations = {
   SET_DEALS(state, deals) {
     state.deals = deals;
   },
+
+  logout(state) {
+    state.deals = [];
+    state.currentDeal = null;
+  },
 };
 
 export default {

@@ -50,6 +50,10 @@ const mutations = {
     SET_CURRENT_DEAL_REVIEWS(state, reviews) {
         state.currentReviews = reviews;
     },
+
+    logout(state) {
+        state.currentReviews = [];
+    },
 }
 
 

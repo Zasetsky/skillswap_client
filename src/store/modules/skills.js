@@ -72,6 +72,10 @@ const mutations = {
   setAvailableSkills(state, availableSkills) {
     state.availableSkills = availableSkills;
   },
+
+  logout(state) {
+    state.availableSkills = [];
+},
 };
 
 export default {

@@ -31,7 +31,7 @@ export default {
   methods: {
     async saveAndGoToNextStep() {
       console.log('exchangePreference before dispatch:', this.exchangePreference);
-      await this.$store.dispatch('user/updateUserAvailability', this.exchangePreference);
+      await this.$store.dispatch('user/isPreSetupToggle');
       this.$emit('finish-profile-setup');
     },
   },

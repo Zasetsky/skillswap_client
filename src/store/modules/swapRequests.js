@@ -68,20 +68,16 @@ const actions = {
   },
 
   async getAllSwapRequests({ commit }) {
-    return new Promise((resolve, reject) => {
       try {
         const socket = getSocket();
 
         socket.emit("getAllSwapRequests");
         socket.on("allSwapRequests", (swapRequests) => {
           commit("setSwapRequests", swapRequests);
-          resolve(swapRequests);
         });
       } catch (error) {
         console.error("Error fetching all swap requests:", error);
-        reject(error);
       }
-    });
   },
 
   async getCurrentSwapRequest({ commit }, swapRequestId) {
@@ -125,6 +121,11 @@ const mutations = {
     } else {
       console.warn("Swap request to update not found in state");
     }
+  },
+
+  logout(state) {
+    state.swapRequests = [];
+    state.currentSwapRequest = null;
   },
 };
 

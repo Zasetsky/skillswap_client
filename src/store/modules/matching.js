@@ -25,6 +25,10 @@ const actions = {
 
 const mutations = {
   setMatchingUsers: (state, matchingUsers) => (state.matchingUsers = matchingUsers),
+
+  logout(state) {
+    state.matchingUsers = [];
+  },
 };
 
 

@@ -74,21 +74,12 @@ const actions = {
 
   // Обновление доступности для обмена
 
-  async updateUserAvailability(context, userChoice) {
+  async isPreSetupToggle() {
     try {
-      console.log('Sending availability update request:', userChoice);
-      const response = await axios.post(`${API_URL}/availability`, {
-        availability: userChoice,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.post(`${API_URL}/isPreSetup`);
   
-      // Обработка ответа сервера
       console.log('Server: ', response.data);
   
-      // Обновление текущего пользователя в состоянии приложения
       store.commit('auth/setUser', response.data.user, { root: true });
     } catch (error) {
       console.error('Error saving availability:', error);
@@ -110,7 +101,7 @@ const actions = {
   async fetchCurrentUser() {
     try {
       const response = await axios.get(`http://localhost:3000/api/auth/user`);
-      store.commit('auth/setUser', response.data.user, { root: true });
+      store.commit('auth/setUser', {...response.data.user}, { root: true });
     } catch (error) {
       console.error('Error fetching current user:', error);
     }
@@ -132,6 +123,11 @@ const mutations = {
   },
   setUserProfile(state, userProfile) {
     state.userProfile = userProfile;
+  },
+
+  logout(state) {
+    state.userProfile = {};
+    state.avatarUrl = null;
   },
 };
 
