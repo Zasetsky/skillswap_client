@@ -138,7 +138,6 @@ export default {
 
     methods: {
         ...mapActions('user', ['fetchUserProfile', 'fetchCurrentUser']),
-        ...mapActions('skills', ['setWeakSkillId']),
         ...mapActions('swapRequests', ['sendSwapRequest', 'deleteSwapRequest', 'getAllSwapRequests']),
 
         async proposeSkillExchange() {
@@ -160,7 +159,7 @@ export default {
             };
             try {
                 await this.sendSwapRequest({ senderId: this.currentUser._id, receiverId: this.localUserId, senderData, receiverData });
-                this.setWeakSkillId(this.mySkillToLearn._id);
+                localStorage.setItem("weakSkillId", this.mySkillToLearn._id);
                 await this.fetchCurrentUser();
                 this.$router.push({ name: 'WeakSkillsPage' });
             } catch (error) {
