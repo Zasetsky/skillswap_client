@@ -96,6 +96,24 @@ const actions = {
       });
     });
   },
+
+  confirmReschedule({ commit }, dealId) {
+    return new Promise((resolve, reject) => {
+      const socket = getSocket();
+  
+      socket.emit("confirmReschedule", dealId);
+  
+      socket.on("rescheduleConfirmed", (deal) => {
+        commit("SET_CURRENT_DEAL", deal);
+        resolve(deal);
+      });
+  
+      socket.on("error", (error) => {
+        console.error("Error confirming reschedule:", error.message);
+        reject(error);
+      });
+    });
+  },  
   
   async getAllDeals({ commit }) {
       return new Promise((resolve, reject) => {

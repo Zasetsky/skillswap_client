@@ -68,6 +68,7 @@
             v-if="showAcceptRejectButtons"
             color="green darken-1"
             text
+            @click="emitConfirmReschedule"
           >
             Принять
           </v-btn>
@@ -408,16 +409,16 @@ export default {
       // Передаем обе формы
       this.$emit('submit-deal-form', {
         formData1: {
+          skill: this.skillsToLearn,
           meetingDate: this.form1.meetingDate,
           meetingTime: this.form1.meetingTime,
           meetingDuration: this.commonMeetingDuration,
-          skill: this.skillsToLearn
         },
         formData2: {
+          skill: this.skillsToTeach,
           meetingDate: this.form2.meetingDate,
           meetingTime: this.form2.meetingTime,
           meetingDuration: this.commonMeetingDuration,
-          skill: this.skillsToTeach
         },
       });
 
@@ -426,6 +427,11 @@ export default {
 
     emitConfirmDeal() {
       this.$emit("confirm-deal");
+      this.dialog = false;
+    },
+
+    emitConfirmReschedule() {
+      this.$emit("confirm-reschedule");
       this.dialog = false;
     },
 
