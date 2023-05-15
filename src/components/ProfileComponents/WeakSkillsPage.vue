@@ -110,16 +110,11 @@ export default {
         return [];
       }
 
-      const currentNotActiveSkill = this.currentUser.skillsToLearn.find(
-        (skill) => skill._id === this.localSkillId && !skill.isActive
-      );
-
       const filteredRequests = this.getSwapRequests.filter(request => {
         return (
           (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
           request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
-          currentNotActiveSkill &&
-          (request.status !== "pending" || request.status !== "accepted")
+          (request.status !== "pending" && request.status !== "accepted")
         );
       });
   

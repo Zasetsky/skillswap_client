@@ -82,6 +82,7 @@ export default {
     async findMatchingUsers() {
       this.matchingUsers = [];
       try {
+        console.log(this.skillToLearn._id);
         const response = await this.fetchMatchingUsers(this.skillToLearn._id);
         this.matchingUsers = response.matchingUsers;
         

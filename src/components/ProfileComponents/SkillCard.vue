@@ -2,7 +2,7 @@
   <v-card
     :key="request._id || sentRequest._id"
     class="mb-4 skill_card"
-    :class="{skill_card_pending: request.status === 'pending' || sentRequest.status === 'pending'}"
+    :class="{skill_card_pending: request.status === 'pending' || sentRequest.status === 'pending' || request.status === 'rejected' || sentRequest.status === 'rejected'}"
     @click="handleClick"
   >
     <v-card-text>
@@ -19,7 +19,7 @@
             {{ skillToTeach.skill }}<span v-if="index < request.senderData.skillsToTeach.length - 1">, </span>
           </span><br>
       </template>
-      <template v-else-if="sentRequest.receiverData">
+      <template v-else-if="sentRequest.receiverData && sentRequest.status !== 'rejected'">
         <strong>Навык для обмена:</strong> {{ sentRequest.status === 'pending' ? '???' : (sentRequest.receiverData.skillsToTeach[0]?.skill ?? '') }}<br>
       </template>
 
@@ -42,27 +42,45 @@ export default {
       default: () => ({}),
     },
   },
+
   computed: {
     ...mapGetters("auth", ["currentUser"]),
 
-    getAvatarUrl() {
-      if (this.request.senderData) {
-        return this.request.senderData.avatar || 'https://via.placeholder.com/64';
-      } else if (this.sentRequest.receiverData) {
-        return this.sentRequest.receiverData.avatar || 'https://via.placeholder.com/64';
+    currentUserId() {
+      return this.currentUser._id;
+    },
+
+    senderData() {
+      return this.request.senderData || this.sentRequest.senderData;
+    },
+
+    receiverData() {
+      return this.request.receiverData || this.sentRequest.receiverData;
+    },
+
+    getUserData() {
+      if (this.currentUserId !== this.request.senderId && this.currentUserId !== this.sentRequest.senderId) {
+        return this.senderData;
       } else {
-        return 'https://via.placeholder.com/64';
+        return this.receiverData;
       }
     },
+
+    getAvatarUrl() {
+      return this.getUserData?.avatar || 'https://via.placeholder.com/64';
+    },
+
     getName() {
-      const firstName = this.request.senderData?.firstName || this.sentRequest.receiverData?.firstName || '';
-      const lastName = this.request.senderData?.lastName || this.sentRequest.receiverData?.lastName || '';
+      const firstName = this.getUserData?.firstName || '';
+      const lastName = this.getUserData?.lastName || '';
       return `${firstName} ${lastName}`;
     },
+
     getDescription() {
-      return this.request.senderData?.bio || this.sentRequest.receiverData?.bio || '';
+      return this.getUserData?.bio || '';
     },
   },
+
   methods: {
     handleClick() {
       let userId, requestId, status;
