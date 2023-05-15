@@ -1,8 +1,5 @@
 <template>
-  <v-container v-if="isLoading">
-    Загрузка...
-  </v-container>
-  <v-container v-else>
+  <v-container>
     <v-row>
       <v-col cols="12">
         <h2>{{ strongSkillObject.skill || strongSkillObject.category || strongSkillObject.subCategory }}</h2>
@@ -89,14 +86,13 @@ export default {
 
   data() {
     return {
-      isLoading: true,
-      localSkillId: '',
       selectedSkillObject: {},
     }
   },
   
   computed: {
     ...mapGetters("auth", ["currentUser"]),
+    ...mapGetters("skills", ["getStrongSkillId"]),
     ...mapGetters("chat", ["getCurrentChat"]),
     ...mapGetters("swapRequests", ["getSwapRequests"]),
 
@@ -105,7 +101,7 @@ export default {
         return {};
       }
 
-      const skillId = this.localSkillId;
+      const skillId = this.getStrongSkillId;
       return this.currentUser.skillsToTeach.find(skill => skill._id === skillId) || {};
     },
 
@@ -115,7 +111,7 @@ export default {
       }
 
       return this.getSwapRequests.filter(request => {
-        return request.status === "pending" && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) && request.receiverId === this.currentUser._id;
+        return request.status === "pending" && request.senderData.skillsToLearn.some(skill => skill._id === this.getStrongSkillId) && request.receiverId === this.currentUser._id;
       });
     },
 
@@ -125,8 +121,8 @@ export default {
       }
       return this.getSwapRequests.filter(request => {
         return (
-          (request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) ||
-          request.senderData.skillsToTeach.some(skill => skill._id === this.localSkillId)) &&
+          (request.senderData.skillsToLearn.some(skill => skill._id === this.getStrongSkillId) ||
+          request.senderData.skillsToTeach.some(skill => skill._id === this.getStrongSkillId)) &&
           request.status === "accepted"
         );
       });
@@ -138,8 +134,8 @@ export default {
       }
       return this.getSwapRequests.filter(request => {
         return (
-          (request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) ||
-          request.senderData.skillsToTeach.some(skill => skill._id === this.localSkillId)) &&
+          (request.senderData.skillsToLearn.some(skill => skill._id === this.getStrongSkillId) ||
+          request.senderData.skillsToTeach.some(skill => skill._id === this.getStrongSkillId)) &&
           ["rejected", "cancelled", "completed"].includes(request.status)
         );
       });
@@ -148,18 +144,13 @@ export default {
   },
 
   async created() {
-    this.isLoading = true;
     try {
-      this.localSkillId = localStorage.getItem("strongSkillId");
-
       await this.fetchCurrentUser();
       await this.getAllSwapRequests();
       await this.listenForUserUpdates();
       await this.listenForSwapRequestUpdates();
     } catch (error) {
       console.error('Error creating swap request:', error);
-    } finally {
-      this.isLoading = false;
     }
   },
 
@@ -186,7 +177,11 @@ export default {
       }
     },
 
-    async openChat(senderId, requestId) {
+    async openChat(senderId, requestId, status) {
+      if (status === 'rejected' || status === 'pending') {
+        console.log('Chat cannot be opened due to the current status of the deal.');
+        return;
+      }
       try {
         // Создать новый чат
         await this.$store.dispatch("chat/createOrGetCurrentChat", {

@@ -98,7 +98,10 @@ const actions = {
     store.commit('user/logout', null, { root: true });
   
     const socket = getSocket();
-    socket.disconnect();
+    if (socket) {
+      socket.disconnect();
+    }
+
   
     // Удаление заголовка авторизации для всех будущих запросов
     delete axios.defaults.headers.common['Authorization'];

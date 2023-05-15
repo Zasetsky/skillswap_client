@@ -65,16 +65,25 @@ export default {
   },
   methods: {
     handleClick() {
-      let userId;
-      if (this.currentUser._id === this.request.senderId || this.currentUser._id === this.sentRequest.senderId) {
-        // Current user is the sender, so we want the receiver's ID
-        userId = this.request.receiverId || this.sentRequest.receiverId;
+      let userId, requestId, status;
+      if (this.currentUser._id === this.request.senderId) {
+        // Current user is the sender of the request
+        userId = this.request.receiverId;
+        requestId = this.request._id;
+        status = this.request.status;
+      } else if (this.currentUser._id === this.sentRequest.senderId) {
+        // Current user is the sender of the sentRequest
+        userId = this.sentRequest.receiverId;
+        requestId = this.sentRequest._id;
+        status = this.sentRequest.status;
       } else {
         // Current user is the receiver, so we want the sender's ID
         userId = this.request.senderId || this.sentRequest.senderId;
+        requestId = this.request._id || this.sentRequest._id;
+        status = this.request.status || this.sentRequest.status;
       }
       
-      this.$emit('open-chat', userId, this.request._id || this.sentRequest._id);
+      this.$emit('open-chat', userId, requestId, status);
     },
   }
 };

@@ -62,14 +62,9 @@ export default {
       SkillCard,
   },
 
-  data() {
-    return {
-      localSkillId: '',
-    }
-  },
-
   computed: {
     ...mapGetters("auth", ["currentUser"]),
+    ...mapGetters("skills", ["getWeakSkillId"]),
     ...mapGetters("chat", ["getCurrentChat"]),
     ...mapGetters("swapRequests", ["getSwapRequests"]),
 
@@ -78,7 +73,7 @@ export default {
         return {};
       }
 
-      const skillId = this.localSkillId;
+      const skillId = this.getWeakSkillId;
       const weakSkill = this.currentUser.skillsToLearn.find(skill => skill._id === skillId) || {};
 
       return weakSkill;
@@ -90,13 +85,13 @@ export default {
       }
 
       const currentActiveSkill = this.currentUser.skillsToLearn.find(
-        (skill) => skill._id === this.localSkillId && skill.isActive
+        (skill) => skill._id === this.getWeakSkillId && skill.isActive
       );
 
       const filteredRequests = this.getSwapRequests.filter((request) => {
         return (
-          (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
-          request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
+          (request.receiverData.skillsToLearn.some((skill) => skill._id === this.getWeakSkillId) ||
+          request.receiverData.skillsToTeach.some((skill) => skill._id === this.getWeakSkillId)) &&
           currentActiveSkill &&
           (request.status === "pending" || request.status === "accepted")
         );
@@ -111,13 +106,13 @@ export default {
       }
 
       const currentNotActiveSkill = this.currentUser.skillsToLearn.find(
-        (skill) => skill._id === this.localSkillId && !skill.isActive
+        (skill) => skill._id === this.getWeakSkillId && !skill.isActive
       );
 
       const filteredRequests = this.getSwapRequests.filter(request => {
         return (
-          (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
-          request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
+          (request.receiverData.skillsToLearn.some((skill) => skill._id === this.getWeakSkillId) ||
+          request.receiverData.skillsToTeach.some((skill) => skill._id === this.getWeakSkillId)) &&
           currentNotActiveSkill &&
           (request.status !== "pending" || request.status !== "accepted")
         );
@@ -140,7 +135,11 @@ export default {
       }
     },
 
-    async openChat(receiverId, requestId) {
+    async openChat(receiverId, requestId, status) {
+      if (status === "rejected" || status === "pending") {
+        console.log('Chat cannot be opened due to the current status of the deal.');
+        return;
+      }
       try {
         await this.$store.dispatch("chat/createOrGetCurrentChat", {
           receiverId: receiverId,
@@ -163,15 +162,13 @@ export default {
     goToMatchingUsers() {
       this.$router.push({
         name: "MatchingUsers",
-        query: { skillToLearnId: this.localSkillId },
+        query: { skillToLearnId: this.getWeakSkillId }, // ИСПРАВИТЬ!!!
       });
     },
   },
 
   async mounted() {
     try {
-      this.localSkillId = localStorage.getItem("weakSkillId");
-
       await this.fetchCurrentUser();
       await this.getAllSwapRequests();
       await this.listenForSwapRequestUpdates();

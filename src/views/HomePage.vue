@@ -110,12 +110,12 @@ export default {
 
   methods: {
     handleOnWeakSkillClick(skill) {
-      localStorage.setItem("weakSkillId", skill);
+      this.$store.dispatch("skills/setWeakSkillId", skill);
       this.$router.push({ name: 'WeakSkillsPage' });
     },
 
     handleOnStrongSkillClick(skill) {
-      localStorage.setItem("strongSkillId", skill);
+      this.$store.dispatch("skills/setStrongSkillId", skill);
       this.$router.push({ name: 'StrongSkillsPage' });
     }
   },

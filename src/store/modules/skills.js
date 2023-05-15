@@ -4,15 +4,28 @@ const API_URL = 'http://localhost:3000/api/skills/'
 
 const state = {
   availableSkills: [],
-
+  weakSkillId: null,
+  strongSkillId: null,
 };
 
 const getters = {
   getSkillList: (state) => state.availableSkills,
 
+  getWeakSkillId: (state) => state.weakSkillId,
+
+  getStrongSkillId: (state) => state.strongSkillId,
+
 };
 
 const actions = {
+
+  setWeakSkillId({ commit }, weakSkillId) {
+    commit('SET_WEAK_SKILL_ID', weakSkillId);
+  },
+
+  setStrongSkillId({ commit }, strongSkillId) {
+    commit('SET_STRONG_SKILL_ID', strongSkillId);
+  },
 
   // Получение списка доступных навыков
 
@@ -71,6 +84,14 @@ const actions = {
 const mutations = {
   setAvailableSkills(state, availableSkills) {
     state.availableSkills = availableSkills;
+  },
+
+  SET_WEAK_SKILL_ID: (state, payload) => {
+    state.weakSkillId = payload;
+  },
+
+  SET_STRONG_SKILL_ID: (state, payload) => {
+    state.strongSkillId = payload;
   },
 
   logout(state) {
