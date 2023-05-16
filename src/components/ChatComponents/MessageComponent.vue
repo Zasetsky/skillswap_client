@@ -90,7 +90,11 @@ export default {
     },
 
     hasMeetingDetails() {
-      return this.allMessages.some(msg => msg.type === 'meeting_details');
+      const statusAllow = ["pending", "pending_update"];
+      const hasMeetingDetailsMessage = this.allMessages.some(msg => msg.type === 'meeting_details');
+      const hasDisallowedDealStatus = this.getCurrentDeal && !statusAllow.includes(this.getCurrentDeal.status);
+
+      return hasMeetingDetailsMessage && hasDisallowedDealStatus;
     },
 
     hasCancellationRequest() {
