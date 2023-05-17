@@ -160,32 +160,37 @@ export default {
         if (deal.status === "pending_update") {
           form1Source = deal.form;
           form2Source = deal.form2;
-        } else if (deal.status === "reschedule_offer") {
-          form1Source = deal.form;
-          form2Source = deal.form2;
-        } else if (deal.status === "reschedule_offer_update") {
-          form1Source = deal.update.form;
-          form2Source = deal.update.form2;
+        } else if (deal.status === "reschedule_offer" || deal.status === "reschedule_offer_update") {
+          form1Source = deal.reschedule.form;
+          form2Source = deal.reschedule.form2;
         }
 
         const form1Highlights = {};
         const form2Highlights = {};
-
+        console.log(this.commonMeetingDuration);
         if (deal.status === "pending_update") {
-          Object.keys(this.form1).forEach((field) => {
-            form1Highlights[field] = deal.form[field] !== deal.update.form[field];
+          Object.keys(deal.form).forEach((field) => {
+            form1Highlights[field] = deal.form[field] !== deal.update.form[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form[field]);
           });
 
-          Object.keys(this.form2).forEach((field) => {
-            form2Highlights[field] = deal.form2[field] !== deal.update.form2[field];
+          Object.keys(deal.form2).forEach((field) => {
+            form2Highlights[field] = deal.form2[field] !== deal.update.form2[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form2[field]);
+          });
+        } else if (deal.status === "reschedule_offer") {
+          Object.keys(deal.form).forEach((field) => {
+            form1Highlights[field] = form1Source[field] !== deal.form[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form[field]);
+          });
+
+          Object.keys(deal.form2).forEach((field) => {
+            form2Highlights[field] = form2Source[field] !== deal.form2[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form2[field]);
           });
         } else {
-          Object.keys(this.form1).forEach((field) => {
-            form1Highlights[field] = form1Source[field] !== deal.reschedule.form[field];
+          Object.keys(deal.form).forEach((field) => {
+            form1Highlights[field] = form1Source[field] !== deal.update.form[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.reschedule.form[field]);
           });
 
-          Object.keys(this.form2).forEach((field) => {
-            form2Highlights[field] = form2Source[field] !== deal.reschedule.form2[field];
+          Object.keys(deal.form2).forEach((field) => {
+            form2Highlights[field] = form2Source[field] !== deal.update.form2[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.reschedule.form2[field]);
           });
         }
 
@@ -201,21 +206,25 @@ export default {
         return false;
       }
 
-      let referenceForm1, referenceForm2;
+      let referenceForm1, referenceForm2, referenceDuration;
 
       // Определяем, с какими формами следует сравнивать
       if (deal.status === "pending_update") {
         referenceForm1 = deal.update.form;
         referenceForm2 = deal.update.form2;
+        referenceDuration = deal.update.form.meetingDuration;
       } else if (deal.status === "reschedule_offer") {
         referenceForm1 = deal.reschedule.form;
         referenceForm2 = deal.reschedule.form2;
+        referenceDuration = deal.reschedule.form.meetingDuration;
       } else if (deal.status === "reschedule_offer_update") {
         referenceForm1 = deal.reschedule.form;
         referenceForm2 = deal.reschedule.form2;
+        referenceDuration = deal.reschedule.form.meetingDuration;
       } else {
         referenceForm1 = deal.form;
         referenceForm2 = deal.form2;
+        referenceDuration = deal.form.meetingDuration;
       }
 
       if (!referenceForm1 || !referenceForm2) {
@@ -229,10 +238,12 @@ export default {
       const form2Changed = Object.entries(this.form2).some(([key, value]) => {
         return value !== referenceForm2[key];
       });
+      const durationChanged = this.commonMeetingDuration !== referenceDuration;
 
-      // Возвращаем true, если хотя бы одна из форм изменена
-      return form1Changed || form2Changed;
+      // Возвращаем true, если хотя бы одна из форм изменена или продолжительность встречи изменена
+      return form1Changed || form2Changed || durationChanged;
     },
+
 
     isBothFormsFilled() {
       return (
