@@ -16,17 +16,19 @@
     </div>
     <div class="bottom-bar">
       <div style="display: flex; justify-content: space-between;">
-        <DealComponent
-          ref="dealForm"
-          :disabled="!showCancelButton"
-          @submit-deal-form="handleDealFormSubmit"
-          @confirm-deal="confirmDeal"
-          @confirm-reschedule="confirmReschedule"
-        />
-        <ContinuationButton
-          v-if="showContinuationButton"
-          @propose-continuation="handleRequestContinuation"
-        />
+        <div>
+          <DealComponent
+            ref="dealForm"
+            :disabled="!showCancelButton && (getCurrentDeal && !getCurrentDeal.status == 'half_completed' || getCurrentDeal && !getCurrentDeal.status == 'half_completed_confirmed_reschedule')"
+            @submit-deal-form="handleDealFormSubmit"
+            @confirm-deal="confirmDeal"
+            @confirm-reschedule="confirmReschedule"
+          />
+          <ContinuationButton
+            v-if="showContinuationButton"
+            @propose-continuation="handleRequestContinuation"
+          />
+        </div>
         <ReviewForm
           v-if="showReviewForm"
           @review-submitted="onReviewSubmitted"
@@ -255,7 +257,7 @@ export default {
     async handleDealFormSubmit({ formData1, formData2 }) {
       this.$refs.dealForm.isSubmitting = true;
 
-      const statusesOfReschedule = ["confirmed", "reschedule_offer", "reschedule_offer_update"];
+      const statusesOfReschedule = ["confirmed", "half_completed", "reschedule_offer", "reschedule_offer_update", "confirmed_reschedule", "half_completed_confirmed_reschedule"];
       try {
         if (!statusesOfReschedule.includes(this.getCurrentDeal.status)) {
           await this.$store.dispatch("deal/updateDeal", {
@@ -429,7 +431,7 @@ export default {
       }
     },
     getCurrentDeal(newDeal, oldDeal) {
-      if (newDeal.status !== oldDeal.status && newDeal.status === 'half_completed') {
+      if (newDeal && oldDeal && newDeal.status !== oldDeal.status && newDeal.status === 'half_completed') {
         this.sendMeetingDetails();
       }
     },

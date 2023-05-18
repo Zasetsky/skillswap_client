@@ -45,7 +45,7 @@
             text
             @click="submitForm"
           >
-            Отправить
+            {{ sendButtonState.text }}
           </v-btn>
           <v-btn
             v-if="isConfirmButtonVisible"
@@ -54,15 +54,6 @@
             @click="emitConfirmDeal"
           >
             Подтвердить
-          </v-btn>
-          <v-btn
-            v-if="proposeButtonState.visible"
-            color="blue darken-1"
-            :disabled="!proposeButtonState.enabled"
-            text
-            @click="submitForm"
-          >
-            Предложить
           </v-btn>
           <v-btn
             v-if="showAcceptRejectButtons"
@@ -271,24 +262,37 @@ export default {
       const currentUser = this.currentUser;
 
       if (!deal) {
-        return { visible: false, enabled: false };
+        return { visible: false, enabled: false, text: '' };
       }
 
       const isSender = deal.sender === currentUser._id;
       const formChanged = this.isFormChanged;
       const bothFormsFilled = this.isBothFormsFilled;
-      const dealNotStarted = deal.status === "not_started";
-      const dealPendingOrUpdate = deal.status === "pending_update" || deal.status === "pending";
+      const dealNotStarted= ["not_started"].includes(deal.status);
+      const dealPendingOrUpdate = ["pending_update", "pending"].includes(deal.status);
+      const dealProcessStatus = ["confirmed", "half_completed", "confirmed_reschedule", "half_completed_confirmed_reschedule"].includes(deal.status);
+      const statusesOfReschedule = ["reschedule_offer", "reschedule_offer_update"].includes(deal.status);
 
       const visible =
-        (isSender && dealPendingOrUpdate) ||
-        (dealNotStarted || dealPendingOrUpdate && this.isConfirm);
+        (dealPendingOrUpdate || dealProcessStatus) ||
+        (dealNotStarted || dealPendingOrUpdate && this.isConfirm) ||
+        ((isSender || formChanged) && (statusesOfReschedule || dealPendingOrUpdate || dealProcessStatus));
 
       const enabled =
         (formChanged && !dealNotStarted) ||
-        (dealNotStarted && bothFormsFilled);
+        (dealNotStarted && bothFormsFilled) ||
+        (formChanged && dealProcessStatus);
 
-      return { visible, enabled };
+      let text = '';
+      if (statusesOfReschedule || dealPendingOrUpdate) {
+        text = 'Изменить';
+      } else if (dealNotStarted) {
+        text = 'Отправить';
+      } else if (dealProcessStatus) {
+        text = 'Предложить';
+      }
+
+      return { visible, enabled, text };
     },
 
     showAcceptRejectButtons() {
@@ -303,24 +307,6 @@ export default {
         (deal.status === "reschedule_offer" || deal.status === "reschedule_offer_update") &&
         !this.isFormChanged
       );
-    },
-
-    proposeButtonState() {
-      const deal = this.getCurrentDeal;
-      const currentUser = this.currentUser;
-
-      if (!deal) {
-        return { visible: false, enabled: false };
-      }
-
-      const isSender = deal.sender === currentUser._id;
-      const formChanged = this.isFormChanged;
-      const statusesOfReschedule = ["reschedule_offer", "reschedule_offer_update"];
-
-      const visible = ((isSender || formChanged) && statusesOfReschedule.includes(this.getCurrentDeal.status) || deal.status === "confirmed");
-      const enabled = formChanged;
-
-      return { visible, enabled };
     },
 
     isConfirmButtonVisible() {
@@ -339,15 +325,16 @@ export default {
     getActionButtonText() {
       const deal = this.getCurrentDeal;
       const currentUser = this.currentUser;
-      const changeOffers = ["pending_update", "pending", "reschedule_offer", "reschedule_offer_update"];
+      const changeOffers = ["pending_update", "pending", "reschedule_offer", "reschedule_offer_update"].includes(deal.status);
+      const statusesOfReschedule = ["confirmed", "half_completed", "confirmed_reschedule", "half_completed_confirmed_reschedule"].includes(deal.status);
       if (deal) {
         if (this.isSubmitting) {
           return "Отправка...";
-        } else if (changeOffers.includes(this.getCurrentDeal.status) && deal.sender === currentUser._id) {
+        } else if (changeOffers && deal.sender === currentUser._id) {
           return "Изменить предложение";
-        } else if (changeOffers.includes(this.getCurrentDeal.status) && deal.sender !== currentUser._id) {
+        } else if (changeOffers && deal.sender !== currentUser._id) {
           return "Посмотреть предложения";
-        } else if (deal.status === "confirmed") {
+        } else if (statusesOfReschedule) {
           return "Предложить перенос";
         }
       }
@@ -456,23 +443,29 @@ export default {
         this.form1 = {
           meetingDate: null,
           meetingTime: null,
-          meetingDuration: null,
         };
         this.form2 = {
           meetingDate: null,
           meetingTime: null,
         };
-      } if (this.getCurrentDeal.status === "pending_update") {
+
+        this.commonMeetingDuration = null;
+
+      } else if (this.getCurrentDeal.status === "pending_update" || this.getCurrentDeal.status === "reschedule_offer_update") {
           this.fillForm(this.form1, this.getCurrentDeal.update.form);
           this.fillForm(this.form2, this.getCurrentDeal.update.form2);
-        } else if (this.getCurrentDeal.status === "reschedule_offer" || this.getCurrentDeal.status === "reschedule_offer_update") {
+          this.commonMeetingDuration = this.getCurrentDeal.update.form.meetingDuration;
+        } else if (this.getCurrentDeal.status === "reschedule_offer") {
           this.fillForm(this.form1, this.getCurrentDeal.reschedule.form);
           this.fillForm(this.form2, this.getCurrentDeal.reschedule.form2);
+          this.commonMeetingDuration = this.getCurrentDeal.reschedule.form.meetingDuration;
         } else {
           this.fillForm(this.form1, this.getCurrentDeal.form || {});
           this.fillForm(this.form2, this.getCurrentDeal.form2 || {});
+          this.commonMeetingDuration = this.getCurrentDeal.form.meetingDuration;
       }
     },
+
   },
 
   watch: {

@@ -24,8 +24,10 @@
           </v-btn>
         </template>
         <template v-else-if="message.type === 'reschedule_proposal'">
-          Предложены параметры переноса сделки: 
+          <p v-if="!isMyMessage">Предложены параметры переноса сделки:</p>
+          <b v-else>Вы предложили перенос.</b>
           <v-btn v-if="
+            !isMyMessage &&
             isLastRescheduleProposal &&
             !hasCancellationRequest &&
             !hasContinuationRequest"
