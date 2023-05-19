@@ -21,7 +21,7 @@ const actions = {
 
       socket.emit("sendSwapRequest", { senderId, receiverId, senderData, receiverData });
       socket.on("swapRequestSent", () => {
-        context.dispatch("getAllSwapRequests");
+        context.dispatch("fetchAllSwapRequests");
       });
     } catch (error) {
       console.error("Error sending swap request:", error);
@@ -34,7 +34,7 @@ const actions = {
 
       socket.emit("acceptSwapRequest", { swapRequestId, chosenSkillToSwap });
       socket.on("swapRequestAccepted", () => {
-        context.dispatch("getAllSwapRequests");
+        context.dispatch("fetchAllSwapRequests");
       });
     } catch (error) {
       console.error("Error accepting swap request:", error);
@@ -47,7 +47,7 @@ const actions = {
 
       socket.emit("rejectSwapRequest", { swapRequestId });
       socket.on("swapRequestRejected", () => {
-        dispatch("getAllSwapRequests");
+        dispatch("fetchAllSwapRequests");
       });
     } catch (error) {
       console.error("Error rejecting swap request:", error);
@@ -60,14 +60,14 @@ const actions = {
 
       socket.emit("deleteSwapRequest", { requestId });
       socket.on("swapRequestDeleted", () => {
-        dispatch("getAllSwapRequests");
+        dispatch("fetchAllSwapRequests");
       });
     } catch (error) {
       console.error("Error deleting swap request:", error);
     }
   },
 
-  async getAllSwapRequests({ commit }) {
+  async fetchAllSwapRequests({ commit }) {
       try {
         const socket = getSocket();
 
@@ -80,7 +80,7 @@ const actions = {
       }
   },
 
-  async getCurrentSwapRequest({ commit }, swapRequestId) {
+  async fetchCurrentSwapRequest({ commit }, swapRequestId) {
     return new Promise((resolve, reject) => {
       try {
         const socket = getSocket();

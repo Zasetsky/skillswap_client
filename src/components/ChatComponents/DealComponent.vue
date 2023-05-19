@@ -116,7 +116,7 @@ export default {
   computed: {
     ...mapGetters("auth", ["currentUser"]),
     ...mapGetters("chat", ["getCurrentChat"]),
-    ...mapGetters("swapRequests", ["getSwapRequests"]),
+    ...mapGetters("swapRequests", ["getCurrentSwapRequest"]),
     ...mapGetters("deal", ["getCurrentDeal"]),
 
     form1MeetingDuration: {
@@ -138,6 +138,10 @@ export default {
     },
 
     highlightMismatchedFields() {
+      if (this.isFormChanged) {
+        return { form1: {}, form2: {} };
+      }
+
       const deal = this.getCurrentDeal;
       const currentUser = this.currentUser;
 
@@ -158,7 +162,7 @@ export default {
 
         const form1Highlights = {};
         const form2Highlights = {};
-        console.log(this.commonMeetingDuration);
+
         if (deal.status === "pending_update") {
           Object.keys(deal.form).forEach((field) => {
             form1Highlights[field] = deal.form[field] !== deal.update.form[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form[field]);
@@ -200,15 +204,11 @@ export default {
       let referenceForm1, referenceForm2, referenceDuration;
 
       // Определяем, с какими формами следует сравнивать
-      if (deal.status === "pending_update") {
+      if (deal.status === "pending_update" || deal.status === "reschedule_offer_update") {
         referenceForm1 = deal.update.form;
         referenceForm2 = deal.update.form2;
         referenceDuration = deal.update.form.meetingDuration;
       } else if (deal.status === "reschedule_offer") {
-        referenceForm1 = deal.reschedule.form;
-        referenceForm2 = deal.reschedule.form2;
-        referenceDuration = deal.reschedule.form.meetingDuration;
-      } else if (deal.status === "reschedule_offer_update") {
         referenceForm1 = deal.reschedule.form;
         referenceForm2 = deal.reschedule.form2;
         referenceDuration = deal.reschedule.form.meetingDuration;
@@ -325,27 +325,32 @@ export default {
     getActionButtonText() {
       const deal = this.getCurrentDeal;
       const currentUser = this.currentUser;
+
+      if (!deal) {
+        return "Идёт загрузка...";
+      }
+
       const changeOffers = ["pending_update", "pending", "reschedule_offer", "reschedule_offer_update"].includes(deal.status);
       const statusesOfReschedule = ["confirmed", "half_completed", "confirmed_reschedule", "half_completed_confirmed_reschedule"].includes(deal.status);
-      if (deal) {
-        if (this.isSubmitting) {
-          return "Отправка...";
-        } else if (changeOffers && deal.sender === currentUser._id) {
-          return "Изменить предложение";
-        } else if (changeOffers && deal.sender !== currentUser._id) {
-          return "Посмотреть предложения";
-        } else if (statusesOfReschedule) {
-          return "Предложить перенос";
-        }
+
+      if (this.isSubmitting) {
+        return "Отправка...";
+      } else if (changeOffers && deal.sender === currentUser._id) {
+        return "Изменить предложение";
+      } else if (changeOffers && deal.sender !== currentUser._id) {
+        return "Посмотреть предложения";
+      } else if (statusesOfReschedule) {
+        return "Предложить перенос";
       }
+      
       return "Согласовать сделку";
     }
   },
 
   methods: {
-    ...mapActions("swapRequests", ["getAllSwapRequests"]),
+    ...mapActions("swapRequests", ["fetchCurrentSwapRequest"]),
     ...mapActions("chat", ["fetchCurrentChat"]),
-    ...mapActions("deal", ["createOrGetCurrentDeal"]),
+    ...mapActions("deal", ["fetchCurrentDeal"]),
 
     fillForm(form, source) {
       Object.keys(form).forEach((field) => {
@@ -359,10 +364,7 @@ export default {
         return;
       }
 
-      const swapRequestId = this.getCurrentChat.swapRequestId;
-      const swapRequest = this.getSwapRequests.find(
-        (request) => request._id === swapRequestId
-      );
+      const swapRequest = this.getCurrentSwapRequest
 
       if (
         swapRequest &&
@@ -386,6 +388,13 @@ export default {
     },
 
     async openDialog() {
+      try {
+        await this.fetchCurrentDeal({
+          chatId: this.getCurrentChat._id,
+        });
+        } catch (error) {
+          console.error("Error fetching current deal: ", error);
+        } 
       this.dialog = true;
     },
 
@@ -472,11 +481,11 @@ export default {
     getCurrentDeal: {
       handler(newValue) {
         if (newValue) {
-          if (newValue.status === "pending_update") {
+          if (newValue.status === "pending_update" || newValue.status === "reschedule_offer_update") {
             this.fillForm(this.form1, newValue.update.form);
             this.fillForm(this.form2, newValue.update.form2);
             this.commonMeetingDuration = newValue.update.form.meetingDuration;
-          } else if (newValue.status === "reschedule_offer" || newValue.status === "reschedule_offer_update") {
+          } else if (newValue.status === "reschedule_offer") {
             this.fillForm(this.form1, newValue.reschedule.form);
             this.fillForm(this.form2, newValue.reschedule.form2);
             this.commonMeetingDuration = newValue.reschedule.form.meetingDuration;
@@ -501,7 +510,10 @@ export default {
 
     try {
       await this.fetchCurrentChat(chatId);
-      await this.getAllSwapRequests();
+      await this.fetchCurrentDeal({
+        chatId: this.getCurrentChat._id,
+      });
+      await this.fetchCurrentSwapRequest(this.getCurrentDeal.swapRequestId);
       this.setTabs();
     } catch (error) {
       console.error(error);

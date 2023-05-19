@@ -153,7 +153,7 @@ export default {
       this.localSkillId = localStorage.getItem("strongSkillId");
 
       await this.fetchCurrentUser();
-      await this.getAllSwapRequests();
+      await this.fetchAllSwapRequests();
       await this.listenForUserUpdates();
       await this.listenForSwapRequestUpdates();
     } catch (error) {
@@ -165,7 +165,7 @@ export default {
 
   methods: {
     ...mapActions('user', ['fetchCurrentUser', 'listenForUserUpdates']),
-    ...mapActions('swapRequests', ['getAllSwapRequests', 'listenForSwapRequestUpdates']),
+    ...mapActions('swapRequests', ['fetchAllSwapRequests', 'listenForSwapRequestUpdates']),
 
     async acceptSwapRequest(swapRequestId) {
       try {

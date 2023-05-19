@@ -16,7 +16,7 @@
     </div>
     <div class="bottom-bar">
       <div style="display: flex; justify-content: space-between;">
-        <div>
+        <div style="display: flex;">
           <DealComponent
             ref="dealForm"
             :disabled="!showCancelButton && (getCurrentDeal && !getCurrentDeal.status == 'half_completed' || getCurrentDeal && !getCurrentDeal.status == 'half_completed_confirmed_reschedule')"
@@ -286,13 +286,6 @@ export default {
     },
 
     async handleOpenDealForm() {
-      try {
-          await this.$store.dispatch("deal/getCurrentDeal", {
-            chatId: this.getCurrentChat._id,
-          });
-        } catch (error) {
-          console.error("Error fetching current deal: ", error);
-        } 
       this.$refs.dealForm.openDialog();
     },
 
@@ -442,10 +435,10 @@ export default {
       const chatId = localStorage.getItem("chatId");
 
       await this.$store.dispatch("chat/fetchCurrentChat", chatId);
-      await this.$store.dispatch("deal/getCurrentDeal", {
+      await this.$store.dispatch("deal/fetchCurrentDeal", {
         chatId: this.getCurrentChat._id,
       });
-      await this.$store.dispatch("swapRequests/getCurrentSwapRequest", this.getCurrentDeal.swapRequestId);
+      await this.$store.dispatch("swapRequests/fetchCurrentSwapRequest", this.getCurrentDeal.swapRequestId);
       await this.$store.dispatch("review/getCurrentDealReviews", this.getCurrentDeal._id);
       await this.$store.dispatch("deal/listenForDealUpdates");
 

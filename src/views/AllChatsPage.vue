@@ -72,7 +72,7 @@ export default {
     this.isLoading = true;
     try {
       await this.fetchAllChats();
-      await this.getAllSwapRequests();
+      await this.fetchAllSwapRequests();
     } catch (error) {
       console.error("Error getting all chats:", error);
     } finally {
@@ -82,7 +82,7 @@ export default {
 
   methods: {
     ...mapActions('chat', ['fetchAllChats']),
-    ...mapActions('swapRequests', ['getAllSwapRequests']),
+    ...mapActions('swapRequests', ['fetchAllSwapRequests']),
     ...mapActions('user', ['fetchUserProfile']),
 
     async getPartnerName(chat) {

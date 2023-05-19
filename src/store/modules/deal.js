@@ -31,7 +31,7 @@ const actions = {
     });
   },
 
-  getCurrentDeal({ commit }, chatId) {
+  fetchCurrentDeal({ commit }, chatId) {
     return new Promise((resolve, reject) => {
       const socket = getSocket();
 

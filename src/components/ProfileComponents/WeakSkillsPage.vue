@@ -123,7 +123,7 @@ export default {
   },
 
   methods: {
-    ...mapActions('swapRequests', ['deleteSwapRequest', 'getAllSwapRequests', 'listenForSwapRequestUpdates']),
+    ...mapActions('swapRequests', ['deleteSwapRequest', 'fetchAllSwapRequests', 'listenForSwapRequestUpdates']),
     ...mapActions('user', ['fetchCurrentUser', 'listenForUserUpdates']),
 
     async cancelSwapRequest(swapRequestId) {
@@ -172,7 +172,7 @@ export default {
       this.localSkillId = localStorage.getItem("weakSkillId");
 
       await this.fetchCurrentUser();
-      await this.getAllSwapRequests();
+      await this.fetchAllSwapRequests();
       await this.listenForSwapRequestUpdates();
       await this.listenForUserUpdates();
       } catch (error) {
