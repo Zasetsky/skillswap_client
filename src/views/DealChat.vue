@@ -19,7 +19,7 @@
         <div style="display: flex;">
           <DealComponent
             ref="dealForm"
-            :disabled="!showCancelButton && (getCurrentDeal && !getCurrentDeal.status == 'half_completed' || getCurrentDeal && !getCurrentDeal.status == 'half_completed_confirmed_reschedule')"
+            :disabled="!showCancelButton && (getCurrentDeal && getCurrentDeal.status !== 'half_completed' && getCurrentDeal.status !== 'half_completed_confirmed_reschedule')"
             @submit-deal-form="handleDealFormSubmit"
             @confirm-deal="confirmDeal"
             @confirm-reschedule="confirmReschedule"
@@ -330,6 +330,9 @@ export default {
       try {
         await this.$store.dispatch("deal/approveContinuation", {
           dealId: this.getCurrentDeal._id,
+        });
+        await this.$store.dispatch("deal/fetchCurrentDeal", {
+          chatId: this.getCurrentChat._id,
         });
       } catch (error) {
         console.error("Error approving continuation:", error);
