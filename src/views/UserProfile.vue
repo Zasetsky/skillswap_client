@@ -9,7 +9,7 @@
                 </v-avatar>
             </v-col>
             <v-col>
-                <h2>{{ userProfile.firstName }} {{ userProfile.lastName }}</h2>
+                <h2>{{ userProfile.firstname }} {{ userProfile.lastname }}</h2>
                 <h4>Биография:</h4>
                 <p>{{ userProfile.bio }}</p>
                 <v-btn
@@ -138,13 +138,13 @@ export default {
 
     methods: {
         ...mapActions('user', ['fetchUserProfile', 'fetchCurrentUser']),
-        ...mapActions('swapRequests', ['sendSwapRequest', 'deleteSwapRequest', 'getAllSwapRequests']),
+        ...mapActions('swapRequests', ['sendSwapRequest', 'deleteSwapRequest', 'fetchAllSwapRequests']),
 
         async proposeSkillExchange() {
             const senderData = {
                 avatar: this.currentUser.avatar,
-                firstName: this.currentUser.firstName,
-                lastName: this.currentUser.lastName,
+                firstname: this.currentUser.firstname,
+                lastname: this.currentUser.lastname,
                 bio: this.currentUser.bio,
                 skillsToLearn: this.mySkillToLearn,
                 skillsToTeach: this.myStrongSkillsForUser,
@@ -152,8 +152,8 @@ export default {
 
             const receiverData = {
                 avatar: this.userProfile.avatar,
-                firstName: this.userProfile.firstName,
-                lastName: this.userProfile.lastName,
+                firstname: this.userProfile.firstname,
+                lastname: this.userProfile.lastname,
                 bio: this.userProfile.bio,
                 skillsToLearn: this.mySkillToLearn,
             };
@@ -179,8 +179,9 @@ export default {
 
     async mounted() {
         try {
+            console.log(this.userProfile);
             await this.fetchUserProfile(this.localUserId);
-            await this.getAllSwapRequests();
+            await this.fetchAllSwapRequests();
         } catch (error) {
             console.error('Error fetching user profile:', error);
         }

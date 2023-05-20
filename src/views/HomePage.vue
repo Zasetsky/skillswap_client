@@ -78,11 +78,11 @@ export default {
     // },
 
     name() {
-      if (!this.currentUser || !this.currentUser.firstName || !this.currentUser.lastName) return "NaN NaN";
-      const firstName = this.currentUser.firstName.toLowerCase();
-      const lastName = this.currentUser.lastName.toLowerCase();
-      const formattedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
-      const formattedLastName = lastName.charAt(0).toUpperCase() + lastName.slice(1);
+      if (!this.currentUser || !this.currentUser.firstname || !this.currentUser.lastname) return "NaN NaN";
+      const firstname = this.currentUser.firstname.toLowerCase();
+      const lastname = this.currentUser.lastname.toLowerCase();
+      const formattedFirstName = firstname.charAt(0).toUpperCase() + firstname.slice(1);
+      const formattedLastName = lastname.charAt(0).toUpperCase() + lastname.slice(1);
       return `${formattedFirstName} ${formattedLastName}`;
     },
 

@@ -235,7 +235,6 @@ export default {
       return form1Changed || form2Changed || durationChanged;
     },
 
-
     isBothFormsFilled() {
       return (
         this.form1.meetingDate &&

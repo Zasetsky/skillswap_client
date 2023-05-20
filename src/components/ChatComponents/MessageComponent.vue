@@ -54,7 +54,9 @@
           <span v-if="isMyMessage" style="color: red;">Если пользователь не примет решение в течение 24 часов, сделка всё равно будет отменена.</span>
         </template>
         <template v-else-if="message.type === 'continuation_request'">
-          Запрос на продолжение сделки:
+          <b v-if="!isMyMessage">Запрос на продолжение сделки:</b>
+          <b v-if="!isMyMessage && getCurrentDeal.continuation.status === 'true'">{{ getUserProfile.firstname }} предлагает продолжить сделку</b>
+          <span v-else>Вы согласились на продолжение сделки.</span>
           <v-btn v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest" color="success" small @click="$emit('approve-continuation')">Подтвердить</v-btn>
           <v-btn v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest" color="error" small @click="$emit('reject-continuation')">Отклонить</v-btn>
         </template>
@@ -73,11 +75,6 @@ export default {
       required: true,
     },
 
-    currentUserId: {
-      type: String,
-      required: true,
-    },
-
     allMessages: {
       type: Array,
       required: true,
@@ -86,9 +83,11 @@ export default {
 
   computed: {
     ...mapGetters('deal', ['getCurrentDeal']),
+    ...mapGetters('auth', ['currentUser']),
+    ...mapGetters('user', ['getUserProfile']),
 
     isMyMessage() {
-      return this.message.sender === this.currentUserId;
+      return this.message.sender === this.currentUser._id;
     },
 
     hasMeetingDetails() {

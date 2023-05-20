@@ -20,7 +20,7 @@
           <v-list>
             <v-list-item v-for="user in matchingUsers" :key="user._id" @click="openUserProfile(user._id)">
               <v-list-item-content>
-                <v-list-item-title>{{ user.firstName }} {{ user.lastName }}</v-list-item-title>
+                <v-list-item-title>{{ user.firstname }} {{ user.lastname }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>

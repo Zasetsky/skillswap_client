@@ -15,6 +15,11 @@
             @open-chat="openChat"
           />
         </v-col>
+        <v-col v-if="computedChats.length === 0" class="text-center fill-height mt-10">
+          <span class="text-h6">
+            Здесь будут ваши начатые чаты
+          </span>
+        </v-col>
       </v-row>
     </v-container>
   </div>
@@ -28,7 +33,7 @@ import ChatCard from "@/components/ChatComponents/ChatCard.vue";
 export default {
   components: {
     ChatCard,
-  },
+},
 
   mixins: [AsyncComputed],
 
@@ -91,7 +96,7 @@ export default {
       await this.fetchUserProfile(partnerId);
       const partnerProfile = this.getUserProfile;
 
-      return partnerProfile ? `${partnerProfile.firstName} ${partnerProfile.lastName}` : '';
+      return partnerProfile ? `${partnerProfile.firstname} ${partnerProfile.lastname}` : '';
     },
 
     getSkills(swapRequest) {

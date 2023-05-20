@@ -6,7 +6,6 @@
         :key="message._id"
         :message="message"
         :allMessages="messages"
-        :currentUserId="currentUser._id"
         @open-deal-form="handleOpenDealForm"
         @approve-cancellation="handleApproveCancellation"
         @reject-cancellation="handleRejectCancellation"
@@ -436,8 +435,10 @@ export default {
   async mounted() {
     try {
       const chatId = localStorage.getItem("chatId");
+      const otherUserId = this.getCurrentDeal.participants.filter(id => id !== this.currentUser._id)[0];
 
       await this.$store.dispatch("chat/fetchCurrentChat", chatId);
+      await this.$store.dispatch("user/fetchUserProfile", otherUserId);
       await this.$store.dispatch("deal/fetchCurrentDeal", {
         chatId: this.getCurrentChat._id,
       });

@@ -71,9 +71,9 @@ export default {
     },
 
     getName() {
-      const firstName = this.getUserData?.firstName || '';
-      const lastName = this.getUserData?.lastName || '';
-      return `${firstName} ${lastName}`;
+      const firstname = this.getUserData?.firstname || '';
+      const lastname = this.getUserData?.lastname || '';
+      return `${firstname} ${lastname}`;
     },
 
     getDescription() {
