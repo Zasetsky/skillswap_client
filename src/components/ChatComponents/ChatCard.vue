@@ -1,5 +1,5 @@
 <template>
-    <v-card @click="$emit('open-chat', chat.partnerId, chat.swapRequestId)">
+    <v-card @click="$emit('open-chat', chat._id)">
       <v-card-title>
         <span>{{ chat.partner }}</span>
       </v-card-title>
