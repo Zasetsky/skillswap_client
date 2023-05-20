@@ -92,7 +92,6 @@ export default {
   },
 
   computed: {
-    ...mapGetters('chat', ['getCurrentChat']),
     ...mapGetters('deal', ['getCurrentDeal']),
     ...mapGetters('auth', ['currentUser']),
     ...mapGetters('swapRequests', ['getCurrentSwapRequest']),

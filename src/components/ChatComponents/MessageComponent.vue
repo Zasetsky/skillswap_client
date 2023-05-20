@@ -151,6 +151,7 @@ export default {
     },
   },
   mounted() {
+    console.log(this.getCurrentDeal);
   }
 };
 </script>

@@ -198,11 +198,15 @@ export default {
           senderId,
           swapRequestId: requestId,
         });
+
+        const lastSwapRequestId = this.getCurrentChat.swapRequestIds[this.getCurrentChat.swapRequestIds.length - 1];
+
         await this.$store.dispatch('deal/createOrGetCurrentDeal', {
           participants: this.getCurrentChat.participants,
           chatId: this.getCurrentChat._id,
-          swapRequestId: this.getCurrentChat.swapRequestId,
+          swapRequestId: lastSwapRequestId,
         });
+
         const chat = this.getCurrentChat;
         localStorage.setItem("chatId", chat._id);
         this.$router.push(`/${chat._id}`);
