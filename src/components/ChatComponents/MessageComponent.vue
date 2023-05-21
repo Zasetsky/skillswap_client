@@ -6,12 +6,18 @@
           {{ message.content }}
         </template>
         <template v-else-if="message.type === 'details'">
-          <b v-if="!isMyMessage">{{ message.content }}</b>
-          <b v-if="isMyMessage">Вы отвергли предложение о продолжении.</b>
+          <b v-if="!isMyMessage && isLastMessage">{{ message.content }}</b>
+          <span v-else-if="!isMyMessage">{{ message.content }}</span>
+          <b v-if="isMyMessage && isLastMessage">Вы отвергли предложение о продолжении</b>
+          <span v-else-if="isMyMessage">Вы отвергли предложение о продолжении</span>
         </template>
         <template v-else-if="message.type === 'deal_proposal'">
-          Предложены параметры сделки: 
+          <b v-if="(!isMyMessage && isLastDealProposal && !hasMeetingDetails) || (!isMyMessage && isLastDealProposal && isLastMessage)">Вам предложены параметры сделки</b>
+          <span v-else-if="!isMyMessage">Вам предложены параметры сделки</span>
+          <b v-if="(isMyMessage && isLastDealProposal && !hasMeetingDetails) || (isMyMessage && isLastDealProposal && isLastMessage)">Вы предложили параметры сделки</b>
+          <span v-else-if="isMyMessage">Вы предложили параметры сделки</span>
           <v-btn v-if="
+            !isMyMessage &&
             isLastDealProposal &&
             !hasMeetingDetails &&
             !hasCancellationRequest &&
@@ -24,7 +30,7 @@
           </v-btn>
         </template>
         <template v-else-if="message.type === 'reschedule_proposal'">
-          <p v-if="!isMyMessage">Предложены параметры переноса сделки:</p>
+          <p v-if="!isMyMessage">Вам предложены параметры переноса сделки:</p>
           <b v-else>Вы предложили перенос.</b>
           <v-btn v-if="
             !isMyMessage &&
@@ -54,9 +60,14 @@
           <span v-if="isMyMessage" style="color: red;">Если пользователь не примет решение в течение 24 часов, сделка всё равно будет отменена.</span>
         </template>
         <template v-else-if="message.type === 'continuation_request'">
-          <b v-if="!isMyMessage">Запрос на продолжение сделки:</b>
-          <b v-if="!isMyMessage && getCurrentDeal.continuation.status === 'true'">{{ getUserProfile.firstname }} предлагает продолжить сделку</b>
-          <span v-else>Вы согласились на продолжение сделки.</span>
+          <b v-if="isMyMessage && isLastContinuationRequest && isLastMessage">Вы отправили запрос на продолжение сделки</b>
+          <span v-else-if="isMyMessage">Вы отправили запрос на продолжение сделки</span>
+          
+          <b v-if="!isMyMessage && isLastContinuationRequest && getCurrentDeal.continuation.status === 'true'">{{ getUserProfile.firstname }} предлагает продолжить</b>
+          <span v-else-if="!isMyMessage && !isLastMessage">{{ getUserProfile.firstname }} предложил продолжить</span>
+          
+          <span v-if="!isMyMessage && getCurrentDeal.continuation.status === 'approved'">Вы согласились на продолжение сделки.</span>
+          
           <v-btn v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest" color="success" small @click="$emit('approve-continuation')">Подтвердить</v-btn>
           <v-btn v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest" color="error" small @click="$emit('reject-continuation')">Отклонить</v-btn>
         </template>
@@ -130,6 +141,11 @@ export default {
       return this.message._id === lastContinuationRequest._id;
     },
 
+    isLastMessage() {
+      const lastMessage = this.allMessages[this.allMessages.length - 1];
+      return this.message._id === lastMessage._id;
+    },
+
   },
 
   methods: {
@@ -150,7 +166,7 @@ export default {
     },
   },
   mounted() {
-    console.log(this.getCurrentDeal);
+
   }
 };
 </script>

@@ -353,7 +353,7 @@ export default {
         await this.$store.dispatch("deal/rejectContinuation", {
           dealId: this.getCurrentDeal._id,
         });
-        await this.sendMessage("details", "Предложение о продолжении отвергнуто.");
+        await this.sendMessage("details", "Предложение о продолжении отвергнуто");
       } catch (error) {
         console.error("Error rejecting continuation:", error);
       }
@@ -420,9 +420,12 @@ export default {
   },
 
   watch: {
-    messages(newVal, oldVal) {
+    async messages(newVal, oldVal) {
       if (newVal.length > oldVal.length) {
         this.scrollToBottom();
+        const chatId = localStorage.getItem("chatId");
+      
+      await this.$store.dispatch("chat/fetchCurrentChat", chatId);
       }
     },
     getCurrentDeal(newDeal, oldDeal) {
@@ -435,15 +438,18 @@ export default {
   async mounted() {
     try {
       const chatId = localStorage.getItem("chatId");
-      const otherUserId = this.getCurrentDeal.participants.filter(id => id !== this.currentUser._id)[0];
-
+      
       await this.$store.dispatch("chat/fetchCurrentChat", chatId);
-      await this.$store.dispatch("user/fetchUserProfile", otherUserId);
       await this.$store.dispatch("deal/fetchCurrentDeal", {
         chatId: this.getCurrentChat._id,
       });
+
+      const otherUserId = this.getCurrentDeal.participants.filter(id => id !== this.currentUser._id)[0];
+      await this.$store.dispatch("user/fetchUserProfile", otherUserId);
+
       await this.$store.dispatch("swapRequests/fetchCurrentSwapRequest", this.getCurrentDeal.swapRequestId);
       await this.$store.dispatch("review/getCurrentDealReviews", this.getCurrentDeal._id);
+
       await this.$store.dispatch("deal/listenForDealUpdates");
 
       this.$nextTick(() => {

@@ -156,8 +156,9 @@ export default {
       await this.fetchAllSwapRequests();
       await this.listenForUserUpdates();
       await this.listenForSwapRequestUpdates();
+      await this.listenForsendSwapRequest();
     } catch (error) {
-      console.error('Error creating swap request:', error);
+      console.error('Error fetching swap request:', error);
     } finally {
       this.isLoading = false;
     }
@@ -165,7 +166,7 @@ export default {
 
   methods: {
     ...mapActions('user', ['fetchCurrentUser', 'listenForUserUpdates']),
-    ...mapActions('swapRequests', ['fetchAllSwapRequests', 'listenForSwapRequestUpdates']),
+    ...mapActions('swapRequests', ['fetchAllSwapRequests', 'listenForSwapRequestUpdates', 'listenForsendSwapRequest']),
 
     async acceptSwapRequest(swapRequestId) {
       try {

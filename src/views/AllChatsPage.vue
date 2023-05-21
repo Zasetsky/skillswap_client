@@ -15,7 +15,7 @@
             @open-chat="openChat"
           />
         </v-col>
-        <v-col v-if="computedChats.length === 0" class="text-center fill-height mt-10">
+        <v-col v-if="computedChats && computedChats.length === 0" class="text-center fill-height mt-10">
           <span class="text-h6">
             Здесь будут ваши начатые чаты
           </span>

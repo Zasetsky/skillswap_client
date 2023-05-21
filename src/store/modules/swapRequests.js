@@ -17,14 +17,28 @@ const getters = {
 const actions = {
   async sendSwapRequest(context, { senderId, receiverId, senderData, receiverData }) {
     try {
-      const socket = getSocket();
+        const socket = getSocket();
 
-      socket.emit("sendSwapRequest", { senderId, receiverId, senderData, receiverData });
-      socket.on("swapRequestSent", () => {
-        context.dispatch("fetchAllSwapRequests");
-      });
+        socket.emit("sendSwapRequest", { senderId, receiverId, senderData, receiverData });
+        socket.on("swapRequestSent", (data) => {
+            console.log(data.message);
+            context.dispatch("fetchAllSwapRequests");
+        });
     } catch (error) {
-      console.error("Error sending swap request:", error);
+        console.error("Error sending swap request:", error);
+    }
+  },
+
+  async listenForsendSwapRequest(context) {
+    try {
+        const socket = getSocket();
+
+        socket.on("swapRequestReceived", (data) => {
+            console.log(data.message);
+            context.dispatch("fetchAllSwapRequests");
+        });
+    } catch (error) {
+        console.error("Error listening for swap requests:", error);
     }
   },
 
@@ -70,7 +84,6 @@ const actions = {
   async fetchAllSwapRequests({ commit }) {
       try {
         const socket = getSocket();
-
         socket.emit("getAllSwapRequests");
         socket.on("allSwapRequests", (swapRequests) => {
           commit("setSwapRequests", swapRequests);
