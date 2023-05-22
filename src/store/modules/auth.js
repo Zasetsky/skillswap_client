@@ -1,7 +1,22 @@
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
+import { connectSocket, getSocket } from "../../soket";
 
 const API_URL = 'http://localhost:3000/api/auth'; 
+
+// Настройка Axios interceptor
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 const state = {
   user: null,
@@ -11,19 +26,6 @@ const state = {
 const getters = {
   isAuthenticated: (state) => !!state.token,
   currentUser: (state) => state.user,
-};
-
-const mutations = {
-  setUser(state, user) {
-    state.user = user;
-  },
-  setToken(state, token) {
-    state.token = token;
-  },
-  logout(state) {
-    state.user = null;
-    state.token = '';
-  },
 };
 
 const actions = {
@@ -45,8 +47,12 @@ const actions = {
       // Сохраняем информацию о пользователе в state
       commit('setUser', user);
 
-      // Установка заголовка авторизации для всех будущих запросов
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // Подключаем сокет после успешной регистрации
+      connectSocket(token);
+
+      // Вызываем событие user_online
+      const socket = getSocket();
+      socket.emit('user_online');
 
       return response.data;
     } catch (error) {
@@ -71,10 +77,13 @@ const actions = {
       
       // Сохраняем информацию о пользователе в state
       commit('setUser', user);
-      console.log(user);
 
-      // Установка заголовка авторизации для всех будущих запросов
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // Подключаем сокет после успешной авторизации
+      connectSocket(token);
+
+      // Вызываем событие user_online
+      const socket = getSocket();
+      socket.emit('user_online');
 
       return response.data;
     } catch (error) {
@@ -87,6 +96,9 @@ const actions = {
     // Удаление токена из localStorage и очистка состояния
     localStorage.removeItem('token');
     commit('logout');
+
+    const socket = getSocket();
+    socket.disconnect();
 
     // Удаление заголовка авторизации для всех будущих запросов
     delete axios.defaults.headers.common['Authorization'];
@@ -107,14 +119,16 @@ const actions = {
         return;
       }
 
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
       try {
-        const response = await axios.get(`${API_URL}/user`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(`${API_URL}/user`);
+
+        // Подключаем сокет после автоматической авторизации
+        connectSocket(token);
+
+        // Вызываем событие user_online
+        const socket = getSocket();
+        socket.emit('user_online');
+
         commit('setUser', response.data.user);
 
       } catch (error) {
@@ -128,7 +142,19 @@ const actions = {
       }
     }
   },
+};
 
+const mutations = {
+  setUser(state, user) {
+    state.user = user;
+  },
+  setToken(state, token) {
+    state.token = token;
+  },
+  logout(state) {
+    state.user = null;
+    state.token = '';
+  },
 };
 
 export default {

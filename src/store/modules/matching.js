@@ -11,13 +11,9 @@ const getters = {
 };
 
 const actions = {
-    async fetchMatchingUsers({ commit, rootState }, selectedSkillToLearn) {
+    async fetchMatchingUsers({ commit }, selectedSkillId) {
         try {
-          const response = await axios.post(`${API_URL}/findMatchingUsers`, {
-            currentUserId: rootState.auth.user._id,
-            skillToLearn: selectedSkillToLearn,
-          });
-          console.log('body: ', response.data);
+          const response = await axios.post(`${API_URL}/findMatchingUsers`, { skillId: selectedSkillId });
           commit('setMatchingUsers', response.data);
           return response.data
         } catch (error) {
@@ -31,10 +27,12 @@ const mutations = {
   setMatchingUsers: (state, matchingUsers) => (state.matchingUsers = matchingUsers),
 };
 
+
+
 export default {
   namespaced: true,
   state,
-  getters,
   actions,
   mutations,
+  getters,
 };

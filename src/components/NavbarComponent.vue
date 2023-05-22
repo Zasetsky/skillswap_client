@@ -1,7 +1,7 @@
 <template>
   <v-navigation-drawer app dark permanent>
     <v-list>
-      <v-list-item @click="$router.push('/profile')">
+      <v-list-item @click="$router.push('/home')">
         <v-list-item-icon>
           <v-icon>mdi-home</v-icon>
         </v-list-item-icon>
@@ -9,16 +9,25 @@
           <v-list-item-title>Главная</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-      <!-- Добавлен новый элемент навигации -->
+
+      <v-list-item @click="$router.push('/chats')">
+        <v-list-item-icon>
+          <v-icon>mdi-chat</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>Чаты</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
       <v-list-item @click="$router.push('/matching')">
         <v-list-item-icon>
           <v-icon>mdi-account-switch</v-icon>
         </v-list-item-icon>
         <v-list-item-content>
-          <v-list-item-title>Поиск совпадений</v-list-item-title>
+          <v-list-item-title>Найти пира</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-      <!-- Добавьте дополнительные элементы навигации здесь -->
+
       <v-list-item @click="handleLogout">
         <v-list-item-icon>
           <v-icon>mdi-logout</v-icon>

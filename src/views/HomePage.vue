@@ -11,10 +11,30 @@
         <!-- <p>{{ user.title }}</p>
         <p>{{ user.location }}</p> -->
         <v-chip-group>
-          <v-chip label color="primary" v-for="(skill, index) in strongSkills" :key="index">{{ skill }}</v-chip>
+          <v-chip
+            label color="primary"
+            v-for="(skill, index) in strongSkills"
+            :key="index"
+            @click="handleOnStrongSkillClick(skill._id)"
+            class="swap-request-chip"
+          >
+            {{ skill.skill || skill.category || skill.subCategory }}
+            <!-- <span v-if="receivedSwapRequests[skill._id]" class="swap-request-counter">
+              {{ receivedSwapRequests[skill._id] }}
+            </span> -->
+          </v-chip>
         </v-chip-group>
         <v-chip-group>
-          <v-chip label color="secondary" v-for="(skill, index) in weakSkills" :key="index">{{ skill }}</v-chip>
+          <!-- :color="weakSkillsWithSwapRequests.includes(skill._id) ? 'purple' : 'secondary'" -->
+          <v-chip
+            label
+            :color="'secondary'"
+            v-for="(skill, index) in weakSkills"
+            :key="index"
+            @click="handleOnWeakSkillClick(skill._id)"
+          >
+            {{ skill.skill || skill.category || skill.subCategory }}
+          </v-chip>
         </v-chip-group>
         <p v-if="bio">{{ bio }}</p>
       </v-col>
@@ -26,17 +46,37 @@
 import { mapGetters } from "vuex";
 
 export default {
-  data() {
-    return {
-      user: {
-        title: 'Web Developer',
-        location: 'New York, USA',
-        bio: 'I am a passionate web developer with experience in creating modern web applications using cutting-edge technologies. I am always eager to learn new skills and collaborate with like-minded professionals.',
-      }
-      };
-  },
   computed: {
     ...mapGetters("auth", ["currentUser"]),
+
+    // receivedSwapRequests() {
+    //   if (!this.currentUser || !this.currentUser.swapRequests) return [];
+
+    //   return this.currentUser.swapRequests.reduce((acc, request) => {
+    //     if (request.status !== "pending") return acc;
+
+    //     request.senderData.skillsToLearn.forEach(skill => {
+    //       const skillId = skill._id;
+    //       acc[skillId] = (acc[skillId] || 0) + 1;
+    //     });
+
+    //     return acc;
+    //   }, {});
+    // },
+
+
+    // weakSkillsWithSwapRequests() {
+    //   if (!this.currentUser || !this.currentUser.swapRequests.length) return [];
+    //   const swapRequests = this.currentUser.swapRequests;
+
+    //   return swapRequests.reduce((ids, request) => {
+    //     if (request.receiverData.skillsToLearn.some(skill => skill._id)) {
+    //       ids.push(request.receiverData.skillsToLearn[0]._id);
+    //     }
+    //     return ids;
+    //   }, []);
+    // },
+
     name() {
       if (!this.currentUser || !this.currentUser.firstName || !this.currentUser.lastName) return "NaN NaN";
       const firstName = this.currentUser.firstName.toLowerCase();
@@ -48,34 +88,12 @@ export default {
 
     strongSkills() {
       if (!this.currentUser || !this.currentUser.skillsToTeach.length) return "NaN"
-      const skills = [];
-      for (let i = 0; i < this.currentUser.skillsToTeach.length; i++) {
-        const element = this.currentUser.skillsToTeach[i];
-        if(element.theme === "Языки") {
-          skills.push(element.category);
-        } else if(element.category === "Региональная кухня") {
-          skills.push(element.subCategory);
-        } else {
-          skills.push(element.skill);
-        }
-      }
-      return skills;
+      return this.currentUser.skillsToTeach; // Возвращаем полный массив объектов, а не только имена навыков
     },
 
     weakSkills() {
       if (!this.currentUser || !this.currentUser.skillsToLearn.length) return "NaN"
-      const skills = [];
-      for (let i = 0; i < this.currentUser.skillsToLearn.length; i++) {
-        const element = this.currentUser.skillsToLearn[i];
-        if(element.theme === "Языки") {
-          skills.push(element.category);
-        } else if(element.category === "Региональная кухня") {
-          skills.push(element.subCategory);
-        } else {
-          skills.push(element.skill);
-        }
-      }
-      return skills;
+      return this.currentUser.skillsToLearn; // Возвращаем полный массив объектов, а не только имена навыков
     },
 
     avatarUrl() {
@@ -89,11 +107,38 @@ export default {
     }
 
   },
-  mounted() {
-    console.log('USER: ', this.currentUser);
-  }
+
+  methods: {
+    handleOnWeakSkillClick(skill) {
+      localStorage.setItem("weakSkillId", skill);
+      this.$router.push({ name: 'WeakSkillsPage' });
+    },
+
+    handleOnStrongSkillClick(skill) {
+      localStorage.setItem("strongSkillId", skill);
+      this.$router.push({ name: 'StrongSkillsPage' });
+    }
+  },
 };
 </script>
 
 <style scoped>
+.swap-request-chip {
+  position: relative;
+  overflow: visible;
+}
+
+.swap-request-counter {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  font-size: 10px;
+  line-height: 18px;
+  height: 18px;
+  width: 18px;
+  text-align: center;
+}
 </style>

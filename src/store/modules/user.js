@@ -5,12 +5,12 @@ const API_URL = 'http://localhost:3000/api/profile'
 
 const state = {
   avatarUrl: null,
+  userProfile: {}
 };
 
-const mutations = {
-  SET_AVATAR_URL(state, avatarUrl) {
-    state.avatarUrl = avatarUrl;
-  },
+const getters = {
+  getUserProfile: state => state.userProfile,
+  getAvatarUrl: state => state.userProfile.avatarUrl,
 };
 
 const actions = {
@@ -21,12 +21,9 @@ const actions = {
     try {
       const formData = new FormData();
       formData.append('avatar', file);
-      console.log('Authorization header:', axios.defaults.headers.common['Authorization']);
-      const token = localStorage.getItem('token');
 
       const response = await axios.post(`${API_URL}/avatar`, formData, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
@@ -45,7 +42,6 @@ const actions = {
     try {
       await axios.put(`${API_URL}/update`, userProfile, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
         },
       });
@@ -85,7 +81,6 @@ const actions = {
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       });
   
@@ -99,12 +94,38 @@ const actions = {
     }
   },
 
+  // Запрос профиля пользователя
+
+  async fetchUserProfile({ commit }, userId) {
+    try {
+      const response = await axios.get(`${API_URL}/current/${userId}`);
+      
+      commit('setUserProfile', response.data.user);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  },
+
+  async fetchCurrentUser() {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/auth/user`);
+      store.commit('auth/setUser', response.data.user, { root: true });
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  },
+
 };
 
-
-const getters = {
-  getAvatarUrl: state => state.userProfile.avatarUrl,
+const mutations = {
+  SET_AVATAR_URL(state, avatarUrl) {
+    state.avatarUrl = avatarUrl;
+  },
+  setUserProfile(state, userProfile) {
+    state.userProfile = userProfile;
+  },
 };
+
 
 export default {
   namespaced: true,

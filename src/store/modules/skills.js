@@ -7,10 +7,9 @@ const state = {
 
 };
 
-const mutations = {
-  setAvailableSkills(state, availableSkills) {
-    state.availableSkills = availableSkills;
-  },
+const getters = {
+  getSkillList: (state) => state.availableSkills,
+
 };
 
 const actions = {
@@ -44,17 +43,39 @@ const actions = {
         } catch (error) {
           console.error('Error during adding weak skills:', error);
         }
+    },
+
+    // Переключение isInProcess для навыка, который пользователь хочет изучить
+
+    async toggleIsInProcessSkillToLearn(context, skillId) {
+      try {
+        await axios.post(`${API_URL}/toggle-skill-to-learn-is-in-process`, { skillId });
+      } catch (error) {
+        console.error('Error during toggling isInProcess for skill to learn:', error);
+      }
+    },
+
+    // Переключение isInProcess для навыка, который пользователь хочет преподавать
+
+    async toggleIsInProcessSkillToTeach(context, skillId) {
+      try {
+        await axios.post(`${API_URL}/toggle-skill-to-teach-is-in-process`, { skillId });
+      } catch (error) {
+        console.error('Error during toggling isInProcess for skill to teach:', error);
+      }
     }
   
   
 };
 
-const getters = {
-    getSkillList: (state) => state.availableSkills,
-
+const mutations = {
+  setAvailableSkills(state, availableSkills) {
+    state.availableSkills = availableSkills;
+  },
 };
 
 export default {
+  namespaced: true,
   state,
   mutations,
   actions,

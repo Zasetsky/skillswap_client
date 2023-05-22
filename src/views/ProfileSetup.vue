@@ -79,7 +79,7 @@ export default {
   },
 
     finishProfileSetup() {
-      this.$router.push('/profile');
+      this.$router.push('/home');
     }
   },
 

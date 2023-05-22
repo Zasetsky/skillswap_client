@@ -3,11 +3,7 @@ import Router from 'vue-router'
 import store from '@/store'
 import jwtDecode from 'jwt-decode';
 
-import LoginPage from '@/views/LoginPage.vue'
-import ProfileSetup from '@/views/ProfileSetup.vue'
 import Home from '@/views/HomePage.vue'
-import MatchingUsers from '@/views/MatchingUsers.vue'
-import UserProfile from '@/views/UserProfile.vue'
 
 Vue.use(Router)
 
@@ -17,13 +13,13 @@ const router = new Router({
     {
       path: '/',
       name: 'Login',
-      component: LoginPage,
+      component: () => import('@/views/LoginPage.vue'),
       meta: { public: true },
     },
     {
       path: '/profile_setup',
       name: 'ProfileSetup',
-      component: ProfileSetup,
+      component: () => import('@/views/ProfileSetup.vue'),
       meta: { requiresAuth: true },
     },
     {
@@ -35,21 +31,43 @@ const router = new Router({
     {
       path: '/matching',
       name: 'MatchingUsers',
-      component: MatchingUsers,
+      component: () => import('@/views/MatchingUsers.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/user/:userId',
       name: 'UserProfile',
-      component: UserProfile,
+      component: () => import('@/views/UserProfile.vue'),
+      props: true,
       meta: { requiresAuth: true },
     },
-    // {
-    //   path: '/skill/:id',
-    //   name: 'SkillDetails',
-    //   component: SkillDetails,
-    //   props: true,
-    // },
+    {
+      path: '/weak-skill',
+      name: 'WeakSkillsPage',
+      component: () => import('@/components/ProfileComponents/WeakSkillsPage.vue'),
+      props: true,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/strong-skill',
+      name: 'StrongSkillsPage',
+      component: () => import('@/components/ProfileComponents/StrongSkillsPage.vue'),
+      props: true,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/chats',
+      name: 'Chats_Page',
+      component: () => import('@/views/AllChatsPage.vue'),
+      meta: { requiresAuth: true },
+    }, 
+    {
+      path: '/:chatId([0-9a-zA-Z-_]+)',
+      name: 'Chat',
+      component: () => import('@/views/DealChat.vue'),
+      props: route => ({ chatId: route.params.chatId }),
+      meta: { requiresAuth: true },
+    }, 
   ],
 })
 
@@ -75,6 +93,8 @@ router.beforeEach(async (to, from, next) => {
     } else if (isPublic && loggedIn && !isProfileSetup) {
       await router.push('/profile_setup');
     } else if (to.name === 'ProfileSetup' && isProfileSetup) {
+      await router.push('/home');
+    } else if (to.name === 'Login' && loggedIn) { // Добавьте эту проверку
       await router.push('/home');
     } else {
       next();
