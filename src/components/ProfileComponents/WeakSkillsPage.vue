@@ -123,8 +123,8 @@ export default {
   },
 
   methods: {
-    ...mapActions('swapRequests', ['deleteSwapRequest', 'fetchAllSwapRequests', 'listenForSwapRequestUpdates']),
-    ...mapActions('user', ['fetchCurrentUser', 'listenForUserUpdates']),
+    ...mapActions('swapRequests', ['deleteSwapRequest', 'fetchAllSwapRequests']),
+    ...mapActions('user', ['fetchCurrentUser']),
 
     async cancelSwapRequest(swapRequestId) {
       try {
@@ -176,8 +176,6 @@ export default {
 
       await this.fetchCurrentUser();
       await this.fetchAllSwapRequests();
-      await this.listenForSwapRequestUpdates();
-      await this.listenForUserUpdates();
       } catch (error) {
         console.error('Error creating swap request:', error);
     }

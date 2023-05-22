@@ -48,9 +48,6 @@ const actions = {
       // Сохраняем информацию о пользователе в state
       commit('setUser', user);
 
-      // Подключаем сокет после успешной регистрации
-      connectSocket(token);
-
       return response.data;
     } catch (error) {
       console.error('Error during registration:', error);
