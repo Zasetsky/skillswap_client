@@ -39,6 +39,17 @@ const actions = {
     });
   },  
   
+  async listenForNewChat(context) {
+    try {
+        const socket = getSocket();
+
+        socket.on("newChat", (newChat) => {
+          context.commit("SET_ALL_CHATS", newChat);
+        });
+    } catch (error) {
+        console.error("Error listening for swap requests:", error);
+    }
+  },
 
   fetchCurrentChat({ commit }, chatId) {
     return new Promise((resolve, reject) => {
@@ -79,7 +90,7 @@ const actions = {
     });
   },
 
-  async sendMessage({ dispatch }, { chatId, type, content, sender }) {
+  async sendMessage(context, { chatId, type, content, sender }) {
     try {
       const socket = getSocket();
 
@@ -94,12 +105,21 @@ const actions = {
       };
       socket.emit("sendMessage", newMessage);
 
-      socket.on("message", (chatId) => {
-        dispatch("fetchCurrentChat", chatId);
-      });
     } catch (error) {
       console.error("Ошибка отправки сообщения:", error);
       throw error;
+    }
+  },
+
+  async listenForNewMessage(context) {
+    try {
+        const socket = getSocket();
+
+        socket.on("message", (chatId) => {
+          context.dispatch("fetchCurrentChat", chatId);
+        });
+    } catch (error) {
+        console.error("Error listening for swap requests:", error);
     }
   },
 };

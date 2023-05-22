@@ -19,10 +19,14 @@ export function connectSocket(token) {
 
     store.dispatch("user/listenForUserUpdates");
     store.dispatch("swapRequests/listenForSwapRequestUpdates");
+    // swapRequest
     store.dispatch("swapRequests/listenForSwapRequestSent");
     store.dispatch("swapRequests/listenForSwapRequestAccepted");
     store.dispatch("swapRequests/listenForSwapRequestDeleted");
     store.dispatch("swapRequests/listenForSwapRequestRejected");
+    // Chat
+    store.dispatch("chat/listenForNewChat");
+    store.dispatch("chat/listenForNewMessage");
   });
 
   socket.on('connect_error', (error) => {
