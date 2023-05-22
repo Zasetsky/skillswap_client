@@ -142,7 +142,7 @@ export default {
       }
       try {
         await this.$store.dispatch("chat/createOrGetCurrentChat", {
-          receiverId: receiverId,
+          receiverId,
           senderId: this.currentUser._id,
           swapRequestId: requestId,
         });

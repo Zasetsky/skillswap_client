@@ -20,20 +20,17 @@ const actions = {
         const socket = getSocket();
 
         socket.emit("sendSwapRequest", { senderId, receiverId, senderData, receiverData });
-        socket.on("swapRequestSent", (data) => {
-            console.log(data.message);
-            context.dispatch("fetchAllSwapRequests");
-        });
+
     } catch (error) {
         console.error("Error sending swap request:", error);
     }
   },
 
-  async listenForswapRequestReceived(context) {
+  async listenForSwapRequestSent(context) {
     try {
         const socket = getSocket();
 
-        socket.on("swapRequestReceived", (data) => {
+        socket.on("swapRequestSent", (data) => {
             console.log(data.message);
             context.dispatch("fetchAllSwapRequests");
         });
@@ -47,9 +44,7 @@ const actions = {
       const socket = getSocket();
 
       socket.emit("acceptSwapRequest", { swapRequestId, chosenSkillToSwap });
-      socket.on("swapRequestAccepted", () => {
-        context.dispatch("fetchAllSwapRequests");
-      });
+
     } catch (error) {
       console.error("Error accepting swap request:", error);
     }
@@ -59,23 +54,21 @@ const actions = {
     try {
         const socket = getSocket();
 
-        socket.on("listenSwapRequestAccepted", (data) => {
-            console.log(data.message);
-            context.dispatch("fetchAllSwapRequests");
+        socket.on("swapRequestAccepted", (data) => {
+          console.log(data.message);
+          context.dispatch("fetchAllSwapRequests");
         });
     } catch (error) {
         console.error("Error listening for swap requests:", error);
     }
   },
 
-  async rejectSwapRequest({ dispatch }, swapRequestId) {
+  async rejectSwapRequest(context , swapRequestId) {
     try {
       const socket = getSocket();
 
       socket.emit("rejectSwapRequest", { swapRequestId });
-      socket.on("swapRequestRejected", () => {
-        dispatch("fetchAllSwapRequests");
-      });
+
     } catch (error) {
       console.error("Error rejecting swap request:", error);
     }
@@ -85,24 +78,20 @@ const actions = {
     try {
         const socket = getSocket();
 
-        socket.on("listenSwapRequestRejected", (data) => {
-            console.log(data.message);
-            context.dispatch("fetchAllSwapRequests");
+        socket.on("swapRequestRejected", () => {
+          context.dispatch("fetchAllSwapRequests");
         });
     } catch (error) {
         console.error("Error listening for swap requests:", error);
     }
   },
 
-  async deleteSwapRequest({ dispatch }, requestId) {
+  async deleteSwapRequest(context , requestId) {
     try {
       const socket = getSocket();
 
       socket.emit("deleteSwapRequest", { requestId });
 
-      socket.on("swapRequestDeleted", () => {
-        dispatch("fetchAllSwapRequests");
-      });
     } catch (error) {
       console.error("Error deleting swap request:", error);
     }
@@ -112,9 +101,9 @@ const actions = {
     try {
         const socket = getSocket();
 
-        socket.on("listenSwapRequestDeleted", (data) => {
-            console.log(data.message);
-            context.dispatch("fetchAllSwapRequests");
+        socket.on("swapRequestDeleted", (data) => {
+          console.log(data.message);
+          context.dispatch("fetchAllSwapRequests");
         });
     } catch (error) {
         console.error("Error listening for swap requests:", error);

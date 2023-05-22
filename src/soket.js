@@ -19,7 +19,7 @@ export function connectSocket(token) {
 
     store.dispatch("user/listenForUserUpdates");
     store.dispatch("swapRequests/listenForSwapRequestUpdates");
-    store.dispatch("swapRequests/listenForswapRequestReceived");
+    store.dispatch("swapRequests/listenForSwapRequestSent");
     store.dispatch("swapRequests/listenForSwapRequestAccepted");
     store.dispatch("swapRequests/listenForSwapRequestDeleted");
     store.dispatch("swapRequests/listenForSwapRequestRejected");
