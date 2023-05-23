@@ -18,15 +18,22 @@ export function connectSocket(token) {
     socket.emit('user_online');
 
     store.dispatch("user/listenForUserUpdates");
-    store.dispatch("swapRequests/listenForSwapRequestUpdates");
+
     // swapRequest
     store.dispatch("swapRequests/listenForSwapRequestSent");
     store.dispatch("swapRequests/listenForSwapRequestAccepted");
     store.dispatch("swapRequests/listenForSwapRequestDeleted");
     store.dispatch("swapRequests/listenForSwapRequestRejected");
+    store.dispatch("swapRequests/listenForSwapRequestUpdates");
     // Chat
     store.dispatch("chat/listenForNewChat");
     store.dispatch("chat/listenForNewMessage");
+
+    // Deal
+    store.dispatch("deal/listenForDealObserver");
+    store.dispatch("deal/listenForDealUpdates");
+    store.dispatch("deal/listenForRescheduleConfirmed");
+    store.dispatch("deal/listenForDealConfirmed");
   });
 
   socket.on('connect_error', (error) => {

@@ -49,11 +49,11 @@ const actions = {
     });
   },
 
-  listenForDealUpdates({ commit }) {
+  listenForDealObserver(context) {
     const socket = getSocket();
 
     socket.on('dealUpdated', (updatedDeal) => {
-      commit('SET_CURRENT_DEAL', updatedDeal);
+      context.commit('SET_CURRENT_DEAL', updatedDeal);
     });
 
     socket.on('error', (error) => {
@@ -61,61 +61,66 @@ const actions = {
     });
   },
 
-  updateDeal({ commit }, { dealId, formData1, formData2 }) {
-      const data = { dealId, formData1, formData2 };
+  updateDeal(context, { dealId, formData1, formData2 }) {
+    const data = { dealId, formData1, formData2 };
 
-      const socket = getSocket();
+    const socket = getSocket();
 
-      socket.emit("updateDeal", data);
+    socket.emit("updateDeal", data);
 
-      socket.on("deal", (deal) => {
-        commit("SET_CURRENT_DEAL", deal);
-      // commit("UPDATE_DEAL", { dealId, deal });
-      });
-
-      socket.on("error", (error) => {
-      console.error("Error updating deal:", error.message);
-      });
-  },
-
-  proposeRescheduleDeal({ commit }, { dealId, rescheduleFormData1, rescheduleFormData2 }) {
-    return new Promise((resolve, reject) => {
-      const socket = getSocket();
-
-      const data = { dealId, rescheduleFormData1, rescheduleFormData2 };
-      socket.emit("proposeReschedule", data);
-
-      socket.on("deal", (deal) => {
-        commit("SET_CURRENT_DEAL", deal);
-        resolve(deal);
-      });
-
-      socket.once("error", (error) => {
-        console.error("Error proposing reschedule:", error.message);
-        reject(error);
-      });
+    socket.on("error", (error) => {
+    console.error("Error updating deal:", error.message);
     });
   },
 
-  confirmReschedule({ commit }, dealId) {
-    return new Promise((resolve, reject) => {
+  listenForDealUpdates(context) {
+    try {
       const socket = getSocket();
-  
-      socket.emit("confirmReschedule", dealId);
-  
+
+      socket.on("deal", (deal) => {
+        context.commit("SET_CURRENT_DEAL", deal);
+      });
+    } catch (error) {
+        console.error("Error listening for swap requests:", error);
+    }
+  },
+
+  proposeRescheduleDeal(context, { dealId, rescheduleFormData1, rescheduleFormData2 }) {
+    const socket = getSocket();
+
+    const data = { dealId, rescheduleFormData1, rescheduleFormData2 };
+    console.log(data);
+    socket.emit("proposeReschedule", data);
+
+    socket.once("error", (error) => {
+      console.error("Error proposing reschedule:", error.message);
+    });
+  },
+
+  confirmReschedule(context, dealId) {
+    const socket = getSocket();
+    console.log(dealId);
+    socket.emit("confirmReschedule", dealId);
+
+    socket.on("error", (error) => {
+      console.error("Error confirming reschedule:", error.message);
+    });
+  },
+
+  listenForRescheduleConfirmed(context) {
+    try {
+      const socket = getSocket();
+
       socket.on("rescheduleConfirmed", (deal) => {
-        commit("SET_CURRENT_DEAL", deal);
-        resolve(deal);
+        context.commit("SET_CURRENT_DEAL", deal);
       });
-  
-      socket.on("error", (error) => {
-        console.error("Error confirming reschedule:", error.message);
-        reject(error);
-      });
-    });
-  },  
-  
-  async getAllDeals({ commit }) {
+  } catch (error) {
+      console.error("Error listening for Reschedule Confirmed:", error);
+  }
+  },
+
+
+  getAllDeals({ commit }) {
       return new Promise((resolve, reject) => {
       try {
         const socket = getSocket();
@@ -132,22 +137,27 @@ const actions = {
       });
   },
 
-  confirmDeal({ commit }, dealId) {
-    return new Promise((resolve, reject) => {
-      const socket = getSocket();
-  
-      socket.emit("confirmDeal", dealId);
-  
-      socket.on("dealConfirmed", (deal) => {
-        commit("SET_CURRENT_DEAL", deal);
-        resolve(deal);
-      });
-  
-      socket.on("error", (error) => {
-        console.error("Error confirming deal:", error.message);
-        reject(error);
-      });
+  confirmDeal(context, dealId) {
+    const socket = getSocket();
+    console.log(dealId);
+
+    socket.emit("confirmDeal", dealId);
+
+    socket.on("error", (error) => {
+      console.error("Error confirming deal:", error.message);
     });
+  },
+
+  listenForDealConfirmed(context) {
+    try {
+      const socket = getSocket();
+
+      socket.on("dealConfirmed", (deal) => {
+        context.commit("SET_CURRENT_DEAL", deal);
+      });
+    } catch (error) {
+        console.error("Error listening for Deal Confirmed:", error);
+    }
   },
 
   // Отмена

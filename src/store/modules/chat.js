@@ -16,7 +16,7 @@ const actions = {
     commit('SET_SOCKET', socket);
   },
 
-  async createOrGetCurrentChat({ commit }, { receiverId, senderId, swapRequestId }) {
+  createOrGetCurrentChat({ commit }, { receiverId, senderId, swapRequestId }) {
     return new Promise((resolve, reject) => {
       try {
         const socket = getSocket();
@@ -39,7 +39,7 @@ const actions = {
     });
   },  
   
-  async listenForNewChat(context) {
+  listenForNewChat(context) {
     try {
         const socket = getSocket();
 
@@ -90,7 +90,7 @@ const actions = {
     });
   },
 
-  async sendMessage(context, { chatId, type, content, sender }) {
+  async sendMessage(context, { chatId, type, content }) {
     try {
       const socket = getSocket();
 
@@ -101,7 +101,6 @@ const actions = {
         chatId,
         type: type || "text",
         content,
-        sender
       };
       socket.emit("sendMessage", newMessage);
 
@@ -111,7 +110,7 @@ const actions = {
     }
   },
 
-  async listenForNewMessage(context) {
+  listenForNewMessage(context) {
     try {
         const socket = getSocket();
 

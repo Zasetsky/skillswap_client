@@ -203,36 +203,12 @@ export default {
           chatId: this.getCurrentChat._id,
           type: type || 'text',
           content,
-          sender: this.currentUser._id
         };
 
         await this.$store.dispatch("chat/sendMessage", newMessage);
       } catch (error) {
         console.error('Error sending message:', error);
         throw error;
-      }
-    },
-
-    async sendMeetingDetails() {
-      try {
-        const meetingDetails = this.getMeetingDetails();
-
-        if (meetingDetails) {
-            const newMessage = {
-            chatId: this.getCurrentChat._id,
-            type: 'meeting_details',
-            content: meetingDetails,
-            sender: meetingDetails === this.getCurrentDeal.form
-              ? this.getCurrentSwapRequest.senderId
-              : this.getCurrentSwapRequest.receiverId
-          };
-
-          await this.$store.dispatch("chat/sendMessage", newMessage);
-        } else {
-          console.warn("No meeting details found");
-        }
-      } catch (error) {
-        console.error("Error sending meeting details:", error);
       }
     },
 
@@ -359,48 +335,12 @@ export default {
       }
     },
 
-    getMeetingDetails() {
-      const deal = this.getCurrentDeal;
-      if (deal.form && deal.form2) {
-        let form1DateTime = new Date(`${deal.form.meetingDate}T${deal.form.meetingTime}`);
-        let form2DateTime = new Date(`${deal.form2.meetingDate}T${deal.form2.meetingTime}`);
-
-        // Добавляем минуту к времени встреч
-        form1DateTime.setMinutes(form1DateTime.getMinutes() + 1);
-        form2DateTime.setMinutes(form2DateTime.getMinutes() + 1);
-
-        let now = new Date();
-        // Округление текущего времени до минут
-        now.setMilliseconds(0);
-        now.setSeconds(0);
-
-        if (form1DateTime <= now && form2DateTime <= now) {
-          return null;
-        }
-
-        if (form1DateTime <= now) {
-          return deal.form2;
-        }
-        if (form2DateTime <= now) {
-          return deal.form;
-        }
-
-        const form1Difference = Math.abs(now - form1DateTime);
-        const form2Difference = Math.abs(now - form2DateTime);
-
-        return form1Difference < form2Difference ? deal.form : deal.form2;
-      } else {
-        return null;
-      }
-    },
-
     async confirmDeal() {
       try {
         await this.$store.dispatch("deal/confirmDeal", {
           dealId: this.getCurrentDeal._id,
         });
-        
-        await this.sendMeetingDetails();
+
       } catch (error) {
         console.error("Error confirming deal:", error);
       }
@@ -411,8 +351,7 @@ export default {
         await this.$store.dispatch("deal/confirmReschedule", {
           dealId: this.getCurrentDeal._id,
         });
-        
-        await this.sendMeetingDetails();
+
       } catch (error) {
         console.error("Error confirming deal:", error);
       }
@@ -426,11 +365,6 @@ export default {
         const chatId = localStorage.getItem("chatId");
       
       await this.$store.dispatch("chat/fetchCurrentChat", chatId);
-      }
-    },
-    getCurrentDeal(newDeal, oldDeal) {
-      if (newDeal && oldDeal && newDeal.status !== oldDeal.status && newDeal.status === 'half_completed') {
-        this.sendMeetingDetails();
       }
     },
   },
@@ -449,8 +383,6 @@ export default {
 
       await this.$store.dispatch("swapRequests/fetchCurrentSwapRequest", this.getCurrentDeal.swapRequestId);
       await this.$store.dispatch("review/getCurrentDealReviews", this.getCurrentDeal._id);
-
-      await this.$store.dispatch("deal/listenForDealUpdates");
 
       this.$nextTick(() => {
         this.scrollToBottom();

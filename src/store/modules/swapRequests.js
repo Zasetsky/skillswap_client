@@ -15,7 +15,7 @@ const getters = {
 };
 
 const actions = {
-  async sendSwapRequest(context, { senderId, receiverId, senderData, receiverData }) {
+  sendSwapRequest(context, { senderId, receiverId, senderData, receiverData }) {
     try {
         const socket = getSocket();
 
@@ -26,7 +26,7 @@ const actions = {
     }
   },
 
-  async listenForSwapRequestSent(context) {
+  listenForSwapRequestSent(context) {
     try {
         const socket = getSocket();
 
@@ -39,7 +39,7 @@ const actions = {
     }
   },
 
-  async acceptSwapRequest(context, { swapRequestId, chosenSkillToSwap }) {
+  acceptSwapRequest(context, { swapRequestId, chosenSkillToSwap }) {
     try {
       const socket = getSocket();
 
@@ -50,7 +50,7 @@ const actions = {
     }
   },
 
-  async listenForSwapRequestAccepted(context) {
+  listenForSwapRequestAccepted(context) {
     try {
         const socket = getSocket();
 
@@ -63,7 +63,7 @@ const actions = {
     }
   },
 
-  async rejectSwapRequest(context , swapRequestId) {
+  rejectSwapRequest(context , swapRequestId) {
     try {
       const socket = getSocket();
 
@@ -74,7 +74,7 @@ const actions = {
     }
   },
 
-  async listenForSwapRequestRejected(context) {
+  listenForSwapRequestRejected(context) {
     try {
         const socket = getSocket();
 
@@ -86,7 +86,7 @@ const actions = {
     }
   },
 
-  async deleteSwapRequest(context , requestId) {
+  deleteSwapRequest(context , requestId) {
     try {
       const socket = getSocket();
 
@@ -97,7 +97,7 @@ const actions = {
     }
   },
 
-  async listenForSwapRequestDeleted(context) {
+  listenForSwapRequestDeleted(context) {
     try {
         const socket = getSocket();
 
@@ -110,7 +110,7 @@ const actions = {
     }
   },
 
-  async fetchAllSwapRequests({ commit }) {
+  fetchAllSwapRequests({ commit }) {
       try {
         const socket = getSocket();
         socket.emit("getAllSwapRequests");
@@ -122,7 +122,7 @@ const actions = {
       }
   },
 
-  async fetchCurrentSwapRequest({ commit }, swapRequestId) {
+  fetchCurrentSwapRequest({ commit }, swapRequestId) {
     return new Promise((resolve, reject) => {
       try {
         const socket = getSocket();
