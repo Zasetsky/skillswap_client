@@ -57,7 +57,7 @@ const actions = {
     });
 
     socket.on('error', (error) => {
-      console.error('Error while listening for deal updates:', error.message);
+      console.error('Error while listening for Deal Observer:', error.message);
     });
   },
 
@@ -81,7 +81,7 @@ const actions = {
         context.commit("SET_CURRENT_DEAL", deal);
       });
     } catch (error) {
-        console.error("Error listening for swap requests:", error);
+        console.error("Error listening for Deal Updates:", error);
     }
   },
 
@@ -161,98 +161,119 @@ const actions = {
   },
 
   // Отмена
-  requestCancellation({ commit }, { dealId, reason, timestamp }) {
+  requestCancellation(context, { dealId, reason, timestamp }) {
     const socket = getSocket();
 
     const data = { dealId, reason, timestamp };
 
     socket.emit("requestCancellation", data);
 
-    socket.on("cancellationRequested", (deal) => {
-      commit("SET_CURRENT_DEAL", deal);
-    });
-  
     socket.on("error", (error) => {
       console.error("Error during send request cancellation deal:", error.message);
     });
   },
 
-  // approveCancellation({ commit }, { dealId }) {
-  //   const socket = getSocket();
+  listenForCancellationRequested(context) {
+    try {
+      const socket = getSocket();
 
-  //   socket.emit("approveCancellation", { dealId });
-  // },
+      socket.on("cancellationRequested", (deal) => {
+        context.commit("SET_CURRENT_DEAL", deal);
+      });
+    } catch (error) {
+        console.error("Error listening for Cancellation Requested:", error);
+    }
+  },
 
-  // rejectCancellation({ commit }, { dealId }) {
-  //   const socket = getSocket();
+  approveCancellation(context, { dealId }) {
+    const socket = getSocket();
 
-  //   socket.emit("rejectCancellation", { dealId });
-  // },
+    socket.emit("approveCancellation", { dealId });
 
-    // approveCancellation({ commit }, { dealId }) {
-  //   const socket = getSocket();
+    socket.on("error", (error) => {
+      console.error("Error during approving cancellation deal:", error.message);
+    });
+  },
 
-  //   socket.emit("approveCancellation", { dealId });
-  // },
+  listenForApproveCancellation(context) {
+    try {
+      const socket = getSocket();
 
-  // rejectCancellation({ commit }, { dealId }) {
-  //   const socket = getSocket();
+      socket.on("cancellationApproved", (deal) => {
+        context.commit("SET_CURRENT_DEAL", deal);
+      });
+    } catch (error) {
+        console.error("Error listening for Cancellation Requested:", error);
+    }
+  },
 
-  //   socket.emit("rejectCancellation", { dealId });
-  // },
+  rejectCancellation(context, { dealId }) {
+    const socket = getSocket();
+
+    socket.emit("rejectCancellation", { dealId });
+
+    socket.on("error", (error) => {
+      console.error("Error during rejecting cancellation deal:", error.message);
+    });
+  },
 
   // продолжение
-  requestContinuation({ commit }, dealId) {
+  requestContinuation(context, dealId) {
     const socket = getSocket();
 
     socket.emit("requestContinuation", dealId);
 
-    socket.on("continuationRequested", (deal) => {
-      commit("SET_CURRENT_DEAL", deal);
-    });
-  
     socket.on("error", (error) => {
       console.error("Error during sending request continuation deal:", error.message);
     });
   },
 
-  rejectContinuation({ commit }, { dealId }) {
+  listenForContinuationRequested(context) {
+    try {
+      const socket = getSocket();
+
+      socket.on("continuationRequested", (deal) => {
+        context.commit("SET_CURRENT_DEAL", deal);
+      });
+    } catch (error) {
+        console.error("Error listening for Cancellation Requested:", error);
+    }
+  },
+
+  rejectContinuation(context, { dealId }) {
     const socket = getSocket();
 
     socket.emit("rejectContinuation", { dealId });
-
-    socket.on("continuationRejected", (deal) => {
-      commit("SET_CURRENT_DEAL", deal);
-    });
 
     socket.on("error", (error) => {
       console.error("Error during rejecting request continuation deal:", error.message);
     });
   },
 
-  approveContinuation({ commit }, { dealId }) {
+  approveContinuation(context, { dealId }) {
     const socket = getSocket();
 
     socket.emit("approveContinuation", { dealId });
-
-    socket.on("continuationApproved", (deal) => {
-      commit("SET_CURRENT_DEAL", deal);
-    });
 
     socket.on("error", (error) => {
       console.error("Error during approving request continuation deal:", error.message);
     });
   },
+
+  listenForApproveContinuation(context) {
+    try {
+      const socket = getSocket();
+
+      socket.on("continuationApproved", (deal) => {
+        context.commit("SET_CURRENT_DEAL", deal);
+      });
+    } catch (error) {
+        console.error("Error listening for Cancellation Requested:", error);
+    }
+  },
 };
 
 const mutations = {
-  // UPDATE_DEAL(state, { dealId, deal }) {
-  //   const index = state.deals.findIndex((d) => d._id === dealId);
-  //   if (index !== -1) {
-  //     state.deals.splice(index, 1, deal);
-  //   }
-  // },
-
   SET_CURRENT_DEAL: (state, deal) => {
     state.currentDeal = deal;
   },

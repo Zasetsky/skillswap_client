@@ -34,6 +34,10 @@ export function connectSocket(token) {
     store.dispatch("deal/listenForDealUpdates");
     store.dispatch("deal/listenForRescheduleConfirmed");
     store.dispatch("deal/listenForDealConfirmed");
+    store.dispatch("deal/listenForCancellationRequested");
+    store.dispatch("deal/listenForContinuationRequested");
+    store.dispatch("deal/listenForApproveContinuation");
+    store.dispatch("deal/listenForApproveCancellation");
   });
 
   socket.on('connect_error', (error) => {

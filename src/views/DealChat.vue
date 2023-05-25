@@ -306,9 +306,6 @@ export default {
         await this.$store.dispatch("deal/approveContinuation", {
           dealId: this.getCurrentDeal._id,
         });
-        await this.$store.dispatch("deal/fetchCurrentDeal", {
-          chatId: this.getCurrentChat._id,
-        });
       } catch (error) {
         console.error("Error approving continuation:", error);
       }
