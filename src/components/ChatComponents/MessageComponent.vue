@@ -8,12 +8,14 @@
           :isMyMessage="isMyMessage"
           :isLastMessage="isLastMessage"
           :messageClass="messageClass"
+          :hasRescheduleRequest="hasRescheduleRequest"
           :hasMeetingDetails="hasMeetingDetails"
           :hasCancellationRequest="hasCancellationRequest"
           :hasContinuationRequest="hasContinuationRequest"
           :isLastRescheduleProposal="isLastRescheduleProposal"
-          :isLastDealProposal="isLastDealProposal"
           :isLastContinuationRequest="isLastContinuationRequest"
+          :isLastCancellationRequest="isLastCancellationRequest"
+          :isLastDealProposal="isLastDealProposal"
           @approve-cancellation="approveCancellation"
           @reject-cancellation="rejectCancellation"
           @approve-continuation="approveContinuation"
@@ -89,15 +91,13 @@ export default {
       let messageClass = 'normal';
       if (this.message.type === 'details' && (!this.isMyMessage && this.isLastMessage)) {
         messageClass = 'highlight';
-      } else if (this.message.type === 'deal_proposal' && ((!this.isMyMessage && this.isLastDealProposal && !this.hasMeetingDetails) || (!this.isMyMessage && this.isLastDealProposal && this.isLastMessage))) {
+      } else if (this.message.type === 'deal_proposal' && this.isLastDealProposal && !this.hasRescheduleRequest && !this.hasMeetingDetails && !this.hasCancellationRequest && !this.hasContinuationRequest) {
         messageClass = 'highlight';
-      } else if (this.message.type === 'reschedule_proposal' && !this.isMyMessage && this.isLastRescheduleProposal && !this.hasCancellationRequest && !this.hasContinuationRequest) {
+      } else if (this.message.type === 'reschedule_proposal' && this.isLastRescheduleProposal && this.hasRescheduleRequest && !this.hasCancellationRequest && !this.hasContinuationRequest && !this.hasMeetingDetails) {
         messageClass = 'highlight';
-      } else if (this.message.type === 'cancellation_request') {
-        messageClass = 'highlight'; // Всегда подсвечивать запросы на отмену
-      } else if (this.message.type === 'continuation_request' && this.isMyMessage && this.isLastContinuationRequest && this.isLastMessage) {
+      } else if (this.message.type === 'cancellation_request' && this.hasCancellationRequest && this.isLastCancellationRequest) {
         messageClass = 'highlight';
-      } else if (this.message.type === 'continuation_request' && !this.isMyMessage && this.isLastContinuationRequest) {
+      } else if (this.message.type === 'continuation_request' && this.hasContinuationRequest && this.isLastContinuationRequest) {
         messageClass = 'highlight';
       }
       return messageClass;
@@ -107,12 +107,20 @@ export default {
       return this.message.sender === this.currentUser._id;
     },
 
-    hasMeetingDetails() {
-      const statusAllow = ["pending", "pending_update"];
-      const hasMeetingDetailsMessage = this.allMessages.some(msg => msg.type === 'meeting_details');
-      const hasDisallowedDealStatus = this.getCurrentDeal && !statusAllow.includes(this.getCurrentDeal.status);
+    hasRescheduleRequest() {
+      if (!this.getCurrentDeal) {
+        return false;
+      }
+      const rescheduleStatuses = ["reschedule_offer", "reschedule_offer_update"].includes(this.getCurrentDeal.status);
+      return this.allMessages.some(msg => msg.type === 'reschedule_proposal') && rescheduleStatuses;
+    },
 
-      return hasMeetingDetailsMessage && hasDisallowedDealStatus;
+    hasMeetingDetails() {
+      const pendingStatuses = ["pending", "pending_update"];
+      const hasMeetingDetailsMessage = this.allMessages.some(msg => msg.type === 'meeting_details');
+      const hasDispendingDealStatus = this.getCurrentDeal && !pendingStatuses.includes(this.getCurrentDeal.status);
+
+      return hasMeetingDetailsMessage && hasDispendingDealStatus && !this.hasRescheduleRequest;
     },
 
     hasCancellationRequest() {
@@ -150,6 +158,14 @@ export default {
       return lastContinuationRequest && this.message._id === lastContinuationRequest._id;
     },
 
+    isLastCancellationRequest() {
+      const lastCancellationRequest = this.allMessages
+        .slice()
+        .reverse()
+        .find((msg) => msg.type === 'cancellation_request');
+
+      return lastCancellationRequest && this.message._id === lastCancellationRequest._id;
+    },
 
     isLastMessage() {
       const lastMessage = this.allMessages[this.allMessages.length - 1];
@@ -181,7 +197,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .message-container {
   width: 100%;
   display: flex;
@@ -224,6 +240,7 @@ export default {
 
 .highlight {
   font-weight: bold;
+  font-size: 15px;
 }
 
 .normal {

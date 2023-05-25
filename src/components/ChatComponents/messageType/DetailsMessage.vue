@@ -1,13 +1,7 @@
 <template>
   <div>
     <span :class="messageClass">{{ message.content }}</span>
-    <span v-if="isMyMessage && isLastMessage" :class="messageClass">Вы отвергли предложение о продолжении</span>
-    <v-btn v-if="!isMyMessage && isLastMessage"
-            color="primary"
-            small
-            @click="$emit('open-deal-form')">
-      Рассмотреть
-    </v-btn>
+    <span v-if="isMyMessage" :class="messageClass">Вы отвергли предложение о продолжении</span>
   </div>
 </template>
 

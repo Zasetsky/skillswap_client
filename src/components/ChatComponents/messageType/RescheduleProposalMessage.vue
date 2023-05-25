@@ -1,11 +1,18 @@
 <template>
   <div>
-    <span :class="messageClass">Вам предложены параметры переноса сделки:</span>
-    <span v-if="isMyMessage && isLastMessage" :class="messageClass">Вы предложили перенос.</span>
-    <v-btn v-if="!isMyMessage && isLastMessage"
-            color="primary"
-            small
-            @click="$emit('openDealForm', message.content)">
+    <span v-if="!isMyMessage" :class="messageClass">Вам предложены параметры переноса сделки:</span>
+    <span v-if="isMyMessage" :class="messageClass">Вы предложили перенос</span>
+    <v-btn 
+      v-if="!isMyMessage &&
+            hasRescheduleRequest &&
+            isLastRescheduleProposal &&
+            !hasCancellationRequest &&
+            !hasContinuationRequest &&
+            !hasMeetingDetails"
+      color="primary"
+      small
+      @click="$emit('open-deal-form')"
+    >
       Открыть
     </v-btn>
   </div>
@@ -20,17 +27,36 @@ export default {
     },
     isMyMessage: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    isLastMessage: {
+    messageClass: {
+      type: String,
+      required: true,
+    },
+    isLastRescheduleProposal: {
       type: Boolean,
-      default: false
+      default: false,
+    },
+    hasRescheduleRequest: {
+      type: Boolean,
+      default: false,
+    },
+    hasCancellationRequest: {
+      type: Boolean,
+      default: false,
+    },
+    hasContinuationRequest: {
+      type: Boolean,
+      default: false,
+    },
+    hasMeetingDetails: {
+      type: Boolean,
+      default: false,
     },
   },
-  computed: {
-    messageClass() {
-      return this.isMyMessage ? 'my-message-class' : 'other-message-class';
-    }
+  emits: ['open-deal-form'],
+  mounted() {
+    console.log(this.messageClass);
   }
 };
 </script>

@@ -1,13 +1,42 @@
 <template>
   <div>
-    <span :class="messageClass">Поступил запрос на отмену сделки:</span>
-    <span v-if="isMyMessage && isLastMessage" :class="messageClass">Вы запросили отмену сделки</span>
-    <v-btn v-if="!isMyMessage && isLastMessage"
-            color="primary"
-            small
-            @click="$emit('handleCancellationRequest', message.content)">
-      Рассмотреть
+    <span v-if="!isMyMessage" :class="messageClass">Поступил запрос на отмену сделки:</span>
+    <span v-if="isMyMessage" :class="messageClass">Вы запросили отмену сделки</span>
+
+    <br v-if="!isMyMessage && hasCancellationRequest && isLastCancellationRequest">
+    <b v-if="!isMyMessage && hasCancellationRequest && isLastCancellationRequest">Причина: {{ message.content.reason }}</b>
+    <br v-if="!isMyMessage && hasCancellationRequest && isLastCancellationRequest">
+
+    <v-btn
+      v-if="!isMyMessage && hasCancellationRequest && isLastCancellationRequest"
+      color="success"
+      small
+      @click="$emit('approve-cancellation')"
+    >
+      Подтвердить
     </v-btn>
+    <v-btn
+      v-if="!isMyMessage && hasCancellationRequest && isLastCancellationRequest"
+      color="error"
+      small
+      @click="$emit('reject-cancellation')"
+    >
+      Отклонить
+    </v-btn>
+    <br>
+
+    <span 
+      v-if="!isMyMessage && hasCancellationRequest && isLastCancellationRequest"
+      style="color: red;"
+    >
+      Если вы не примете решение в течение 24 часов, ваша карма подпортится, и сделка всё равно будет отменена.
+    </span>
+    <span
+      v-if="isMyMessage && hasCancellationRequest && isLastCancellationRequest"
+      style="color: red;"
+    >
+      Если пользователь не примет решение в течение 24 часов, сделка всё равно будет отменена.
+    </span>
   </div>
 </template>
 
@@ -22,15 +51,18 @@ export default {
       type: Boolean,
       default: false
     },
-    isLastMessage: {
+    hasCancellationRequest: {
       type: Boolean,
-      default: false
+      default: false,
+    },
+    isLastCancellationRequest: {
+      type: Boolean,
+      default: false,
+    },
+    messageClass: {
+      type: String,
+      required: true,
     },
   },
-  computed: {
-    messageClass() {
-      return this.isMyMessage ? 'my-message-class' : 'other-message-class';
-    }
-  }
 };
 </script>

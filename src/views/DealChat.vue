@@ -106,7 +106,7 @@ export default {
       }
 
       const cancellationStatus = currentDeal.cancellation.status;
-      const isRejected = cancellationStatus === 'rejected';
+      const isRejected = cancellationStatus === 'false';
 
       const isCompleted = currentDeal.status === 'completed';
 
