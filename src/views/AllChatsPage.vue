@@ -125,15 +125,17 @@ export default {
     },
 
     isReceived(chat) {
+      const lastSwapRequestId = chat.swapRequestIds[chat.swapRequestIds.length - 1];
       const swapRequest = this.getSwapRequests.find(
-        (sr) => sr._id === chat.swapRequestId
+        (sr) => sr._id === lastSwapRequestId
       );
       return swapRequest ? swapRequest.receiverId === this.currentUser._id : false;
     },
 
     isSender(chat) {
+      const lastSwapRequestId = chat.swapRequestIds[chat.swapRequestIds.length - 1];
       const swapRequest = this.getSwapRequests.find(
-        (sr) => sr._id === chat.swapRequestId
+        (sr) => sr._id === lastSwapRequestId
       );
       return swapRequest ? swapRequest.senderId === this.currentUser._id : false;
     },
@@ -150,8 +152,9 @@ export default {
         console.error('Error opening chat:', error);
       }
     },
-
   },
+  mounted() {
+  }
 };
 </script>
 <style scoped>

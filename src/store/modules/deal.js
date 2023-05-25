@@ -99,8 +99,18 @@ const actions = {
 
   confirmReschedule(context, dealId) {
     const socket = getSocket();
-    console.log(dealId);
+
     socket.emit("confirmReschedule", dealId);
+
+    socket.on("error", (error) => {
+      console.error("Error confirming reschedule:", error.message);
+    });
+  },
+
+  rejectReschedule(context, dealId) {
+    const socket = getSocket();
+
+    socket.emit("rejectReschedule", dealId);
 
     socket.on("error", (error) => {
       console.error("Error confirming reschedule:", error.message);

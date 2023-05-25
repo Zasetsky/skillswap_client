@@ -2,84 +2,51 @@
   <div class="message-container" :class="{'my-message': isMyMessage, 'other-message': !isMyMessage}">
     <v-card class="message-card mb-2">
       <v-card-text>
-        <template v-if="message.type === 'text'">
-          {{ message.content }}
-        </template>
-        <template v-else-if="message.type === 'details'">
-          <b v-if="!isMyMessage && isLastMessage">{{ message.content }}</b>
-          <span v-else-if="!isMyMessage">{{ message.content }}</span>
-          <b v-if="isMyMessage && isLastMessage">Вы отвергли предложение о продолжении</b>
-          <span v-else-if="isMyMessage">Вы отвергли предложение о продолжении</span>
-        </template>
-        <template v-else-if="message.type === 'deal_proposal'">
-          <b v-if="(!isMyMessage && isLastDealProposal && !hasMeetingDetails) || (!isMyMessage && isLastDealProposal && isLastMessage)">Вам предложены параметры сделки</b>
-          <span v-else-if="!isMyMessage">Вам предложены параметры сделки</span>
-          <b v-if="(isMyMessage && isLastDealProposal && !hasMeetingDetails) || (isMyMessage && isLastDealProposal && isLastMessage)">Вы предложили параметры сделки</b>
-          <span v-else-if="isMyMessage">Вы предложили параметры сделки</span>
-          <v-btn v-if="
-            !isMyMessage &&
-            isLastDealProposal &&
-            !hasMeetingDetails &&
-            !hasCancellationRequest &&
-            !hasContinuationRequest"
-            color="primary"
-            small
-            @click="openDealForm"
-          >
-            Открыть
-          </v-btn>
-        </template>
-        <template v-else-if="message.type === 'reschedule_proposal'">
-          <p v-if="!isMyMessage">Вам предложены параметры переноса сделки:</p>
-          <b v-else>Вы предложили перенос.</b>
-          <v-btn v-if="
-            !isMyMessage &&
-            isLastRescheduleProposal &&
-            !hasCancellationRequest &&
-            !hasContinuationRequest"
-            color="primary"
-            small
-            @click="openDealForm"
-          >
-            Открыть
-          </v-btn>
-        </template>
-        <template v-else-if="message.type === 'meeting_details'">
-          Навык: <b>{{ message.content.skill }}</b><br><br>
-          Дата встречи: <b>{{ message.content.meetingDate }}</b><br>
-          Время встречи: <b>{{ message.content.meetingTime }}</b><br>
-          Продолжительность встречи: <b>{{ message.content.meetingDuration }}</b>
-        </template>
-        <template v-else-if="message.type === 'cancellation_request'">
-          <b>Запрос на отмену сделки:</b>
-          <br><b>Причина:</b> {{ message.content.reason }}<br>
-          <v-btn v-if="!isMyMessage" color="success" small @click="$emit('approve-cancellation')">Подтвердить</v-btn>
-          <v-btn v-if="!isMyMessage" color="error" small @click="$emit('reject-cancellation')">Отклонить</v-btn>
-          <br>
-          <span v-if="!isMyMessage" style="color: red;">Если вы не примете решение в течение 24 часов, ваша карма подпортится, и сделка всё равно будет отменена.</span>
-          <span v-if="isMyMessage" style="color: red;">Если пользователь не примет решение в течение 24 часов, сделка всё равно будет отменена.</span>
-        </template>
-        <template v-else-if="message.type === 'continuation_request'">
-          <b v-if="isMyMessage && isLastContinuationRequest && isLastMessage">Вы отправили запрос на продолжение сделки</b>
-          <span v-else-if="isMyMessage">Вы отправили запрос на продолжение сделки</span>
-          
-          <b v-if="!isMyMessage && isLastContinuationRequest">{{ getUserProfile.firstname }} предлагает продолжить</b>
-          <span v-else-if="!isMyMessage && !isLastMessage">{{ getUserProfile.firstname }} предложил продолжить</span>
-          
-          <span v-if="!isMyMessage">Вы согласились на продолжение сделки.</span>
-          
-          <v-btn v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest" color="success" small @click="$emit('approve-continuation')">Подтвердить</v-btn>
-          <v-btn v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest" color="error" small @click="$emit('reject-continuation')">Отклонить</v-btn>
-        </template>
+        <component 
+          :is="messageComponent"
+          :message="message"
+          :isMyMessage="isMyMessage"
+          :isLastMessage="isLastMessage"
+          :messageClass="messageClass"
+          :hasMeetingDetails="hasMeetingDetails"
+          :hasCancellationRequest="hasCancellationRequest"
+          :hasContinuationRequest="hasContinuationRequest"
+          :isLastRescheduleProposal="isLastRescheduleProposal"
+          :isLastDealProposal="isLastDealProposal"
+          :isLastContinuationRequest="isLastContinuationRequest"
+          @approve-cancellation="approveCancellation"
+          @reject-cancellation="rejectCancellation"
+          @approve-continuation="approveContinuation"
+          @reject-continuation="rejectContinuation"
+          @open-deal-form="openDealForm"
+        />
       </v-card-text>
     </v-card>
   </div>
 </template>
 
+
 <script>
+import TextMessage from './messageType/TextMessage.vue'
+import DetailsMessage from './messageType/DetailsMessage.vue'
+import DealProposalMessage from './messageType/DealProposalMessage.vue'
+import RescheduleProposalMessage from './messageType/RescheduleProposalMessage.vue'
+import MeetingDetailsMessage from './messageType/MeetingDetailsMessage.vue'
+import CancellationRequestMessage from './messageType/CancellationRequestMessage.vue'
+import ContinuationRequestMessage from './messageType/ContinuationRequestMessage.vue'
 import { mapGetters } from 'vuex';
 
 export default {
+  components: {
+    TextMessage,
+    DetailsMessage,
+    DealProposalMessage,
+    RescheduleProposalMessage,
+    MeetingDetailsMessage,
+    CancellationRequestMessage,
+    ContinuationRequestMessage,
+  },
+
   props: {
     message: {
       type: Object,
@@ -97,6 +64,45 @@ export default {
     ...mapGetters('auth', ['currentUser']),
     ...mapGetters('user', ['getUserProfile']),
 
+    messageComponent() {
+      switch(this.message.type) {
+        case 'text':
+          return 'TextMessage';
+        case 'details':
+          return 'DetailsMessage';
+        case 'deal_proposal':
+          return 'DealProposalMessage';
+        case 'reschedule_proposal':
+          return 'RescheduleProposalMessage';
+        case 'meeting_details':
+          return 'MeetingDetailsMessage';
+        case 'cancellation_request':
+          return 'CancellationRequestMessage';
+        case 'continuation_request':
+          return 'ContinuationRequestMessage';
+        default:
+          return '';
+      }
+    },
+
+    messageClass() {
+      let messageClass = 'normal';
+      if (this.message.type === 'details' && (!this.isMyMessage && this.isLastMessage)) {
+        messageClass = 'highlight';
+      } else if (this.message.type === 'deal_proposal' && ((!this.isMyMessage && this.isLastDealProposal && !this.hasMeetingDetails) || (!this.isMyMessage && this.isLastDealProposal && this.isLastMessage))) {
+        messageClass = 'highlight';
+      } else if (this.message.type === 'reschedule_proposal' && !this.isMyMessage && this.isLastRescheduleProposal && !this.hasCancellationRequest && !this.hasContinuationRequest) {
+        messageClass = 'highlight';
+      } else if (this.message.type === 'cancellation_request') {
+        messageClass = 'highlight'; // Всегда подсвечивать запросы на отмену
+      } else if (this.message.type === 'continuation_request' && this.isMyMessage && this.isLastContinuationRequest && this.isLastMessage) {
+        messageClass = 'highlight';
+      } else if (this.message.type === 'continuation_request' && !this.isMyMessage && this.isLastContinuationRequest) {
+        messageClass = 'highlight';
+      }
+      return messageClass;
+    },
+
     isMyMessage() {
       return this.message.sender === this.currentUser._id;
     },
@@ -110,7 +116,7 @@ export default {
     },
 
     hasCancellationRequest() {
-      return this.allMessages.some(msg => msg.type === 'cancellation_request');
+      return this.allMessages.some(msg => msg.type === 'cancellation_request') && this.getCurrentDeal && this.getCurrentDeal.cancellation?.status === "true";
     },
 
     hasContinuationRequest() {
@@ -122,7 +128,8 @@ export default {
         .slice()
         .reverse()
         .find((msg) => msg.type === 'reschedule_proposal');
-      return this.message._id === lastRescheduleProposal._id;
+
+      return lastRescheduleProposal && this.message._id === lastRescheduleProposal._id;
     },
 
     isLastDealProposal() {
@@ -130,7 +137,8 @@ export default {
         .slice()
         .reverse()
         .find((msg) => msg.type === 'deal_proposal');
-      return this.message._id === lastDealProposal._id;
+
+      return lastDealProposal && this.message._id === lastDealProposal._id;
     },
 
     isLastContinuationRequest() {
@@ -138,8 +146,10 @@ export default {
         .slice()
         .reverse()
         .find((msg) => msg.type === 'continuation_request');
-      return this.message._id === lastContinuationRequest._id;
+
+      return lastContinuationRequest && this.message._id === lastContinuationRequest._id;
     },
+
 
     isLastMessage() {
       const lastMessage = this.allMessages[this.allMessages.length - 1];
@@ -150,7 +160,7 @@ export default {
 
   methods: {
     openDealForm() {
-      this.$emit('open-deal-form', this.message.content);
+      this.$emit('open-deal-form');
     },
     approveContinuation() {
       this.$emit('approve-continuation', this.message._id);
@@ -210,6 +220,14 @@ export default {
 .other-message .message-card {
   background-color: #ffffff;
   border-radius: 7px 7px 7px 0px;
+}
+
+.highlight {
+  font-weight: bold;
+}
+
+.normal {
+  font-weight: normal;
 }
 </style>
 
