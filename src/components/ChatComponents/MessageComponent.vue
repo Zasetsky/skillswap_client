@@ -63,10 +63,10 @@
           <b v-if="isMyMessage && isLastContinuationRequest && isLastMessage">Вы отправили запрос на продолжение сделки</b>
           <span v-else-if="isMyMessage">Вы отправили запрос на продолжение сделки</span>
           
-          <b v-if="!isMyMessage && isLastContinuationRequest && getCurrentDeal.continuation.status === 'true'">{{ getUserProfile.firstname }} предлагает продолжить</b>
+          <b v-if="!isMyMessage && isLastContinuationRequest">{{ getUserProfile.firstname }} предлагает продолжить</b>
           <span v-else-if="!isMyMessage && !isLastMessage">{{ getUserProfile.firstname }} предложил продолжить</span>
           
-          <span v-if="!isMyMessage && getCurrentDeal.continuation.status === 'approved'">Вы согласились на продолжение сделки.</span>
+          <span v-if="!isMyMessage">Вы согласились на продолжение сделки.</span>
           
           <v-btn v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest" color="success" small @click="$emit('approve-continuation')">Подтвердить</v-btn>
           <v-btn v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest" color="error" small @click="$emit('reject-continuation')">Отклонить</v-btn>
@@ -114,7 +114,7 @@ export default {
     },
 
     hasContinuationRequest() {
-      return this.allMessages.some(msg => msg.type === 'continuation_request') && this.getCurrentDeal?.continuation?.status === "true";
+      return this.allMessages.some(msg => msg.type === 'continuation_request') && this.getCurrentDeal && this.getCurrentDeal.continuation?.status === "true";
     },
 
     isLastRescheduleProposal() {

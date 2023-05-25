@@ -139,11 +139,15 @@ const actions = {
     });
   },
 
-  listenForSwapRequestUpdates({ commit }) {
+  listenForSwapRequestUpdates({ commit, rootState }) {
     const socket = getSocket();
-
+  
     socket.on("swapRequestUpdated", (updatedSwapRequest) => {
-      commit("updateSwapRequest", updatedSwapRequest);
+      if (rootState.route.name === 'WeakSkillsPage' || rootState.route.name === 'StrongSkillsPage') {
+        commit("updateSwapRequest", updatedSwapRequest);
+      } else {
+        commit("setCurrentSwapRequest", updatedSwapRequest);
+      }
     });
   },
 };

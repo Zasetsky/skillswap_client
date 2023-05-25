@@ -22,6 +22,7 @@
             @submit-deal-form="handleDealFormSubmit"
             @confirm-deal="confirmDeal"
             @confirm-reschedule="confirmReschedule"
+            @reject-reschedule="rejectReschedule"
           />
           <ContinuationButton
             v-if="showContinuationButton"
@@ -346,6 +347,17 @@ export default {
     async confirmReschedule() {
       try {
         await this.$store.dispatch("deal/confirmReschedule", {
+          dealId: this.getCurrentDeal._id,
+        });
+
+      } catch (error) {
+        console.error("Error confirming deal:", error);
+      }
+    },
+
+    async rejectReschedule() {
+      try {
+        await this.$store.dispatch("deal/rejectReschedule", {
           dealId: this.getCurrentDeal._id,
         });
 

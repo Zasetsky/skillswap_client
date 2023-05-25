@@ -19,12 +19,6 @@ export function connectSocket(token) {
 
     store.dispatch("user/listenForUserUpdates");
 
-    // swapRequest
-    store.dispatch("swapRequests/listenForSwapRequestSent");
-    store.dispatch("swapRequests/listenForSwapRequestAccepted");
-    store.dispatch("swapRequests/listenForSwapRequestDeleted");
-    store.dispatch("swapRequests/listenForSwapRequestRejected");
-    store.dispatch("swapRequests/listenForSwapRequestUpdates");
     // Chat
     store.dispatch("chat/listenForNewChat");
     store.dispatch("chat/listenForNewMessage");
@@ -38,6 +32,13 @@ export function connectSocket(token) {
     store.dispatch("deal/listenForContinuationRequested");
     store.dispatch("deal/listenForApproveContinuation");
     store.dispatch("deal/listenForApproveCancellation");
+
+    // swapRequest
+    store.dispatch("swapRequests/listenForSwapRequestSent");
+    store.dispatch("swapRequests/listenForSwapRequestAccepted");
+    store.dispatch("swapRequests/listenForSwapRequestDeleted");
+    store.dispatch("swapRequests/listenForSwapRequestRejected");
+    store.dispatch("swapRequests/listenForSwapRequestUpdates");
   });
 
   socket.on('connect_error', (error) => {

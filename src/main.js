@@ -6,12 +6,15 @@ import vuetify from './plugins/vuetify';
 import Vuelidate from 'vuelidate';
 import '@/assets/styles/main.scss';
 import AsyncComputed from "vue-async-computed";
+import { sync } from 'vuex-router-sync'
 
 Vue.use(AsyncComputed);
 
 Vue.use(Vuelidate);
 
 Vue.config.productionTip = false;
+
+sync(store, router)
 
 async function initApp() {
   await store.dispatch('auth/autoLogin');

@@ -67,6 +67,7 @@
             v-if="showAcceptRejectButtons"
             color="red darken-1"
             text
+            @click="emitRejectReschedule"
           >
             Отклонить
           </v-btn>
@@ -438,6 +439,11 @@ export default {
 
     emitConfirmReschedule() {
       this.$emit("confirm-reschedule");
+      this.dialog = false;
+    },
+    
+    emitRejectReschedule() {
+      this.$emit("reject-reschedule");
       this.dialog = false;
     },
 
