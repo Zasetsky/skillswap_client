@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div v-if="getCurrentDeal && getCurrentDeal.status !== 'completed' && (!getCurrentDeal.cancellation || getCurrentDeal.cancellation?.status === 'false')">
     <v-dialog v-model="dialog" width="600" @click:outside="resetForm">
       <template v-slot:activator="{ on, attrs }">
         <v-btn
           color="primary"
           v-bind="attrs"
           v-on="on"
-          :disabled="disabled"
+          :disabled="disabled && !isSubmitting"
           @click="openDialog"
         >
           {{ getActionButtonText }}
@@ -261,7 +261,9 @@ export default {
       const deal = this.getCurrentDeal;
       const currentUser = this.currentUser;
 
-      if (!deal) {
+      if (!deal || 
+          ["true", "continued"].includes(deal.continuation?.status) || 
+          ["true", "cancelled"].includes(deal.cancellation?.status)) {
         return { visible: false, enabled: false, text: '' };
       }
 
@@ -297,7 +299,9 @@ export default {
 
     showAcceptRejectButtons() {
       const deal = this.getCurrentDeal;
-      if (!deal) {
+      if (!deal ||
+          ["true", "continued"].includes(deal.continuation?.status) || 
+          ["true", "cancelled"].includes(deal.cancellation?.status)) {
         return false;
       }
 
@@ -313,9 +317,14 @@ export default {
       const deal = this.getCurrentDeal;
       const currentUser = this.currentUser;
 
+      if (!deal ||
+          ["true", "continued"].includes(deal.continuation?.status) || 
+          ["true", "cancelled"].includes(deal.cancellation?.status)) {
+        return false;
+      }
+
       // Если пользователь не является отправителем и статус сделки "pending_update" или "pending" и ни одна из форм не была изменена
       return (
-        deal &&
         (deal.status === "pending_update" || deal.status === "pending") &&
         deal.sender !== currentUser._id &&
         !this.isFormChanged

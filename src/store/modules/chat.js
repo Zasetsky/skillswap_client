@@ -51,7 +51,7 @@ const actions = {
     }
   },
 
-  fetchCurrentChat({ commit, rootState }, chatId) {
+  fetchCurrentChat({ commit }, chatId) {
     return new Promise((resolve, reject) => {
       const socket = getSocket();
 
@@ -63,11 +63,12 @@ const actions = {
       socket.emit("fetchCurrentChat", { chatId });
 
       socket.on("chat", (chat) => {
-        if (rootState.route.name === 'Chats_Page') {
+        commit("SET_CURRENT_CHAT", chat);
+
+        if (state.chats.length) {
           commit("UPDATE_CHAT", chat);
-        } else {
-          commit("SET_CURRENT_CHAT", chat);
         }
+
         resolve(chat);
       });
       socket.on("error", (error) => {

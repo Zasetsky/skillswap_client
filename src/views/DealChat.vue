@@ -18,7 +18,7 @@
         <div style="display: flex;">
           <DealComponent
             ref="dealForm"
-            :disabled="!showCancelButton && (getCurrentDeal && getCurrentDeal.status !== 'half_completed' && getCurrentDeal.status !== 'half_completed_confirmed_reschedule')"
+            :disabled="!showCancelButton && !ishalfCompletedStatus"
             @submit-deal-form="handleDealFormSubmit"
             @confirm-deal="confirmDeal"
             @confirm-reschedule="confirmReschedule"
@@ -85,6 +85,18 @@ export default {
         : [];
     },
 
+    ishalfCompletedStatus() {
+      const currentDeal = this.getCurrentDeal;
+
+      if (!currentDeal) {
+        return false;
+      }
+
+      const specialStatuses = ['half_completed', 'half_completed_confirmed_reschedule', 'reschedule_offer', 'reschedule_offer_update'];
+
+      return specialStatuses.includes(currentDeal.status);
+    },
+
     showCancelButton() {
       const currentDeal = this.getCurrentDeal;
 
@@ -143,26 +155,32 @@ export default {
         return false;
       }
 
-      const form = deal.update && deal.update.form ? deal.update.form : deal.form;
-      if (!form || !form.meetingDate || !form.meetingTime) {
-        return false;
-      }
-
-      const meetingDate = new Date(form.meetingDate);
-      const meetingTime = form.meetingTime.split(':');
-      const deadline = new Date(
-        meetingDate.getFullYear(),
-        meetingDate.getMonth(),
-        meetingDate.getDate(),
-        parseInt(meetingTime[0]),
-        parseInt(meetingTime[1])
-      );
-
-      const now = new Date();
-      const remainingTimeInMilliseconds = deadline - now;
+      const formTypes = ['form', 'form2'];
       const threeHoursInMilliseconds = 3 * 60 * 60 * 1000;
 
-      return remainingTimeInMilliseconds <= threeHoursInMilliseconds;
+      for (let formType of formTypes) {
+        const form = deal[formType];
+        if (form && form.meetingDate && form.meetingTime) {
+          const meetingDate = new Date(form.meetingDate);
+          const meetingTime = form.meetingTime.split(':');
+          const deadline = new Date(
+            meetingDate.getFullYear(),
+            meetingDate.getMonth(),
+            meetingDate.getDate(),
+            parseInt(meetingTime[0]),
+            parseInt(meetingTime[1])
+          );
+      
+          const now = new Date();
+          const remainingTimeInMilliseconds = deadline - now;
+      
+          if (remainingTimeInMilliseconds <= threeHoursInMilliseconds) {
+            return true;
+          }
+        }
+      }
+
+      return false;
     },
 
     showReviewForm() {
