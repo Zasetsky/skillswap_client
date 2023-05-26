@@ -51,7 +51,7 @@ const actions = {
     }
   },
 
-  fetchCurrentChat({ commit }, chatId) {
+  fetchCurrentChat({ commit, rootState }, chatId) {
     return new Promise((resolve, reject) => {
       const socket = getSocket();
 
@@ -59,9 +59,15 @@ const actions = {
         reject("Chat ID is undefined or null");
         return;
       }
+
       socket.emit("fetchCurrentChat", { chatId });
+
       socket.on("chat", (chat) => {
-        commit("SET_CURRENT_CHAT", chat);
+        if (rootState.route.name === 'Chats_Page') {
+          commit("UPDATE_CHAT", chat);
+        } else {
+          commit("SET_CURRENT_CHAT", chat);
+        }
         resolve(chat);
       });
       socket.on("error", (error) => {
@@ -132,11 +138,10 @@ const mutations = {
     state.chats = chats;
   },
 
-  UPDATE_DEAL(state, { chatId, deal }) {
-    const chatIndex = state.chats.findIndex(chat => chat._id === chatId);
-    if (chatIndex !== -1) {
-      state.chats[chatIndex].deal = deal;
-    }
+  UPDATE_CHAT(state, updatedChat) {
+    state.chats = state.chats.map(chat =>
+      chat._id === updatedChat._id ? updatedChat : chat
+    );
   },
 
   logout(state) {

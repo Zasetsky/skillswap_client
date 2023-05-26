@@ -53,6 +53,26 @@ export default {
 
   asyncComputed: {
     async computedChats() {
+      this.computedChats = await this.computeChats();
+      return this.computedChats;
+    },
+  },
+
+  watch: {
+    getAllChats: {
+      handler() {
+        this.computeChats();
+      },
+      deep: true
+    },
+  },
+
+  methods: {
+    ...mapActions('chat', ['fetchAllChats', 'fetchCurrentChat']),
+    ...mapActions('swapRequests', ['fetchAllSwapRequests']),
+    ...mapActions('user', ['fetchUserProfile']),
+
+    async computeChats() {
       const chats = await Promise.all(
         this.getAllChats.map(async (chat) => {
           const lastSwapRequestId = chat.swapRequestIds[chat.swapRequestIds.length - 1];
@@ -70,24 +90,6 @@ export default {
       this.computedChats = chats;
       return chats;
     },
-  },
-
-  async created() {
-    this.isLoading = true;
-    try {
-      await this.fetchAllChats();
-      await this.fetchAllSwapRequests();
-    } catch (error) {
-      console.error("Error getting all chats:", error);
-    } finally {
-      this.isLoading = false;
-    }
-  },
-
-  methods: {
-    ...mapActions('chat', ['fetchAllChats', 'fetchCurrentChat']),
-    ...mapActions('swapRequests', ['fetchAllSwapRequests']),
-    ...mapActions('user', ['fetchUserProfile']),
 
     async getPartnerName(chat) {
       const partnerId = chat.participants.find(
@@ -153,8 +155,18 @@ export default {
       }
     },
   },
-  mounted() {
-  }
+
+  async created() {
+    this.isLoading = true;
+    try {
+      await this.fetchAllChats();
+      await this.fetchAllSwapRequests();
+    } catch (error) {
+      console.error("Error getting all chats:", error);
+    } finally {
+      this.isLoading = false;
+    }
+  },
 };
 </script>
 <style scoped>
