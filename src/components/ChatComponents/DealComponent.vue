@@ -16,7 +16,13 @@
       <v-card>
         <v-card-title>Форма согласования сделки</v-card-title>
         <v-tabs v-model="activeTab" background-color="transparent" show-arrows>
-          <v-tab v-for="(tab, index) in tabs" :key="index">{{ tab }}</v-tab>
+          <v-tab
+            v-for="(tab, index) in tabs"
+            :key="index"
+            :class="{'mismatched-tab': isMismatched(index)}"
+          >
+            {{ tab }}
+          </v-tab>
         </v-tabs>
         <v-tabs-items v-model="activeTab">
           <v-tab-item :value="0">
@@ -101,7 +107,6 @@ export default {
       activeTab: 0,
       skillsToTeach: null,
       skillsToLearn: null,
-      tabs: [],
       commonMeetingDuration: null,
       form1: {
         meetingDate: null,
@@ -138,6 +143,35 @@ export default {
       }
     },
 
+    tabs() {
+      const swapRequest = this.getCurrentSwapRequest;
+      const deal = this.getCurrentDeal;
+      const tabs = [];
+
+      if (
+        swapRequest &&
+        swapRequest.senderData &&
+        swapRequest.receiverData
+      ) {
+        const skillsToTeach =
+          swapRequest.senderData.skillsToTeach?.[0]?.skill ||
+          swapRequest.receiverData.skillsToLearn?.[0]?.skill;
+        const skillsToLearn =
+          swapRequest.senderData.skillsToLearn?.[0]?.skill ||
+          swapRequest.receiverData.skillsToTeach?.[0]?.skill;
+
+        if (skillsToLearn && (!deal || !deal.form || !deal.form.isCompleted)) {
+          tabs.push(skillsToLearn);
+        }
+
+        if (skillsToTeach && (!deal || !deal.form2 || !deal.form2.isCompleted)) {
+          tabs.push(skillsToTeach);
+        }
+      }
+
+      return tabs;
+    },
+
     highlightMismatchedFields() {
       if (this.isFormChanged) {
         return { form1: {}, form2: {} };
@@ -163,37 +197,35 @@ export default {
 
         const form1Highlights = {};
         const form2Highlights = {};
+        let isForm1Changed = false;
+        let isForm2Changed = false;
 
-        if (deal.status === "pending_update") {
-          Object.keys(deal.form).forEach((field) => {
-            form1Highlights[field] = deal.form[field] !== deal.update.form[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form[field]);
-          });
+          // Проверяем первую форму
+        Object.keys(form1Source || {}).forEach((field) => {
+          const isFieldChanged = form1Source[field] !== deal.form[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form[field]);
+          if (isFieldChanged) {
+            isForm1Changed = true;
+          }
+          form1Highlights[field] = isFieldChanged;
+        });
 
-          Object.keys(deal.form2).forEach((field) => {
-            form2Highlights[field] = deal.form2[field] !== deal.update.form2[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form2[field]);
-          });
-        } else if (deal.status === "reschedule_offer") {
-          Object.keys(deal.form).forEach((field) => {
-            form1Highlights[field] = form1Source[field] !== deal.form[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form[field]);
-          });
+        // Проверяем вторую форму
+        Object.keys(form2Source || {}).forEach((field) => {
+          const isFieldChanged = form2Source[field] !== deal.form2[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form2[field]);
+          if (isFieldChanged) {
+            isForm2Changed = true;
+          }
+          form2Highlights[field] = isFieldChanged;
+        });
 
-          Object.keys(deal.form2).forEach((field) => {
-            form2Highlights[field] = form2Source[field] !== deal.form2[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form2[field]);
-          });
-        } else {
-          Object.keys(deal.form).forEach((field) => {
-            form1Highlights[field] = form1Source[field] !== deal.update.form[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.reschedule.form[field]);
-          });
-
-          Object.keys(deal.form2).forEach((field) => {
-            form2Highlights[field] = form2Source[field] !== deal.update.form2[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.reschedule.form2[field]);
-          });
-        }
-
-        return { form1: form1Highlights, form2: form2Highlights };
-      } else {
-        return { form1: {}, form2: {} };
+        // Возвращаем объекты для форм в зависимости от того, внесены ли в них изменения
+        return {
+          form1: isForm1Changed ? form1Highlights : {},
+          form2: isForm2Changed ? form2Highlights : {},
+        };
       }
+
+      return { form1: {}, form2: {} };
     },
     
     isFormChanged() {
@@ -224,10 +256,10 @@ export default {
       }
 
       // Проверяем каждую форму
-      const form1Changed = Object.entries(this.form1).some(([key, value]) => {
+      const form1Changed = Object.entries(this.form1 || {}).some(([key, value]) => {
         return value !== referenceForm1[key];
       });
-      const form2Changed = Object.entries(this.form2).some(([key, value]) => {
+      const form2Changed = Object.entries(this.form2 || {}).some(([key, value]) => {
         return value !== referenceForm2[key];
       });
       const durationChanged = this.commonMeetingDuration !== referenceDuration;
@@ -367,33 +399,19 @@ export default {
       });
     },
 
-    setTabs() {
-      if (!this.getCurrentChat) {
-        console.error("Текущий чат не найден");
-        return;
-      }
-
-      const swapRequest = this.getCurrentSwapRequest
-
-      if (
-        swapRequest &&
-        swapRequest.senderData &&
-        swapRequest.receiverData
-      ) {
-        this.skillsToTeach =
-          swapRequest.senderData.skillsToTeach?.[0]?.skill ||
-          swapRequest.receiverData.skillsToLearn?.[0]?.skill;
-        this.skillsToLearn =
-          swapRequest.senderData.skillsToLearn?.[0]?.skill ||
-          swapRequest.receiverData.skillsToTeach?.[0]?.skill;
-
-        if (this.skillsToTeach && this.skillsToLearn) {
-          this.tabs = [this.skillsToLearn, this.skillsToTeach];
-          this.activeTab = 0;
-        } else {
-          console.error("Не удалось найти данные навыков");
+    isMismatched(index) {
+      // Получаем форму, соответствующую индексу таба.
+      const form = this.highlightMismatchedFields[`form${index + 1}`];
+      // Если форма существует и в ней есть изменения, то возвращаем true.
+      if (form) {
+        const mismatches = Object.values(form);
+        // Если в форме есть хотя бы одно изменение, возвращаем true.
+        if (mismatches.some(field => field)) {
+          return true;
         }
       }
+      // В противном случае возвращаем false.
+      return false;
     },
 
     async openDialog() {
@@ -462,7 +480,8 @@ export default {
     },
 
     resetForm() {
-      if (!this.getCurrentDeal || !this.getCurrentDeal.form) {
+      const deal = this.getCurrentDeal;
+      if (!deal || !deal.form) {
         this.form1 = {
           meetingDate: null,
           meetingTime: null,
@@ -474,18 +493,26 @@ export default {
 
         this.commonMeetingDuration = null;
 
-      } else if (this.getCurrentDeal.status === "pending_update" || this.getCurrentDeal.status === "reschedule_offer_update") {
-          this.fillForm(this.form1, this.getCurrentDeal.update.form);
-          this.fillForm(this.form2, this.getCurrentDeal.update.form2);
-          this.commonMeetingDuration = this.getCurrentDeal.update.form.meetingDuration;
-        } else if (this.getCurrentDeal.status === "reschedule_offer") {
-          this.fillForm(this.form1, this.getCurrentDeal.reschedule.form);
-          this.fillForm(this.form2, this.getCurrentDeal.reschedule.form2);
-          this.commonMeetingDuration = this.getCurrentDeal.reschedule.form.meetingDuration;
+      } else {
+        let form1Source, form2Source, meetingDuration;
+
+        if (deal.status === "pending_update" || deal.status === "reschedule_offer_update") {
+          form1Source = deal.update.form || {};
+          form2Source = deal.update.form2 || {};
+          meetingDuration = deal.update.form?.meetingDuration;
+        } else if (deal.status === "reschedule_offer") {
+          form1Source = deal.reschedule.form || {};
+          form2Source = deal.reschedule.form2 || {};
+          meetingDuration = deal.reschedule.form?.meetingDuration;
         } else {
-          this.fillForm(this.form1, this.getCurrentDeal.form || {});
-          this.fillForm(this.form2, this.getCurrentDeal.form2 || {});
-          this.commonMeetingDuration = this.getCurrentDeal.form.meetingDuration;
+          form1Source = deal.form || {};
+          form2Source = deal.form2 || {};
+          meetingDuration = deal.form?.meetingDuration;
+        }
+
+        this.fillForm(this.form1, form1Source);
+        this.fillForm(this.form2, form2Source);
+        this.commonMeetingDuration = meetingDuration;
       }
     },
 
@@ -495,18 +522,50 @@ export default {
     getCurrentDeal: {
       handler(newValue) {
         if (newValue) {
-          if (newValue.status === "pending_update" || newValue.status === "reschedule_offer_update") {
-            this.fillForm(this.form1, newValue.update.form);
-            this.fillForm(this.form2, newValue.update.form2);
-            this.commonMeetingDuration = newValue.update.form.meetingDuration;
+          if (
+            newValue.status === "pending_update" ||
+            newValue.status === "reschedule_offer_update"
+          ) {
+            this.fillForm(
+              this.form1,
+              newValue.update && newValue.update.form ? newValue.update.form : {}
+            );
+            this.fillForm(
+              this.form2,
+              newValue.update && newValue.update.form2 ? newValue.update.form2 : {}
+            );
+            this.commonMeetingDuration =
+              newValue.update && newValue.update.form
+                ? newValue.update.form.meetingDuration
+                : null;
           } else if (newValue.status === "reschedule_offer") {
-            this.fillForm(this.form1, newValue.reschedule.form);
-            this.fillForm(this.form2, newValue.reschedule.form2);
-            this.commonMeetingDuration = newValue.reschedule.form.meetingDuration;
+            this.fillForm(
+              this.form1,
+              newValue.reschedule && newValue.reschedule.form
+                ? newValue.reschedule.form
+                : {}
+            );
+            this.fillForm(
+              this.form2,
+              newValue.reschedule && newValue.reschedule.form2
+                ? newValue.reschedule.form2
+                : {}
+            );
+            this.commonMeetingDuration =
+              newValue.reschedule && newValue.reschedule.form
+                ? newValue.reschedule.form.meetingDuration
+                : null;
           } else {
-            this.fillForm(this.form1, newValue.form || {});
-            this.fillForm(this.form2, newValue.form2 || {});
-            this.commonMeetingDuration = newValue.form.meetingDuration || null;
+            this.fillForm(
+              this.form1,
+              newValue.form ? newValue.form : {}
+            );
+            this.fillForm(
+              this.form2,
+              newValue.form2 ? newValue.form2 : {}
+            );
+            this.commonMeetingDuration =
+              newValue.form ? newValue.form.meetingDuration : null;
           }
         } else {
           this.fillForm(this.form1, {});
@@ -519,6 +578,7 @@ export default {
     },
   },
 
+
   async mounted() {
     const chatId = localStorage.getItem('chatId');
 
@@ -528,10 +588,14 @@ export default {
         chatId: this.getCurrentChat._id,
       });
       await this.fetchCurrentSwapRequest(this.getCurrentDeal.swapRequestId);
-      this.setTabs();
     } catch (error) {
       console.error(error);
     }
   },
 };
 </script>
+<style scoped>
+.mismatched-tab {
+  border: 2px solid red;  /* или любой другой стиль, который вы хотите использовать для подсветки */
+}
+</style>
