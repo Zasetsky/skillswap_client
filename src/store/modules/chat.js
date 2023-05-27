@@ -42,12 +42,13 @@ const actions = {
   listenForNewChat(context) {
     try {
         const socket = getSocket();
+        console.log('asdasdasdasasd');
 
         socket.on("newChat", (newChat) => {
-          context.commit("SET_ALL_CHATS", newChat);
+          context.commit("ADD_CHAT", newChat);
         });
     } catch (error) {
-        console.error("Error listening for swap requests:", error);
+        console.error("Error listening for new chat:", error);
     }
   },
 
@@ -125,7 +126,7 @@ const actions = {
           context.dispatch("fetchCurrentChat", chatId);
         });
     } catch (error) {
-        console.error("Error listening for swap requests:", error);
+        console.error("Error listening for New Message:", error);
     }
   },
 };
@@ -143,6 +144,10 @@ const mutations = {
     state.chats = state.chats.map(chat =>
       chat._id === updatedChat._id ? updatedChat : chat
     );
+  },
+
+  ADD_CHAT: (state, newChat) => {
+    state.chats.push(newChat);
   },
 
   logout(state) {
