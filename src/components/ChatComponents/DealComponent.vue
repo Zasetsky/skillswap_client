@@ -105,8 +105,6 @@ export default {
       isSubmitting: false,
       actionButtonText: "",
       activeTab: 0,
-      skillsToTeach: null,
-      skillsToLearn: null,
       commonMeetingDuration: null,
       form1: {
         meetingDate: null,
@@ -143,30 +141,36 @@ export default {
       }
     },
 
-    tabs() {
+    skillsToTeach() {
       const swapRequest = this.getCurrentSwapRequest;
+      if (swapRequest && swapRequest.senderData && swapRequest.receiverData) {
+        return swapRequest.senderData.skillsToTeach?.[0]?.skill || swapRequest.receiverData.skillsToLearn?.[0]?.skill;
+      }
+      return null;
+    },
+
+    skillsToLearn() {
+      const swapRequest = this.getCurrentSwapRequest;
+      if (swapRequest && swapRequest.senderData && swapRequest.receiverData) {
+        return swapRequest.senderData.skillsToLearn?.[0]?.skill || swapRequest.receiverData.skillsToTeach?.[0]?.skill;
+      }
+      return null;
+    },
+
+    // update your tabs computed property
+    tabs() {
       const deal = this.getCurrentDeal;
       const tabs = [];
 
-      if (
-        swapRequest &&
-        swapRequest.senderData &&
-        swapRequest.receiverData
-      ) {
-        const skillsToTeach =
-          swapRequest.senderData.skillsToTeach?.[0]?.skill ||
-          swapRequest.receiverData.skillsToLearn?.[0]?.skill;
-        const skillsToLearn =
-          swapRequest.senderData.skillsToLearn?.[0]?.skill ||
-          swapRequest.receiverData.skillsToTeach?.[0]?.skill;
+      let formIsNotCompleted1 = !deal || !deal.form || !deal.form.isCompleted || deal.form.isCompleted === false;
+      let formIsNotCompleted2 = !deal || !deal.form2 || !deal.form2.isCompleted || deal.form2.isCompleted === false;
 
-        if (skillsToLearn && (!deal || !deal.form || !deal.form.isCompleted)) {
-          tabs.push(skillsToLearn);
-        }
+      if (this.skillsToLearn && formIsNotCompleted1) {
+        tabs.push(this.skillsToLearn);
+      }
 
-        if (skillsToTeach && (!deal || !deal.form2 || !deal.form2.isCompleted)) {
-          tabs.push(skillsToTeach);
-        }
+      if (this.skillsToTeach && formIsNotCompleted2) {
+        tabs.push(this.skillsToTeach);
       }
 
       return tabs;
@@ -185,15 +189,9 @@ export default {
         (deal.status === "pending_update" || deal.status === "reschedule_offer" || deal.status === "reschedule_offer_update") &&
         currentUser._id !== deal.sender
       ) {
-        let form1Source, form2Source;
 
-        if (deal.status === "pending_update") {
-          form1Source = deal.form;
-          form2Source = deal.form2;
-        } else if (deal.status === "reschedule_offer" || deal.status === "reschedule_offer_update") {
-          form1Source = deal.reschedule.form;
-          form2Source = deal.reschedule.form2;
-        }
+        let form1Source = deal.update.form;
+        let form2Source = deal.update.form2;
 
         const form1Highlights = {};
         const form2Highlights = {};
@@ -237,14 +235,10 @@ export default {
       let referenceForm1, referenceForm2, referenceDuration;
 
       // Определяем, с какими формами следует сравнивать
-      if (deal.status === "pending_update" || deal.status === "reschedule_offer_update") {
+      if (deal.status === "pending_update" || deal.status === "reschedule_offer_update" || deal.status === "reschedule_offer") {
         referenceForm1 = deal.update.form;
         referenceForm2 = deal.update.form2;
         referenceDuration = deal.update.form.meetingDuration;
-      } else if (deal.status === "reschedule_offer") {
-        referenceForm1 = deal.reschedule.form;
-        referenceForm2 = deal.reschedule.form2;
-        referenceDuration = deal.reschedule.form.meetingDuration;
       } else {
         referenceForm1 = deal.form;
         referenceForm2 = deal.form2;
@@ -377,9 +371,9 @@ export default {
       if (this.isSubmitting) {
         return "Отправка...";
       } else if (changeOffers && deal.sender === currentUser._id) {
-        return "Изменить предложение";
+        return "Вы уже отправили предложение";
       } else if (changeOffers && deal.sender !== currentUser._id) {
-        return "Посмотреть предложения";
+        return "Посмотреть предложение";
       } else if (statusesOfReschedule) {
         return "Предложить перенос";
       }
@@ -496,14 +490,10 @@ export default {
       } else {
         let form1Source, form2Source, meetingDuration;
 
-        if (deal.status === "pending_update" || deal.status === "reschedule_offer_update") {
+        if (deal.status === "pending_update" || deal.status === "reschedule_offer_update" || deal.status === "reschedule_offer") {
           form1Source = deal.update.form || {};
           form2Source = deal.update.form2 || {};
           meetingDuration = deal.update.form?.meetingDuration;
-        } else if (deal.status === "reschedule_offer") {
-          form1Source = deal.reschedule.form || {};
-          form2Source = deal.reschedule.form2 || {};
-          meetingDuration = deal.reschedule.form?.meetingDuration;
         } else {
           form1Source = deal.form || {};
           form2Source = deal.form2 || {};
@@ -524,7 +514,8 @@ export default {
         if (newValue) {
           if (
             newValue.status === "pending_update" ||
-            newValue.status === "reschedule_offer_update"
+            newValue.status === "reschedule_offer_update" ||
+            newValue.status === "reschedule_offer"
           ) {
             this.fillForm(
               this.form1,
@@ -537,23 +528,6 @@ export default {
             this.commonMeetingDuration =
               newValue.update && newValue.update.form
                 ? newValue.update.form.meetingDuration
-                : null;
-          } else if (newValue.status === "reschedule_offer") {
-            this.fillForm(
-              this.form1,
-              newValue.reschedule && newValue.reschedule.form
-                ? newValue.reschedule.form
-                : {}
-            );
-            this.fillForm(
-              this.form2,
-              newValue.reschedule && newValue.reschedule.form2
-                ? newValue.reschedule.form2
-                : {}
-            );
-            this.commonMeetingDuration =
-              newValue.reschedule && newValue.reschedule.form
-                ? newValue.reschedule.form.meetingDuration
                 : null;
           } else {
             this.fillForm(

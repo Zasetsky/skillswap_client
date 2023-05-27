@@ -18,7 +18,7 @@
         <div style="display: flex;">
           <DealComponent
             ref="dealForm"
-            :disabled="!showCancelButton && !ishalfCompletedStatus"
+            :disabled="!showCancelButton && !ishalfCompletedStatus || isSender"
             @submit-deal-form="handleDealFormSubmit"
             @confirm-deal="confirmDeal"
             @confirm-reschedule="confirmReschedule"
@@ -83,6 +83,20 @@ export default {
       return this.$store.state.chat.currentChat
         ? this.$store.state.chat.currentChat.messages
         : [];
+    },
+
+    isSender() {
+      const deal = this.getCurrentDeal;
+      const currentUser = this.currentUser;
+
+      const isSender = deal.sender === currentUser._id;
+      const isPendingStasuses = ["pending", "pending_update", "reschedule_offer", "reschedule_offer_update"].includes(deal.status);
+      
+      if (deal && currentUser) {
+        return isSender && isPendingStasuses;
+      }
+
+      return false;
     },
 
     ishalfCompletedStatus() {
