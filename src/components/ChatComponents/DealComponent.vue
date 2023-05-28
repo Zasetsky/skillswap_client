@@ -449,37 +449,37 @@ export default {
     },
 
     submitForm() {
-      // Проверяем, заполнены ли обе формы
-      if (!this.form1.meetingDate || !this.form1.meetingTime) {
-        alert('Пожалуйста, заполните все поля для первой формы');
-        return;
-      }
-      if (!this.form2.meetingDate || !this.form2.meetingTime) {
-        alert('Пожалуйста, заполните все поля для второй формы');
-        return;
-      }
-      if (!this.commonMeetingDuration) {
-        alert('Пожалуйста, заполните продолжительность сделки');
-        return;
+      let dataToEmit;
+
+      if (!this.completedForms.form1 && !this.completedForms.form2) {
+        // Обе формы не завершены, поэтому передаем обе
+        dataToEmit = {
+          formData1: {
+            skill: this.skillsToLearn,
+            meetingDate: this.form1.meetingDate,
+            meetingTime: this.form1.meetingTime,
+            meetingDuration: this.commonMeetingDuration,
+          },
+          formData2: {
+            skill: this.skillsToTeach,
+            meetingDate: this.form2.meetingDate,
+            meetingTime: this.form2.meetingTime,
+            meetingDuration: this.commonMeetingDuration,
+          },
+        };
+      } else {
+        // Одна или обе формы завершены, передаем только formData1
+        dataToEmit = {
+          formData1: {
+            skill: this.skillsToLearn,
+            meetingDate: this.form1.meetingDate,
+            meetingTime: this.form1.meetingTime,
+            meetingDuration: this.commonMeetingDuration,
+          }
+        };
       }
 
-      // Передаем обе формы
-      this.$emit('submit-deal-form', {
-        formData1: {
-          skill: this.skillsToLearn,
-          meetingDate: this.form1.meetingDate,
-          meetingTime: this.form1.meetingTime,
-          meetingDuration: this.commonMeetingDuration,
-        },
-        formData2: {
-          skill: this.skillsToTeach,
-          meetingDate: this.form2.meetingDate,
-          meetingTime: this.form2.meetingTime,
-          meetingDuration: this.commonMeetingDuration,
-        },
-      });
-
-      this.dialog = false;
+      this.$emit('submit-deal-form', dataToEmit);
     },
 
     emitConfirmDeal() {
