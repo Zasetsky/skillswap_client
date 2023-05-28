@@ -165,8 +165,8 @@ export default {
 
     isCancelButtonCloseToDeadline() {
       const deal = this.getCurrentDeal;
-      if (!deal || deal.status !== 'confirmed') {
-        return false;
+      if (!deal) {
+        return true;
       }
 
       const formTypes = ['form', 'form2'];
@@ -184,10 +184,11 @@ export default {
             parseInt(meetingTime[0]),
             parseInt(meetingTime[1])
           );
-      
+          
           const now = new Date();
+
           const remainingTimeInMilliseconds = deadline - now;
-      
+
           if (remainingTimeInMilliseconds <= threeHoursInMilliseconds) {
             return true;
           }
@@ -400,12 +401,9 @@ export default {
   },
 
   watch: {
-    async messages(newVal, oldVal) {
+    messages(newVal, oldVal) {
       if (newVal.length > oldVal.length) {
         this.scrollToBottom();
-        const chatId = localStorage.getItem("chatId");
-      
-      await this.$store.dispatch("chat/fetchCurrentChat", chatId);
       }
     },
   },

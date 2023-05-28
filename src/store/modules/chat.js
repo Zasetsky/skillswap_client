@@ -1,4 +1,5 @@
 import { getSocket } from "../../soket";
+import Vue from 'vue';
 
 const state = {
     currentChat: null,
@@ -12,10 +13,6 @@ const getters = {
 };
 
 const actions = {
-  setSocket({ commit }, socket) {
-    commit('SET_SOCKET', socket);
-  },
-
   createOrGetCurrentChat({ commit }, { receiverId, senderId, swapRequestId }) {
     return new Promise((resolve, reject) => {
       try {
@@ -42,7 +39,6 @@ const actions = {
   listenForNewChat(context) {
     try {
         const socket = getSocket();
-        console.log('asdasdasdasasd');
 
         socket.on("newChat", (newChat) => {
           context.commit("ADD_CHAT", newChat);
@@ -65,11 +61,6 @@ const actions = {
 
       socket.on("chat", (chat) => {
         commit("SET_CURRENT_CHAT", chat);
-
-        if (state.chats.length) {
-          commit("UPDATE_CHAT", chat);
-        }
-
         resolve(chat);
       });
       socket.on("error", (error) => {
@@ -122,8 +113,8 @@ const actions = {
     try {
         const socket = getSocket();
 
-        socket.on("message", (chatId) => {
-          context.dispatch("fetchCurrentChat", chatId);
+        socket.on("message", (newMessage) => {
+          context.commit("ADD_MESSAGE_TO_CHAT", newMessage);
         });
     } catch (error) {
         console.error("Error listening for New Message:", error);
@@ -132,6 +123,24 @@ const actions = {
 };
 
 const mutations = {
+  ADD_MESSAGE_TO_CHAT(state, newMessage) {
+    // Update state.currentChat
+    if (state.currentChat && state.currentChat._id === newMessage.chatId) {
+      Vue.set(state.currentChat, 'messages', [...state.currentChat.messages, newMessage]);
+    }
+
+    // Update the correct chat in state.chats
+    state.chats = state.chats.map(chat => {
+      if (chat._id === newMessage.chatId) {
+        return {
+          ...chat,
+          messages: [...chat.messages, newMessage]
+        }
+      }
+      return chat;
+    });
+  },
+
   SET_CURRENT_CHAT: (state, chat) => {
     state.currentChat = chat;
   },
