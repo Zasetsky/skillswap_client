@@ -228,6 +228,7 @@ export default {
     
     isFormChanged() {
       const deal = this.getCurrentDeal;
+      
       if (!deal || !deal.form || !deal.form2) {
         return false;
       }
@@ -238,24 +239,37 @@ export default {
       if (deal.status === "pending_update" || deal.status === "reschedule_offer_update" || deal.status === "reschedule_offer") {
         referenceForm1 = deal.update.form;
         referenceForm2 = deal.update.form2;
-        referenceDuration = deal.update.form.meetingDuration;
+        referenceDuration = deal.update.form?.meetingDuration;
       } else {
         referenceForm1 = deal.form;
         referenceForm2 = deal.form2;
-        referenceDuration = deal.form.meetingDuration;
+        referenceDuration = deal.form?.meetingDuration;
       }
 
       if (!referenceForm1 || !referenceForm2) {
         return false;
       }
 
-      // Проверяем каждую форму
-      const form1Changed = Object.entries(this.form1 || {}).some(([key, value]) => {
-        return value !== referenceForm1[key];
-      });
-      const form2Changed = Object.entries(this.form2 || {}).some(([key, value]) => {
-        return value !== referenceForm2[key];
-      });
+      // Проверяем каждую форму в зависимости от завершенности форм
+      let form1Changed = false;
+      let form2Changed = false;
+      if (!this.completedForms.form1 && !this.completedForms.form2) {
+        form1Changed = Object.entries(this.form1 || {}).some(([key, value]) => {
+          return value !== referenceForm1[key];
+        });
+        form2Changed = Object.entries(this.form2 || {}).some(([key, value]) => {
+          return value !== referenceForm2[key];
+        });
+      } else if (this.completedForms.form1 && !this.completedForms.form2) {
+        form1Changed = Object.entries(this.form1 || {}).some(([key, value]) => {
+          return value !== referenceForm2[key];
+        });
+      } else if (!this.completedForms.form1 && this.completedForms.form2) {
+        form1Changed = Object.entries(this.form1 || {}).some(([key, value]) => {
+          return value !== referenceForm1[key];
+        });
+      }
+
       const durationChanged = this.commonMeetingDuration !== referenceDuration;
 
       // Возвращаем true, если хотя бы одна из форм изменена или продолжительность встречи изменена
@@ -379,6 +393,21 @@ export default {
       }
       
       return "Согласовать сделку";
+    },
+
+    completedForms() {
+      const deal = this.getCurrentDeal;
+      const completed = { form1: false, form2: false };
+
+      if (deal && deal.form && deal.form.isCompleted) {
+        completed.form1 = true;
+      }
+
+      if (deal && deal.form2 && deal.form2.isCompleted) {
+        completed.form2 = true;
+      }
+
+      return completed;
     }
   },
 
@@ -475,7 +504,8 @@ export default {
 
     resetForm() {
       const deal = this.getCurrentDeal;
-      if (!deal || !deal.form) {
+
+      if (!deal || (!deal.form && !(deal.update && deal.update.form))) {
         this.form1 = {
           meetingDate: null,
           meetingTime: null,
@@ -486,7 +516,6 @@ export default {
         };
 
         this.commonMeetingDuration = null;
-
       } else {
         let form1Source, form2Source, meetingDuration;
 
@@ -500,10 +529,24 @@ export default {
           meetingDuration = deal.form?.meetingDuration;
         }
 
-        this.fillForm(this.form1, form1Source);
-        this.fillForm(this.form2, form2Source);
+        this.handleFormFilling(this.form1, form1Source, form2Source);
         this.commonMeetingDuration = meetingDuration;
       }
+    },
+
+    handleFormFilling(formToFill, formFromDeal, form2FromDeal) {
+      if (!this.completedForms.form1 && !this.completedForms.form2) {
+        this.fillForm(formToFill, formFromDeal ? formFromDeal : {});
+        this.fillForm(this.form2, form2FromDeal ? form2FromDeal : {});
+      } else if (this.completedForms.form1 && !this.completedForms.form2) {
+        this.fillForm(formToFill, form2FromDeal ? form2FromDeal : {});
+      } else if (!this.completedForms.form1 && this.completedForms.form2) {
+        this.fillForm(formToFill, formFromDeal ? formFromDeal : {});
+      }
+    },
+
+    updateCommonMeetingDuration(form) {
+      this.commonMeetingDuration = form ? form.meetingDuration : null;
     },
 
   },
@@ -517,29 +560,19 @@ export default {
             newValue.status === "reschedule_offer_update" ||
             newValue.status === "reschedule_offer"
           ) {
-            this.fillForm(
+            this.handleFormFilling(
               this.form1,
-              newValue.update && newValue.update.form ? newValue.update.form : {}
+              newValue.update && newValue.update.form,
+              newValue.update && newValue.update.form2
             );
-            this.fillForm(
-              this.form2,
-              newValue.update && newValue.update.form2 ? newValue.update.form2 : {}
-            );
-            this.commonMeetingDuration =
-              newValue.update && newValue.update.form
-                ? newValue.update.form.meetingDuration
-                : null;
+            this.updateCommonMeetingDuration(newValue.update && newValue.update.form);
           } else {
-            this.fillForm(
+            this.handleFormFilling(
               this.form1,
-              newValue.form ? newValue.form : {}
+              newValue.form,
+              newValue.form2
             );
-            this.fillForm(
-              this.form2,
-              newValue.form2 ? newValue.form2 : {}
-            );
-            this.commonMeetingDuration =
-              newValue.form ? newValue.form.meetingDuration : null;
+            this.updateCommonMeetingDuration(newValue.form);
           }
         } else {
           this.fillForm(this.form1, {});
@@ -552,8 +585,8 @@ export default {
     },
   },
 
-
   async mounted() {
+    console.log(this.activeTab);
     const chatId = localStorage.getItem('chatId');
 
     try {

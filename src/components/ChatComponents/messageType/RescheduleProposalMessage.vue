@@ -6,6 +6,7 @@
       v-if="!isMyMessage &&
             hasRescheduleRequest &&
             isLastRescheduleProposal &&
+            !isDealCancelledOrCompleted &&
             !hasCancellationRequest &&
             !hasContinuationRequest &&
             !hasMeetingDetails"
@@ -32,6 +33,10 @@ export default {
     messageClass: {
       type: String,
       required: true,
+    },
+    isDealCancelledOrCompleted: {
+      type: Boolean,
+      default: false,
     },
     isLastRescheduleProposal: {
       type: Boolean,

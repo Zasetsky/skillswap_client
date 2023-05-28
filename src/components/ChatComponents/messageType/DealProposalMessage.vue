@@ -15,6 +15,7 @@
     <v-btn
       v-if="!isMyMessage &&
             isLastDealProposal &&
+            !isDealCancelledOrCompleted &&
             !hasRescheduleRequest &&
             !hasMeetingDetails &&
             !hasCancellationRequest &&
@@ -42,6 +43,10 @@ export default {
     messageClass: {
       type: String,
       required: true,
+    },
+    isDealCancelledOrCompleted: {
+      type: Boolean,
+      default: false,
     },
     isLastDealProposal: {
       type: Boolean,

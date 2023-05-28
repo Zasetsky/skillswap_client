@@ -6,6 +6,7 @@
           :is="messageComponent"
           :message="message"
           :isMyMessage="isMyMessage"
+          :isDealCancelledOrCompleted="isDealCancelledOrCompleted"
           :isLastMessage="isLastMessage"
           :messageClass="messageClass"
           :hasRescheduleRequest="hasRescheduleRequest"
@@ -87,18 +88,28 @@ export default {
       }
     },
 
+    isDealCancelledOrCompleted() {
+      if (!this.getCurrentDeal) {
+        return false;
+      }
+
+      return ["cancelled", "completed"].includes(this.getCurrentDeal.status);
+    },
+
     messageClass() {
       let messageClass = 'normal';
-      if (this.message.type === 'details' && (!this.isMyMessage && this.isLastMessage)) {
-        messageClass = 'highlight';
-      } else if (this.message.type === 'deal_proposal' && this.isLastDealProposal && !this.hasRescheduleRequest && !this.hasMeetingDetails && !this.hasCancellationRequest && !this.hasContinuationRequest) {
-        messageClass = 'highlight';
-      } else if (this.message.type === 'reschedule_proposal' && this.isLastRescheduleProposal && this.hasRescheduleRequest && !this.hasCancellationRequest && !this.hasContinuationRequest && !this.hasMeetingDetails) {
-        messageClass = 'highlight';
-      } else if (this.message.type === 'cancellation_request' && this.hasCancellationRequest && this.isLastCancellationRequest) {
-        messageClass = 'highlight';
-      } else if (this.message.type === 'continuation_request' && this.hasContinuationRequest && this.isLastContinuationRequest) {
-        messageClass = 'highlight';
+      if (!this.isDealCancelledOrCompleted) {
+        if (this.message.type === 'details' && (!this.isMyMessage && this.isLastMessage)) {
+          messageClass = 'highlight';
+        } else if (this.message.type === 'deal_proposal' && this.isLastDealProposal && !this.hasRescheduleRequest && !this.hasMeetingDetails && !this.hasCancellationRequest && !this.hasContinuationRequest) {
+          messageClass = 'highlight';
+        } else if (this.message.type === 'reschedule_proposal' && this.isLastRescheduleProposal && this.hasRescheduleRequest && !this.hasCancellationRequest && !this.hasContinuationRequest && !this.hasMeetingDetails) {
+          messageClass = 'highlight';
+        } else if (this.message.type === 'cancellation_request' && this.hasCancellationRequest && this.isLastCancellationRequest) {
+          messageClass = 'highlight';
+        } else if (this.message.type === 'continuation_request' && this.hasContinuationRequest && this.isLastContinuationRequest) {
+          messageClass = 'highlight';
+        }
       }
       return messageClass;
     },

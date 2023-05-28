@@ -4,7 +4,9 @@
     <span v-if="isMyMessage" :class="messageClass">Вы запросили продолжение сделки</span>
 
     <v-btn
-      v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest"
+      v-if="!isMyMessage &&
+            hasContinuationRequest &&
+            isLastContinuationRequest"
       color="success"
       small
       @click="$emit('approve-continuation')"
@@ -12,7 +14,9 @@
       Подтвердить
     </v-btn>
     <v-btn
-      v-if="!isMyMessage && hasContinuationRequest && isLastContinuationRequest"
+      v-if="!isMyMessage &&
+            hasContinuationRequest &&
+            isLastContinuationRequest"
       color="error"
       small
       @click="$emit('reject-continuation')"

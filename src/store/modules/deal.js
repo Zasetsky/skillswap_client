@@ -49,13 +49,15 @@ const actions = {
     });
   },
 
-  listenForDealObserver(context) {
+  listenForDealObserver({ commit, state }) {
     const socket = getSocket();
-
+  
     socket.on('dealUpdated', (updatedDeal) => {
-      context.commit('SET_CURRENT_DEAL', updatedDeal);
+      if (state.currentDeal && updatedDeal._id === state.currentDeal._id) {
+        commit('SET_CURRENT_DEAL', updatedDeal);
+      }
     });
-
+  
     socket.on('error', (error) => {
       console.error('Error while listening for Deal Observer:', error.message);
     });
@@ -73,12 +75,14 @@ const actions = {
     });
   },
 
-  listenForDealUpdates(context) {
+  listenForDealUpdates({ commit, state }) {
     try {
       const socket = getSocket();
-
+  
       socket.on("deal", (deal) => {
-        context.commit("SET_CURRENT_DEAL", deal);
+        if(state.currentDeal && deal._id === state.currentDeal._id) {
+          commit("SET_CURRENT_DEAL", deal);
+        }
       });
     } catch (error) {
         console.error("Error listening for Deal Updates:", error);
@@ -117,16 +121,18 @@ const actions = {
     });
   },
 
-  listenForRescheduleConfirmed(context) {
+  listenForRescheduleConfirmed({ commit, state }) {
     try {
       const socket = getSocket();
-
+  
       socket.on("rescheduleConfirmed", (deal) => {
-        context.commit("SET_CURRENT_DEAL", deal);
+        if (state.currentDeal && deal._id === state.currentDeal._id) {
+          commit("SET_CURRENT_DEAL", deal);
+        }
       });
-  } catch (error) {
+    } catch (error) {
       console.error("Error listening for Reschedule Confirmed:", error);
-  }
+    }
   },
 
 
@@ -158,15 +164,17 @@ const actions = {
     });
   },
 
-  listenForDealConfirmed(context) {
+  listenForDealConfirmed({ commit, state }) {
     try {
       const socket = getSocket();
-
+  
       socket.on("dealConfirmed", (deal) => {
-        context.commit("SET_CURRENT_DEAL", deal);
+        if (state.currentDeal && deal._id === state.currentDeal._id) {
+          commit("SET_CURRENT_DEAL", deal);
+        }
       });
     } catch (error) {
-        console.error("Error listening for Deal Confirmed:", error);
+      console.error("Error listening for Deal Confirmed:", error);
     }
   },
 
@@ -183,15 +191,17 @@ const actions = {
     });
   },
 
-  listenForCancellationRequested(context) {
+  listenForCancellationRequested({ commit, state }) {
     try {
       const socket = getSocket();
-
+  
       socket.on("cancellationRequested", (deal) => {
-        context.commit("SET_CURRENT_DEAL", deal);
+        if (state.currentDeal && deal._id === state.currentDeal._id) {
+          commit("SET_CURRENT_DEAL", deal);
+        }
       });
     } catch (error) {
-        console.error("Error listening for Cancellation Requested:", error);
+      console.error("Error listening for Cancellation Requested:", error);
     }
   },
 
@@ -205,15 +215,17 @@ const actions = {
     });
   },
 
-  listenForApproveCancellation(context) {
+  listenForApproveCancellation({ commit, state }) {
     try {
       const socket = getSocket();
-
+  
       socket.on("cancellationApproved", (deal) => {
-        context.commit("SET_CURRENT_DEAL", deal);
+        if (state.currentDeal && deal._id === state.currentDeal._id) {
+          commit("SET_CURRENT_DEAL", deal);
+        }
       });
     } catch (error) {
-        console.error("Error listening for Cancellation Requested:", error);
+      console.error("Error listening for Cancellation Requested:", error);
     }
   },
 
@@ -238,15 +250,17 @@ const actions = {
     });
   },
 
-  listenForContinuationRequested(context) {
+  listenForContinuationRequested({ commit, state }) {
     try {
       const socket = getSocket();
-
+  
       socket.on("continuationRequested", (deal) => {
-        context.commit("SET_CURRENT_DEAL", deal);
+        if (state.currentDeal && deal._id === state.currentDeal._id) {
+          commit("SET_CURRENT_DEAL", deal);
+        }
       });
     } catch (error) {
-        console.error("Error listening for Cancellation Requested:", error);
+      console.error("Error listening for Cancellation Requested:", error);
     }
   },
 
@@ -270,15 +284,17 @@ const actions = {
     });
   },
 
-  listenForApproveContinuation(context) {
+  listenForApproveContinuation({ commit, state }) {
     try {
       const socket = getSocket();
-
+  
       socket.on("continuationApproved", (deal) => {
-        context.commit("SET_CURRENT_DEAL", deal);
+        if (state.currentDeal && deal._id === state.currentDeal._id) {
+          commit("SET_CURRENT_DEAL", deal);
+        }
       });
     } catch (error) {
-        console.error("Error listening for Cancellation Requested:", error);
+      console.error("Error listening for Cancellation Requested:", error);
     }
   },
 };
