@@ -3,14 +3,20 @@ import { getSocket } from "../../soket";
 const state = {
   deals: [],
   currentDeal: null,
+  isSending: false,
 };
 
 const getters = {
   getCurrentDeal: (state) => state.currentDeal,
   getAllDeals: (state) => state.deals,
+  getIsSending: (state) => state.isSending,
 };
 
 const actions = {
+  toggleIsSending({ commit }) {
+    commit("SET_IS_SENDING");
+  },
+
   createOrGetCurrentDeal({ commit }, { participants, chatId, swapRequestId }) {
     const data = { participants, chatId, swapRequestId };
 
@@ -293,9 +299,9 @@ const actions = {
   
       socket.on("continuationApproved", (deal) => {
         const currentChat = rootState.chat.currentChat;
-        console.log(currentChat);
         if (currentChat && deal.chatId === currentChat._id) {
           commit("SET_CURRENT_DEAL", deal);
+          commit("SET_IS_SENDING");
         }
       });
     } catch (error) {
@@ -305,6 +311,11 @@ const actions = {
 };
 
 const mutations = {
+  SET_IS_SENDING: (state) => {
+    state.isSending = !state.isSending
+    console.log(state.isSending);
+  },
+  
   SET_CURRENT_DEAL: (state, deal) => {
     state.currentDeal = deal;
   },

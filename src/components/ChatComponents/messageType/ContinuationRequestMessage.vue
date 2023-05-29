@@ -5,6 +5,7 @@
 
     <v-btn
       v-if="!isMyMessage &&
+            !getIsSending &&
             hasContinuationRequest &&
             isLastContinuationRequest"
       color="success"
@@ -15,6 +16,7 @@
     </v-btn>
     <v-btn
       v-if="!isMyMessage &&
+            !getIsSending &&
             hasContinuationRequest &&
             isLastContinuationRequest"
       color="error"
@@ -27,6 +29,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   props: {
     message: {
@@ -50,5 +54,8 @@ export default {
       required: true,
     },
   },
+  computed: {
+    ...mapGetters('deal', ['getIsSending']),
+  }
 };
 </script>

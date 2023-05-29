@@ -1,29 +1,30 @@
 <template>
-  <v-tooltip top color="black">
-    <template v-slot:activator="{ on }">
-      <v-btn
-        color="white"
-        v-on="on"
-        :disabled="disabled"
-        @click="proposeContinuation"
-      >
-        <v-icon
-          color="success"
-          class="cursor-pointer"
-        >
-          mdi-arrow-right-bold-box-outline
-        </v-icon>
-      </v-btn>
-    </template>
-    <span>Предложить продолжение</span>
-  </v-tooltip>
+  <v-btn
+    color="primary"
+    :disabled="isDisabledButton"
+    @click="proposeContinuation"
+  >
+    {{ getButtonText }}
+  </v-btn>
 </template>
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
-  props: {
-    disabled: {
-      type: Boolean,
-      default: false,
+  computed: {
+    ...mapGetters('deal', ['getIsSending', 'getCurrentDeal']),
+
+    getButtonText() {
+      if (this.getIsSending) {
+        return "Идёт загрузка...";
+      } else {
+        return "Предложить продолжение";
+      }
+    },
+
+    isDisabledButton() {
+      const pendingStatus = this.getCurrentDeal && this.getCurrentDeal.continuation?.status === "true";
+      return this.getIsSending || pendingStatus;
     },
   },
 

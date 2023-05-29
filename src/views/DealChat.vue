@@ -159,9 +159,9 @@ export default {
         return true;
       }
 
-      const isRejectedOrApproved = currentDeal.continuation.status === 'false' || currentDeal.continuation.status === 'approved';
+      // const isRejectedOrApproved = currentDeal.continuation.status === 'false' || currentDeal.continuation.status === 'approved';
 
-      return isRejectedOrApproved;
+      return currentDeal.continuation.status;
     },
 
     isCancelButtonCloseToDeadline() {
@@ -353,6 +353,7 @@ export default {
     },
 
     async handleApproveContinuation() {
+      this.$store.dispatch("deal/toggleIsSending");
       try {
         await this.$store.dispatch("deal/approveContinuation", {
           dealId: this.getCurrentDeal._id,
