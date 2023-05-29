@@ -13,26 +13,17 @@ const getters = {
 };
 
 const actions = {
-  createOrGetCurrentChat({ commit }, { receiverId, senderId, swapRequestId }) {
-    return new Promise((resolve, reject) => {
-      try {
-        const socket = getSocket();
+  createChat({ commit }, { receiverId, senderId, requestId }) {
+    const socket = getSocket();
 
-        socket.on("chat", (chat) => {
-          commit("SET_CURRENT_CHAT", chat);
-          resolve();
-        });
-  
-        socket.on("error", (error) => {
-          console.error("Ошибка создания чата:", error);
-          reject(error);
-        });
-  
-        socket.emit("createOrGetCurrentChat", { receiverId, senderId, swapRequestId });
-      } catch (error) {
-        console.error("Ошибка создания чата:", error);
-        reject(error);
-      }
+    socket.emit("createChat", { receiverId, senderId, requestId });
+
+    socket.once("chat", (newChat) => {
+      commit("SET_CURRENT_CHAT", newChat);
+    });
+
+    socket.on("error", (error) => {
+      console.error("Ошибка создания чата:", error.message);
     });
   },  
   

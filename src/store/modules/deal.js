@@ -17,23 +17,19 @@ const actions = {
     commit("SET_IS_SENDING");
   },
 
-  createOrGetCurrentDeal({ commit }, { participants, chatId, swapRequestId }) {
-    const data = { participants, chatId, swapRequestId };
+  createDeal({ commit }, { participants, chatId, requestId }) {
+    const data = { participants, chatId, requestId };
 
-    return new Promise((resolve, reject) => {
-      const socket = getSocket();
+    const socket = getSocket();
 
-      socket.emit("createOrGetCurrentDeal", data);
-  
-      socket.once("deal", (newDeal) => {
-        commit("SET_CURRENT_DEAL", newDeal);
-        resolve(newDeal);
-      });
-  
-      socket.once("error", (error) => {
-        console.error("Error creating deal:", error.message);
-        reject(error);
-      });
+    socket.emit("createOrGetCurrentDeal", data);
+
+    socket.once("newDeal", (newDeal) => {
+      commit("SET_CURRENT_DEAL", newDeal);
+    });
+
+    socket.once("error", (error) => {
+      console.error("Error creating deal:", error.message);
     });
   },
 

@@ -163,6 +163,7 @@ export default {
 
   methods: {
     ...mapActions('user', ['fetchCurrentUser']),
+    ...mapActions('chat', ['fetchCurrentChat']),
     ...mapActions('swapRequests', ['fetchAllSwapRequests']),
 
     async acceptSwapRequest(swapRequestId) {
@@ -184,33 +185,49 @@ export default {
       }
     },
 
-    async openChat(senderId, requestId, status) {
+    async createChat(senderId, requestId) {
+      try {
+        await this.$store.dispatch("chat/createChat", {
+          receiverId: this.currentUser._id,
+          senderId,
+          requestId,
+        });
+      } catch (error) {
+        console.error("Error creating chat:", error);
+      }
+    },
+
+    async createDeal(senderId, requestId, chatId) {
+      try {
+        await this.$store.dispatch("deal/createDeal", {
+          participants: [this.currentUser._id, senderId],
+          chatId,
+          requestId,
+        });
+      } catch (error) {
+        console.error("Error creating deal:", error);
+      }
+    },
+
+    async openChat(senderId, requestId, chatId, status) {
       if (status === 'rejected' || status === 'pending') {
         console.log('Chat cannot be opened due to the current status of the deal.');
         return;
       }
-      try {
-        // Создать новый чат
-        await this.$store.dispatch("chat/createOrGetCurrentChat", {
-          receiverId: this.currentUser._id,
-          senderId,
-          swapRequestId: requestId,
-        });
 
-        const lastSwapRequestId = this.getCurrentChat.swapRequestIds[this.getCurrentChat.swapRequestIds.length - 1];
+      let localChatId;
 
-        await this.$store.dispatch('deal/createOrGetCurrentDeal', {
-          participants: this.getCurrentChat.participants,
-          chatId: this.getCurrentChat._id,
-          swapRequestId: lastSwapRequestId,
-        });
-
-        const chat = this.getCurrentChat;
-        localStorage.setItem("chatId", chat._id);
-        this.$router.push(`/${chat._id}`);
-      } catch (error) {
-        console.error("Error opening chat:", error);
+      if (!chatId) {
+        await this.createChat(senderId, requestId);
+        await this.createDeal(senderId, requestId, chatId);
+        localChatId = this.getCurrentChat;
+      } else {
+        await this.fetchCurrentChat(chatId);
+        localChatId = chatId;
       }
+
+      localStorage.setItem("chatId", localChatId);
+      this.$router.push(`/${localChatId}`);
     },
   },
 };
