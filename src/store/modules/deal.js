@@ -89,13 +89,17 @@ const actions = {
     }
   },
 
-  proposeRescheduleDeal(context, { dealId, rescheduleFormData1, rescheduleFormData2 }) {
+  proposeRescheduleDeal(context, { dealId, formData1, formData2 }) {
     const socket = getSocket();
 
-    const data = { dealId, rescheduleFormData1, rescheduleFormData2 };
-    console.log(data);
-    socket.emit("proposeReschedule", data);
+    const data = { dealId, formData1 };
+  
+    if (formData2) {
+      Object.assign(data, {formData2});
+    }
 
+    socket.emit("proposeReschedule", data);
+  
     socket.once("error", (error) => {
       console.error("Error proposing reschedule:", error.message);
     });
@@ -155,7 +159,6 @@ const actions = {
 
   confirmDeal(context, dealId) {
     const socket = getSocket();
-    console.log(dealId);
 
     socket.emit("confirmDeal", dealId);
 
@@ -284,12 +287,14 @@ const actions = {
     });
   },
 
-  listenForApproveContinuation({ commit, state }) {
+  listenForApproveContinuation({ commit, rootState }) {
     try {
       const socket = getSocket();
   
       socket.on("continuationApproved", (deal) => {
-        if (state.currentDeal && deal._id === state.currentDeal._id) {
+        const currentChat = rootState.chat.currentChat;
+        console.log(currentChat);
+        if (currentChat && deal.chatId === currentChat._id) {
           commit("SET_CURRENT_DEAL", deal);
         }
       });

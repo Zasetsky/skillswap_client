@@ -21,7 +21,6 @@ export default {
       default: false
     },
   },
-  emits: ['open-deal-form'],
   computed: {
     messageClass() {
       return this.isMyMessage ? 'my-message-class' : 'other-message-class';

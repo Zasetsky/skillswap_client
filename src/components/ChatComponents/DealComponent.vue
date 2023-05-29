@@ -19,7 +19,7 @@
           <v-tab
             v-for="(tab, index) in tabs"
             :key="index"
-            :class="{'mismatched-tab': isMismatched(index)}"
+            :class="{'mismatched-tab': isMismatchedInTabs(index)}"
           >
             {{ tab }}
           </v-tab>
@@ -97,6 +97,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    completedForms: {
+      type: Object,
+      required: true,
+    }
   },
 
   data() {
@@ -157,7 +161,6 @@ export default {
       return null;
     },
 
-    // update your tabs computed property
     tabs() {
       const deal = this.getCurrentDeal;
       const tabs = [];
@@ -190,64 +193,69 @@ export default {
         currentUser._id !== deal.sender
       ) {
 
-        let form1Source = deal.update.form;
-        let form2Source = deal.update.form2;
+        let form1Source = deal.update?.form;
+        let form2Source = deal.update?.form2;
 
         const form1Highlights = {};
         const form2Highlights = {};
         let isForm1Changed = false;
         let isForm2Changed = false;
 
-          // Проверяем первую форму
-        Object.keys(form1Source || {}).forEach((field) => {
-          const isFieldChanged = form1Source[field] !== deal.form[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form[field]);
-          if (isFieldChanged) {
-            isForm1Changed = true;
-          }
-          form1Highlights[field] = isFieldChanged;
-        });
+        // Проверяем первую форму, если она есть
+        if(form1Source) {
+          Object.keys(form1Source).forEach((field) => {
+            const isFieldChanged = form1Source[field] !== deal.form[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form[field]);
+            if (isFieldChanged) {
+              isForm1Changed = true;
+            }
+            form1Highlights[field] = isFieldChanged;
+          });
+        }
 
-        // Проверяем вторую форму
-        Object.keys(form2Source || {}).forEach((field) => {
-          const isFieldChanged = form2Source[field] !== deal.form2[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form2[field]);
-          if (isFieldChanged) {
-            isForm2Changed = true;
-          }
-          form2Highlights[field] = isFieldChanged;
-        });
+        // Проверяем вторую форму, если она есть
+        if(form2Source) {
+          Object.keys(form2Source).forEach((field) => {
+            const isFieldChanged = form2Source[field] !== deal.form2[field] || (field === 'meetingDuration' && this.commonMeetingDuration !== deal.form2[field]);
+            if (isFieldChanged) {
+              isForm2Changed = true;
+            }
+            form2Highlights[field] = isFieldChanged;
+          });
+        }
 
-        // Возвращаем объекты для форм в зависимости от того, внесены ли в них изменения
-        return {
-          form1: isForm1Changed ? form1Highlights : {},
-          form2: isForm2Changed ? form2Highlights : {},
-        };
+        // Если form завершена, то подсвечиваем form1, даже если изменения были в form2
+        if (deal.form.isCompleted) {
+          return { form1: isForm2Changed ? form2Highlights : {}, form2: {} };
+        } else if (deal.form2.isCompleted) {
+          return { form1: isForm1Changed ? form1Highlights : {}, form2: {} };
+        } else {
+          return {
+            form1: isForm1Changed ? form1Highlights : {},
+            form2: isForm2Changed ? form2Highlights : {},
+          };
+        }
       }
 
       return { form1: {}, form2: {} };
     },
+
     
     isFormChanged() {
       const deal = this.getCurrentDeal;
-      
+
       if (!deal || !deal.form || !deal.form2) {
         return false;
       }
 
-      let referenceForm1, referenceForm2, referenceDuration;
+      let referenceForm1 = deal.form;
+      let referenceForm2 = deal.form2;
+      let referenceDuration = deal.form?.meetingDuration;
 
       // Определяем, с какими формами следует сравнивать
       if (deal.status === "pending_update" || deal.status === "reschedule_offer_update" || deal.status === "reschedule_offer") {
-        referenceForm1 = deal.update.form;
-        referenceForm2 = deal.update.form2;
-        referenceDuration = deal.update.form?.meetingDuration;
-      } else {
-        referenceForm1 = deal.form;
-        referenceForm2 = deal.form2;
-        referenceDuration = deal.form?.meetingDuration;
-      }
-
-      if (!referenceForm1 || !referenceForm2) {
-        return false;
+        referenceForm1 = deal.update?.form || referenceForm1;
+        referenceForm2 = deal.update?.form2 || referenceForm2;
+        referenceDuration = deal.update?.form?.meetingDuration || referenceDuration;
       }
 
       // Проверяем каждую форму в зависимости от завершенности форм
@@ -394,21 +402,6 @@ export default {
       
       return "Согласовать сделку";
     },
-
-    completedForms() {
-      const deal = this.getCurrentDeal;
-      const completed = { form1: false, form2: false };
-
-      if (deal && deal.form && deal.form.isCompleted) {
-        completed.form1 = true;
-      }
-
-      if (deal && deal.form2 && deal.form2.isCompleted) {
-        completed.form2 = true;
-      }
-
-      return completed;
-    }
   },
 
   methods: {
@@ -422,18 +415,24 @@ export default {
       });
     },
 
-    isMismatched(index) {
-      // Получаем форму, соответствующую индексу таба.
+    isMismatchedInTabs(index) {
+      const deal = this.getCurrentDeal;
+
+      if (deal && (deal.form.isCompleted || deal.form2.isCompleted)) {
+        return false;
+      }
+
       const form = this.highlightMismatchedFields[`form${index + 1}`];
-      // Если форма существует и в ней есть изменения, то возвращаем true.
+
       if (form) {
         const mismatches = Object.values(form);
-        // Если в форме есть хотя бы одно изменение, возвращаем true.
+
         if (mismatches.some(field => field)) {
           return true;
         }
       }
-      // В противном случае возвращаем false.
+
+
       return false;
     },
 
@@ -478,8 +477,8 @@ export default {
           }
         };
       }
-
       this.$emit('submit-deal-form', dataToEmit);
+      this.close();
     },
 
     emitConfirmDeal() {
@@ -517,31 +516,34 @@ export default {
 
         this.commonMeetingDuration = null;
       } else {
-        let form1Source, form2Source, meetingDuration;
+        let form1Source, form2Source;
 
         if (deal.status === "pending_update" || deal.status === "reschedule_offer_update" || deal.status === "reschedule_offer") {
           form1Source = deal.update.form || {};
           form2Source = deal.update.form2 || {};
-          meetingDuration = deal.update.form?.meetingDuration;
         } else {
           form1Source = deal.form || {};
           form2Source = deal.form2 || {};
-          meetingDuration = deal.form?.meetingDuration;
         }
 
-        this.handleFormFilling(this.form1, form1Source, form2Source);
-        this.commonMeetingDuration = meetingDuration;
+        this.handleFormFilling(form1Source, form2Source);
       }
     },
 
-    handleFormFilling(formToFill, formFromDeal, form2FromDeal) {
+    handleFormFilling(formFromDeal, form2FromDeal) {
       if (!this.completedForms.form1 && !this.completedForms.form2) {
-        this.fillForm(formToFill, formFromDeal ? formFromDeal : {});
+        this.fillForm(this.form1, formFromDeal ? formFromDeal : {});
         this.fillForm(this.form2, form2FromDeal ? form2FromDeal : {});
+
+        this.updateCommonMeetingDuration(formFromDeal);
       } else if (this.completedForms.form1 && !this.completedForms.form2) {
-        this.fillForm(formToFill, form2FromDeal ? form2FromDeal : {});
+        this.fillForm(this.form1, form2FromDeal ? form2FromDeal : {});
+
+        this.updateCommonMeetingDuration(form2FromDeal);
       } else if (!this.completedForms.form1 && this.completedForms.form2) {
-        this.fillForm(formToFill, formFromDeal ? formFromDeal : {});
+        this.fillForm(this.form1, formFromDeal ? formFromDeal : {});
+
+        this.updateCommonMeetingDuration(formFromDeal);
       }
     },
 
@@ -561,18 +563,14 @@ export default {
             newValue.status === "reschedule_offer"
           ) {
             this.handleFormFilling(
-              this.form1,
               newValue.update && newValue.update.form,
               newValue.update && newValue.update.form2
             );
-            this.updateCommonMeetingDuration(newValue.update && newValue.update.form);
           } else {
             this.handleFormFilling(
-              this.form1,
               newValue.form,
               newValue.form2
             );
-            this.updateCommonMeetingDuration(newValue.form);
           }
         } else {
           this.fillForm(this.form1, {});
@@ -586,7 +584,6 @@ export default {
   },
 
   async mounted() {
-    console.log(this.activeTab);
     const chatId = localStorage.getItem('chatId');
 
     try {

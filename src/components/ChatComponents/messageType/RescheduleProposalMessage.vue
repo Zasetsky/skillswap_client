@@ -59,9 +59,5 @@ export default {
       default: false,
     },
   },
-  emits: ['open-deal-form'],
-  mounted() {
-    console.log(this.messageClass);
-  }
 };
 </script>

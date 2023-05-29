@@ -190,16 +190,16 @@ export default {
       this.$emit('open-deal-form');
     },
     approveContinuation() {
-      this.$emit('approve-continuation', this.message._id);
+      this.$emit('approve-continuation');
     },
     rejectContinuation() {
-      this.$emit('reject-continuation', this.message._id);
+      this.$emit('reject-continuation');
     },
     approveCancellation() {
-      this.$emit('approve-cancellation', this.message._id);
+      this.$emit('approve-cancellation');
     },
     rejectCancellation() {
-      this.$emit('reject-cancellation', this.message._id);
+      this.$emit('reject-cancellation');
     },
   },
   mounted() {

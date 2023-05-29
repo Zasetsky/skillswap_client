@@ -19,6 +19,7 @@
           <DealComponent
             ref="dealForm"
             :disabled="!showCancelButton && !ishalfCompletedStatus || isSender"
+            :completedForms="completedForms"
             @submit-deal-form="handleDealFormSubmit"
             @confirm-deal="confirmDeal"
             @confirm-reschedule="confirmReschedule"
@@ -216,6 +217,21 @@ export default {
       const showForm2Button = isForm2Completed && isReceiver && !this.isReviewSubmitted('form2');
 
       return showForm1Button || showForm2Button;
+    },
+
+    completedForms() {
+      const deal = this.getCurrentDeal;
+      const completed = { form1: false, form2: false };
+
+      if (deal && deal.form && deal.form.isCompleted) {
+        completed.form1 = true;
+      }
+
+      if (deal && deal.form2 && deal.form2.isCompleted) {
+        completed.form2 = true;
+      }
+
+      return completed;
     }
   },
 
@@ -278,21 +294,22 @@ export default {
           await this.sendMessage("deal_proposal", " ");
 
         } else {
+          const rescheduleFormData = this.completedForms.form1 || this.completedForms.form2 ? { formData1 } : { formData1, formData2 };
+          console.log('resch:', rescheduleFormData);
           await this.$store.dispatch("deal/proposeRescheduleDeal", {
             dealId: this.getCurrentDeal._id,
-            rescheduleFormData1: formData1,
-            rescheduleFormData2: formData2,
+            ...rescheduleFormData
           });
 
           await this.sendMessage("reschedule_proposal", " ");
         }
 
       } catch (error) {
-          console.error("Error during async submit:", error);
+        console.error("Error during async submit:", error);
       } finally {
         this.$refs.dealForm.isSubmitting = false;
       }
-    },
+    }, 
 
     async handleOpenDealForm() {
       this.$refs.dealForm.openDialog();
