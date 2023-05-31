@@ -210,8 +210,8 @@ export default {
       const isSender = swapRequest.senderId === this.currentUser._id;
       const isReceiver = swapRequest.receiverId === this.currentUser._id;
 
-      const isForm1Completed = deal.completedForm.includes('form');
-      const isForm2Completed = deal.completedForm.includes('form2');
+      const isForm1Completed = deal && deal.completedForm && deal.completedForm.includes('form');
+      const isForm2Completed = deal && deal.completedForm && deal.completedForm.includes('form2');
 
       const showForm1Button = isForm1Completed && isSender && !this.isReviewSubmitted('form');
       const showForm2Button = isForm2Completed && isReceiver && !this.isReviewSubmitted('form2');

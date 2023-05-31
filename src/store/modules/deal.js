@@ -17,15 +17,16 @@ const actions = {
     commit("SET_IS_SENDING");
   },
 
-  createDeal({ commit }, { participants, chatId, requestId }) {
-    const data = { participants, chatId, requestId };
+  createDeal({ commit }, { participants, requestId, chatId }) {
+    const data = { participants, requestId, chatId };
 
     const socket = getSocket();
 
-    socket.emit("createOrGetCurrentDeal", data);
+    socket.emit("createDeal", data);
 
     socket.once("newDeal", (newDeal) => {
       commit("SET_CURRENT_DEAL", newDeal);
+      commit("SET_IS_SENDING");
     });
 
     socket.once("error", (error) => {
@@ -309,7 +310,7 @@ const actions = {
 const mutations = {
   SET_IS_SENDING: (state) => {
     state.isSending = !state.isSending
-    console.log(state.isSending);
+    console.log("coming:", state.isSending);
   },
   
   SET_CURRENT_DEAL: (state, deal) => {

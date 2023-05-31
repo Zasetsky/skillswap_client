@@ -1,6 +1,5 @@
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
-import store from '@/store';
 import { connectSocket, getSocket } from "../../soket";
 
 const API_URL = 'http://localhost:3000/api/auth'; 
@@ -85,14 +84,14 @@ const actions = {
   logout({ commit }) {
     // Очистка состояния модуля авторизации
     localStorage.removeItem('token');
-    commit('auth/logout', null, { root: true });
-    store.commit('chat/logout', null, { root: true });
-    store.commit('deal/logout', null, { root: true });
-    store.commit('matching/logout', null, { root: true });
-    store.commit('review/logout', null, { root: true });
-    store.commit('skills/logout', null, { root: true });
-    store.commit('swapRequests/logout', null, { root: true });
-    store.commit('user/logout', null, { root: true });
+    commit('logout');
+    commit('chat/logout', null, { root: true });
+    commit('deal/logout', null, { root: true });
+    commit('matching/logout', null, { root: true });
+    commit('review/logout', null, { root: true });
+    commit('skills/logout', null, { root: true });
+    commit('swapRequests/logout', null, { root: true });
+    commit('user/logout', null, { root: true });
   
     const socket = getSocket();
     if (socket) {

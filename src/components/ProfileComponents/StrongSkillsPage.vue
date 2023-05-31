@@ -97,6 +97,7 @@ export default {
   
   computed: {
     ...mapGetters("auth", ["currentUser"]),
+    ...mapGetters("deal", ["getIsSending"]),
     ...mapGetters("chat", ["getCurrentChat"]),
     ...mapGetters("swapRequests", ["getSwapRequests"]),
 
@@ -127,7 +128,7 @@ export default {
         return (
           (request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) ||
           request.senderData.skillsToTeach.some(skill => skill._id === this.localSkillId)) &&
-          request.status === "accepted"
+          (request.status === "accepted" || request.status === "active")
         );
       });
     },
@@ -215,12 +216,20 @@ export default {
         return;
       }
 
+      if (this.getIsSending) {
+        console.log('Is BUSY!!!');
+        return;
+      }
+
       let localChatId;
 
       if (!chatId) {
+        this.$store.dispatch("deal/toggleIsSending");
+
         await this.createChat(senderId, requestId);
-        await this.createDeal(senderId, requestId, chatId);
-        localChatId = this.getCurrentChat;
+        localChatId = this.getCurrentChat._id;
+
+        await this.createDeal(senderId, requestId, localChatId);
       } else {
         await this.fetchCurrentChat(chatId);
         localChatId = chatId;

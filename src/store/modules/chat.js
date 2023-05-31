@@ -14,18 +14,22 @@ const getters = {
 
 const actions = {
   createChat({ commit }, { receiverId, senderId, requestId }) {
-    const socket = getSocket();
+    return new Promise((resolve, reject) => {
+      const socket = getSocket();
 
-    socket.emit("createChat", { receiverId, senderId, requestId });
+      socket.emit("createChat", { receiverId, senderId, requestId });
 
-    socket.once("chat", (newChat) => {
-      commit("SET_CURRENT_CHAT", newChat);
+      socket.once("chat", (newChat) => {
+        commit("SET_CURRENT_CHAT", newChat);
+        resolve(newChat);
+      });
+
+      socket.on("error", (error) => {
+        console.error("Ошибка создания чата:", error.error);
+        reject(error);
+      });
     });
-
-    socket.on("error", (error) => {
-      console.error("Ошибка создания чата:", error.message);
-    });
-  },  
+  },
   
   listenForNewChat(context) {
     try {

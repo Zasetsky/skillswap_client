@@ -1,5 +1,4 @@
 import axios from 'axios';
-import store from '@/store';
 import { getSocket } from "../../soket";
 
 const API_URL = 'http://localhost:3000/api/profile'
@@ -74,13 +73,13 @@ const actions = {
 
   // Обновление доступности для обмена
 
-  async isPreSetupToggle() {
+  async isPreSetupToggle({ commit }) {
     try {
       const response = await axios.post(`${API_URL}/isPreSetup`);
   
       console.log('Server: ', response.data);
   
-      store.commit('auth/setUser', response.data.user, { root: true });
+      commit('auth/setUser', response.data.user, { root: true });
     } catch (error) {
       console.error('Error saving availability:', error);
     }
@@ -98,20 +97,20 @@ const actions = {
     }
   },
 
-  async fetchCurrentUser() {
+  async fetchCurrentUser({ commit }) {
     try {
       const response = await axios.get(`http://localhost:3000/api/auth/user`);
-      store.commit('auth/setUser', {...response.data.user}, { root: true });
+      commit('auth/setUser', {...response.data.user}, { root: true });
     } catch (error) {
       console.error('Error fetching current user:', error);
     }
   },
 
-  listenForUserUpdates() {
+  listenForUserUpdates({ commit }) {
     const socket = getSocket();
 
     socket.on("userUpdated", (updatedUser) => {
-      store.commit('auth/setUser', updatedUser, { root: true });
+      commit('auth/setUser', updatedUser, { root: true });
     });
   },
 
