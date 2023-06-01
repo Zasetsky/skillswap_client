@@ -100,10 +100,10 @@ export default {
       }
     },
 
-    async createChat(senderId, requestId) {
+    async createChat(receiverId, senderId, requestId) {
       try {
         await this.$store.dispatch("chat/createChat", {
-          receiverId: this.currentUser._id,
+          receiverId,
           senderId,
           requestId,
         });
@@ -112,10 +112,10 @@ export default {
       }
     },
 
-    async createDeal(senderId, requestId, chatId) {
+    async createDeal(receiverId, senderId, requestId, chatId) {
       try {
         await this.$store.dispatch("deal/createDeal", {
-          participants: [this.currentUser._id, senderId],
+          participants: [receiverId, senderId],
           chatId,
           requestId,
         });
@@ -124,7 +124,7 @@ export default {
       }
     },
 
-    async openChat(senderId, requestId, chatId, status) {
+    async openChat(receiverId, senderId, requestId, chatId, status) {
       if (status === 'rejected' || status === 'pending') {
         console.log('Chat cannot be opened due to the current status of the deal.');
         return;
@@ -140,10 +140,10 @@ export default {
       if (!chatId) {
         this.$store.dispatch("deal/toggleIsSending");
 
-        await this.createChat(senderId, requestId);
+        await this.createChat(receiverId, senderId, requestId);
         localChatId = this.getCurrentChat._id;
 
-        await this.createDeal(senderId, requestId, localChatId);
+        await this.createDeal(receiverId, senderId, requestId, localChatId);
       } else {
         await this.$store.dispatch("chat/fetchCurrentChat", chatId);
         localChatId = chatId;

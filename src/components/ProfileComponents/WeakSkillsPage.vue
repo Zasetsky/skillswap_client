@@ -12,54 +12,26 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="12" sm="6">
-        <h3>Активный запрос</h3>
-        <skill-card
-          v-for="sentRequest in filteredActiveRequests"
-          :key="sentRequest._id"
-          :sentRequest="sentRequest"
-          @open-chat="openChat"
-        >
-          <v-btn
-            v-if="sentRequest.status !== 'accepted'"
-            class="mt-4"
-            color="primary"
-            @click="cancelSwapRequest(sentRequest._id)"
-          >
-            Отменить запрос
-          </v-btn>
-        </skill-card>
-        <v-card v-if="filteredActiveRequests.length === 0">
-          <v-card-text>
-            Здесь будет информация об активных запросов этого навыка
-          </v-card-text>
-        </v-card>
-      </v-col>
-      <v-col cols="12" sm="6">
-        <h3>История запросов и выполненных сделок</h3>
-        <skill-card
-          v-for="pastRequest in filteredPastRequests"
-          :key="pastRequest._id"
-          :sentRequest="pastRequest"
-          @open-chat="openChat"
-        >
-          <strong>Статус:</strong> {{ pastRequest.status }}
-        </skill-card>
-        <v-card v-if="filteredPastRequests.length === 0">
-          <v-card-text>Здесь будет информация об активной сделке</v-card-text>
-        </v-card>
-      </v-col>
+      <active-requests
+        :filteredActiveRequests="filteredActiveRequests"
+        @cancel-request="cancelSwapRequest"
+        @open-chat="openChat"
+      />
+      <past-requests @open-chat="openChat" />
     </v-row>
   </v-container>
 </template>
 
 <script>
-import SkillCard from "./SkillCard.vue";
-import { mapGetters, mapActions } from "vuex";
+import ActiveRequests from "./WeakSkillComponents/ActiveRequests.vue";
+import PastRequests from "./WeakSkillComponents/PastRequests.vue";
+
+import { mapGetters } from "vuex";
 
 export default {
   components: {
-      SkillCard,
+      ActiveRequests,
+      PastRequests
   },
 
   data() {
@@ -72,17 +44,6 @@ export default {
     ...mapGetters("auth", ["currentUser"]),
     ...mapGetters("chat", ["getCurrentChat"]),
     ...mapGetters("swapRequests", ["getSwapRequests"]),
-
-    weakSkillObject() {
-      if (!this.currentUser) {
-        return {};
-      }
-
-      const skillId = this.localSkillId;
-      const weakSkill = this.currentUser.skillsToLearn.find(skill => skill._id === skillId) || {};
-
-      return weakSkill;
-    },
 
     filteredActiveRequests() {
       if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
@@ -105,61 +66,78 @@ export default {
       return filteredRequests;
     },
 
-    filteredPastRequests() {
-      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
-        return [];
+    weakSkillObject() {
+      if (!this.currentUser) {
+        return {};
       }
 
-      const filteredRequests = this.getSwapRequests.filter(request => {
-        return (
-          (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
-          request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
-          (request.status !== "pending" && request.status !== "accepted")
-        );
-      });
-  
-      return filteredRequests;
+      const skillId = this.localSkillId;
+      const weakSkill = this.currentUser.skillsToLearn.find(skill => skill._id === skillId) || {};
+
+      return weakSkill;
     },
   },
 
   methods: {
-    ...mapActions('swapRequests', ['deleteSwapRequest', 'fetchAllSwapRequests']),
-    ...mapActions('user', ['fetchCurrentUser']),
-
     async cancelSwapRequest(swapRequestId) {
       try {
-        await this.deleteSwapRequest(swapRequestId);
-        await this.fetchCurrentUser();
+        await this.$store.dispatch("swapRequests/deleteSwapRequest", swapRequestId);
+        await this.$store.dispatch("user/fetchCurrentUser");
       } catch (error) {
         console.error('Error creating swap request:', error);
       }
     },
 
-    async openChat(receiverId, requestId, status) {
-      if (status === "rejected" || status === "pending") {
-        console.log('Chat cannot be opened due to the current status of the deal.');
+    async createChat(receiverId, senderId, requestId) {
+      try {
+        await this.$store.dispatch("chat/createChat", {
+          receiverId,
+          senderId,
+          requestId,
+        });
+      } catch (error) {
+        console.error("Error creating chat:", error);
+      }
+    },
+
+    async createDeal(receiverId, senderId, requestId, chatId) {
+      try {
+        await this.$store.dispatch("deal/createDeal", {
+          participants: [receiverId, senderId],
+          chatId,
+          requestId,
+        });
+      } catch (error) {
+        console.error("Error creating deal:", error);
+      }
+    },
+
+    async openChat(receiverId, senderId, requestId, chatId, status) {
+      if (status === 'rejected' || status === 'pending') {
         return;
       }
-      try {
-        await this.$store.dispatch("chat/createOrGetCurrentChat", {
-          receiverId,
-          senderId: this.currentUser._id,
-          swapRequestId: requestId,
-        });
 
-        const lastSwapRequestId = this.getCurrentChat.swapRequestIds[this.getCurrentChat.swapRequestIds.length - 1];
-
-        await this.$store.dispatch('deal/createOrGetCurrentDeal', {
-          participants: this.getCurrentChat.participants,
-          chatId: this.getCurrentChat._id,
-          swapRequestId: lastSwapRequestId,
-        });
-        const chat = this.getCurrentChat;
-        localStorage.setItem("chatId", chat._id);
-        this.$router.push(`/${chat._id}`);
-      } catch (error) {
-        console.error('Error opening chat:', error);
+      if (this.getIsSending && !chatId) {
+        console.log('Is BUSY!!!');
+        return;
       }
+
+      let localChatId;
+
+      if (!chatId) {
+        this.$store.dispatch("deal/toggleIsSending");
+
+        await this.createChat(receiverId, senderId, requestId);
+        localChatId = this.getCurrentChat._id;
+
+        await this.createDeal(receiverId, senderId, requestId, localChatId);
+      } else {
+        await this.$store.dispatch("chat/fetchCurrentChat", chatId);
+        localChatId = chatId;
+      }
+
+      localStorage.setItem("chatId", localChatId);
+      this.$router.push(`/${localChatId}`);
     },
 
     goToMatchingUsers() {
@@ -174,8 +152,8 @@ export default {
     try {
       this.localSkillId = localStorage.getItem("weakSkillId");
 
-      await this.fetchCurrentUser();
-      await this.fetchAllSwapRequests();
+      await this.$store.dispatch("user/fetchCurrentUser");
+      await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
       } catch (error) {
         console.error('Error creating swap request:', error);
     }

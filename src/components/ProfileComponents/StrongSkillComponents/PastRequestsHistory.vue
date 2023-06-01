@@ -46,8 +46,8 @@ export default {
   },
 
   methods: {
-    emitOpenChat(userId, requestId, chatId, status) {
-      this.$emit('open-chat', userId, requestId, chatId, status);
+    emitOpenChat(receiverId, senderId, requestId, chatId, status) {
+      this.$emit('open-chat', receiverId, senderId, requestId, chatId, status);
     }
   },
 };

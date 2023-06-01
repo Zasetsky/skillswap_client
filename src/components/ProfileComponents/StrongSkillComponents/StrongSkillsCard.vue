@@ -71,24 +71,26 @@ export default {
 
   methods: {
     handleClick() {
-      let senderId, requestId, status, chatId;
+      let receiverId, senderId, requestId, status, chatId;
 
       if (this.currentUser._id === this.request.senderId) {
         // Current user is the sender of the request
+        receiverId = this.request.senderId;
         senderId = this.request.receiverId;
         requestId = this.request._id;
         chatId = this.request.chatId;
         status = this.request.status;
       } else {
         // Current user is the receiver of the request
+        receiverId = this.request.receiverId;
         senderId = this.request.senderId;
         requestId = this.request._id;
         chatId = this.request.chatId;
         status = this.request.status;
       }
       
-      this.$emit('open-chat', senderId, requestId, chatId, status);
+      this.$emit('open-chat', receiverId, senderId, requestId, chatId, status);
     },
-  }
+  },
 };
 </script>
