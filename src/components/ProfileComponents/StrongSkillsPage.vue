@@ -10,88 +10,44 @@
     </v-row>
     <v-row>
       <v-col cols="12" sm="6">
-        <h3>Принятые запросы и начатые сделки</h3>
-        <skill-card
-          v-for="acceptedRequest in acceptedRequests"
-          :key="acceptedRequest._id"
-          :request="acceptedRequest"
+        <accepted-requests
           @open-chat="openChat"
         >
-        </skill-card>
-        <v-card v-if="acceptedRequests.length === 0">
-          <v-card-text>
-            Здесь будет информация об принятых запросах и активных сделках этого навыка
-          </v-card-text>
-        </v-card>
+        </accepted-requests>
 
-        <h3>Полученные запросы на обмен</h3>
-        <skill-card
-          v-for="receivedRequest in filteredReceivedRequests"
-          :key="receivedRequest._id"
-          :request="receivedRequest"
+        <received-requests
+          @accept-request="acceptSwapRequest"
+          @reject-request="rejectSwapRequest"
         >
-          <v-select
-            v-model="selectedSkillObject"
-            :items="receivedRequest.senderData.skillsToTeach"
-            label="Выберите навык для обучения"
-            class="mt-4"
-            item-text="skill"
-            item-value="item"
-            return-object
-          >
-          </v-select>
-          <v-btn 
-            class="mt-4"
-            color="primary"
-            :disabled="!selectedSkillObject.skill"
-            @click="acceptSwapRequest(receivedRequest._id)"
-          >
-            Принять запрос
-          </v-btn>
-          <v-btn class="mt-4 ml-2" color="error" @click="rejectSwapRequest(receivedRequest._id)">
-            Отклонить запрос
-          </v-btn>
-        </skill-card>
-        <v-card v-if="filteredReceivedRequests.length === 0">
-          <v-card-text>
-            Здесь будет информация о полученных запросах на обмен этого навыка
-          </v-card-text>
-        </v-card>
+        </received-requests>
       </v-col>
       <v-col cols="12" sm="6">
-        <h3>История запросов и сделок</h3>
-        <skill-card
-          class="skill-card"
-          v-for="pastRequest in pastRequests"
-          :key="pastRequest._id"
-          :request="pastRequest"
+        <past-requests
           @open-chat="openChat"
         >
-          <strong>Статус:</strong> {{ pastRequest.status }}
-        </skill-card>
-        <v-card v-if="pastRequests.length === 0">
-          <v-card-text>Здесь будет информация о прошлых запросах этого навыка</v-card-text>
-        </v-card>
+        </past-requests>
       </v-col>
     </v-row>
   </v-container>
 </template>
   
 <script>
-import SkillCard from "./SkillCard.vue";
+import AcceptedRequests from "./StrongSkillComponents/AcceptedRequests.vue";
+import ReceivedRequests from "./StrongSkillComponents/ReceivedRequests.vue";
+import PastRequests from "./StrongSkillComponents/PastRequestsHistory.vue";
 
-import { mapGetters, mapActions } from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   components: {
-    SkillCard,
+    AcceptedRequests,
+    ReceivedRequests,
+    PastRequests
   },
 
   data() {
     return {
       isLoading: true,
-      localSkillId: '',
-      selectedSkillObject: {},
     }
   },
   
@@ -106,55 +62,16 @@ export default {
         return {};
       }
 
-      const skillId = this.localSkillId;
-      return this.currentUser.skillsToTeach.find(skill => skill._id === skillId) || {};
+      const localSkillId = localStorage.getItem("strongSkillId");
+      return this.currentUser.skillsToTeach.find(skill => skill._id === localSkillId) || {};
     },
-
-    filteredReceivedRequests() {
-      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
-        return [];
-      }
-
-      return this.getSwapRequests.filter(request => {
-        return request.status === "pending" && request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) && request.receiverId === this.currentUser._id;
-      });
-    },
-
-    acceptedRequests() {
-      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
-        return [];
-      }
-      return this.getSwapRequests.filter(request => {
-        return (
-          (request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) ||
-          request.senderData.skillsToTeach.some(skill => skill._id === this.localSkillId)) &&
-          (request.status === "accepted" || request.status === "active")
-        );
-      });
-    },
-
-    pastRequests() {
-      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
-        return [];
-      }
-      return this.getSwapRequests.filter(request => {
-        return (
-          (request.senderData.skillsToLearn.some(skill => skill._id === this.localSkillId) ||
-          request.senderData.skillsToTeach.some(skill => skill._id === this.localSkillId)) &&
-          ["rejected", "cancelled", "completed"].includes(request.status)
-        );
-      });
-    },
-
   },
 
   async created() {
     this.isLoading = true;
     try {
-      this.localSkillId = localStorage.getItem("strongSkillId");
-
-      await this.fetchCurrentUser();
-      await this.fetchAllSwapRequests();
+      await this.$store.dispatch("user/fetchCurrentUser");
+      await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
     } catch (error) {
       console.error('Error fetching swap request:', error);
     } finally {
@@ -163,15 +80,12 @@ export default {
   },
 
   methods: {
-    ...mapActions('user', ['fetchCurrentUser']),
-    ...mapActions('chat', ['fetchCurrentChat']),
-    ...mapActions('swapRequests', ['fetchAllSwapRequests']),
-
-    async acceptSwapRequest(swapRequestId) {
+    async acceptSwapRequest(swapRequestId, chosenSkillToSwap) {
+      console.log(chosenSkillToSwap);
       try {
         await this.$store.dispatch('swapRequests/acceptSwapRequest', {
           swapRequestId,
-          chosenSkillToSwap: this.selectedSkillObject
+          chosenSkillToSwap
         });
       } catch (error) {
         console.error('Error accepting swap request:', error);
@@ -216,7 +130,7 @@ export default {
         return;
       }
 
-      if (this.getIsSending) {
+      if (this.getIsSending && !chatId) {
         console.log('Is BUSY!!!');
         return;
       }
@@ -231,7 +145,7 @@ export default {
 
         await this.createDeal(senderId, requestId, localChatId);
       } else {
-        await this.fetchCurrentChat(chatId);
+        await this.$store.dispatch("chat/fetchCurrentChat", chatId);
         localChatId = chatId;
       }
 
@@ -241,3 +155,19 @@ export default {
   },
 };
 </script>
+<style>
+.skill_card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.skill_card_pending {
+  cursor: default;
+}
+
+.skill_card:hover {
+  /* transform: scale(1.005); */
+  background-color: rgba(0, 0, 0, 0.05);;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+</style>
