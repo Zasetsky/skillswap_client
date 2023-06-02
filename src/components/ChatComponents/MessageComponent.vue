@@ -30,13 +30,13 @@
 
 
 <script>
-import TextMessage from './messageType/TextMessage.vue'
-import DetailsMessage from './messageType/DetailsMessage.vue'
-import DealProposalMessage from './messageType/DealProposalMessage.vue'
-import RescheduleProposalMessage from './messageType/RescheduleProposalMessage.vue'
-import MeetingDetailsMessage from './messageType/MeetingDetailsMessage.vue'
-import CancellationRequestMessage from './messageType/CancellationRequestMessage.vue'
-import ContinuationRequestMessage from './messageType/ContinuationRequestMessage.vue'
+import TextMessage from './MessageType/TextMessage'
+import DetailsMessage from './MessageType/DetailsMessage'
+import DealProposalMessage from './MessageType/DealProposalMessage'
+import RescheduleProposalMessage from './MessageType/RescheduleProposalMessage'
+import MeetingDetailsMessage from './MessageType/MeetingDetailsMessage'
+import CancellationRequestMessage from './MessageType/CancellationRequestMessage'
+import ContinuationRequestMessage from './MessageType/ContinuationRequestMessage'
 import { mapGetters } from 'vuex';
 
 export default {

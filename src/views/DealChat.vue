@@ -52,10 +52,10 @@
 import { mapGetters } from 'vuex';
 import MessageComponent from '@/components/ChatComponents/MessageComponent.vue';
 import MessageForm from '@/components/ChatComponents/MessageFormComponent.vue';
-import DealComponent from '@/components/ChatComponents/DealComponent.vue';
-import CancelDealButton from '@/components/ChatComponents/CancelDealButton.vue';
-import ContinuationButton from '@/components/ChatComponents/ContinuationButton.vue';
-import ReviewForm from '@/components/ChatComponents/ReviewForm.vue';
+import DealComponent from '@/components/ChatComponents/Deal/DealComponent.vue';
+import CancelDealButton from '@/components/ChatComponents/Buttons/CancelDealButton.vue';
+import ContinuationButton from '@/components/ChatComponents/Buttons/ContinuationButton.vue';
+import ReviewForm from '@/components/ChatComponents/Buttons/ReviewForm.vue';
 
 export default {
   components: {
