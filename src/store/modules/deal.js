@@ -22,16 +22,20 @@ const actions = {
 
     const socket = getSocket();
 
+    return new Promise((resolve, reject) => {
     socket.emit("createDeal", data);
 
     socket.once("newDeal", (newDeal) => {
       commit("SET_CURRENT_DEAL", newDeal);
       commit("SET_IS_SENDING");
+      resolve(newDeal);
     });
 
     socket.once("error", (error) => {
       console.error("Error creating deal:", error.message);
+      reject(error);
     });
+  });
   },
 
   fetchCurrentDeal({ commit }, chatId) {

@@ -126,7 +126,6 @@ export default {
 
     async openChat(receiverId, senderId, requestId, chatId, status) {
       if (status === 'rejected' || status === 'pending') {
-        console.log('Chat cannot be opened due to the current status of the deal.');
         return;
       }
 

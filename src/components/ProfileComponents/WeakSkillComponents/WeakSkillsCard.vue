@@ -69,7 +69,7 @@
   
     methods: {
       handleClick() {
-        let receiverId, senderId, requestId, status, chatId;
+        let receiverId, senderId, requestId, chatId, status;
 
         if (this.currentUser._id === this.request.senderId) {
           // Current user is the sender of the request
