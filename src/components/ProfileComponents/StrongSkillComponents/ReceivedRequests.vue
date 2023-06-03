@@ -7,19 +7,19 @@
       :request="receivedRequest"
     >
       <v-select
-        v-model="selectedSkillObject"
+        v-model="selectedSkillsMap[receivedRequest._id]"
         :items="receivedRequest.senderData.skillsToTeach"
         label="Выберите навык для обучения"
         class="mt-4"
         item-text="skill"
         item-value="item"
         return-object
-      >
-      </v-select>
+      />
+
       <v-btn 
         class="mt-4"
         color="primary"
-        :disabled="!selectedSkillObject.skill"
+        :disabled="!selectedSkillsMap[receivedRequest._id]?.skill"
         @click="emitAcceptSwapRequest(receivedRequest._id)"
       >
         Принять запрос
@@ -47,7 +47,7 @@ export default {
   },
   data() {
     return {
-      selectedSkillObject: {},
+      selectedSkillsMap: {},
     }
   },
 
@@ -70,11 +70,21 @@ export default {
 
   methods: {
     async emitAcceptSwapRequest(swapRequestId) {
-        this.$emit('accept-request', swapRequestId, this.selectedSkillObject);
+        this.$emit('accept-request', swapRequestId, this.selectedSkillsMap);
     },
 
     async emitRejectSwapRequest(swapRequestId) {
         this.$emit('reject-request', swapRequestId);
+    },
+  },
+
+  watch: {
+    filteredReceivedRequests() {
+      for (const requestId in this.selectedSkillsMap) {
+        if (!this.filteredReceivedRequests.find(req => req._id === requestId)) {
+          this.$delete(this.selectedSkillsMap, requestId);
+        }
+      }
     },
   },
 };

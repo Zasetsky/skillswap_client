@@ -15,21 +15,19 @@
     </div>
     <div class="bottom-bar">
       <div style="display: flex; justify-content: space-between;">
-        <div style="display: flex;">
-          <DealComponent
-            ref="dealForm"
-            :disabled="!showCancelButton && !ishalfCompletedStatus || isSender"
-            :completedForms="completedForms"
-            @submit-deal-form="handleDealFormSubmit"
-            @confirm-deal="confirmDeal"
-            @confirm-reschedule="confirmReschedule"
-            @reject-reschedule="rejectReschedule"
-          />
-          <ContinuationButton
-            v-if="showContinuationButton"
-            @propose-continuation="handleRequestContinuation"
-          />
-        </div>
+        <DealComponentWrapper
+          ref="dealForm"
+          :disabled="!showCancelButton && !ishalfCompletedStatus || isSender"
+          :completedForms="completedForms"
+          @submit-deal-form="handleDealFormSubmit"
+          @confirm-deal="confirmDeal"
+          @confirm-reschedule="confirmReschedule"
+          @reject-reschedule="rejectReschedule"
+        />
+        <ContinuationButton
+          v-if="showContinuationButton"
+          @propose-continuation="handleRequestContinuation"
+        />
         <ReviewForm
           v-if="showReviewForm"
           @review-submitted="onReviewSubmitted"
@@ -52,7 +50,7 @@
 import { mapGetters } from 'vuex';
 import MessageComponent from '@/components/ChatComponents/MessageComponent.vue';
 import MessageForm from '@/components/ChatComponents/MessageFormComponent.vue';
-import DealComponent from '@/components/ChatComponents/Deal/DealComponent.vue';
+import DealComponentWrapper from '@/components/ChatComponents/Deal/DealComponentWrapper.vue';
 import CancelDealButton from '@/components/ChatComponents/Buttons/CancelDealButton.vue';
 import ContinuationButton from '@/components/ChatComponents/Buttons/ContinuationButton.vue';
 import ReviewForm from '@/components/ChatComponents/Buttons/ReviewForm.vue';
@@ -61,7 +59,7 @@ export default {
   components: {
     MessageComponent,
     MessageForm,
-    DealComponent,
+    DealComponentWrapper,
     CancelDealButton,
     ContinuationButton,
     ReviewForm,
@@ -158,8 +156,6 @@ export default {
       if (!currentDeal.continuation) {
         return true;
       }
-
-      // const isRejectedOrApproved = currentDeal.continuation.status === 'false' || currentDeal.continuation.status === 'approved';
 
       return currentDeal.continuation.status;
     },

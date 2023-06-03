@@ -80,8 +80,9 @@ export default {
   },
 
   methods: {
-    async acceptSwapRequest(swapRequestId, chosenSkillToSwap) {
-      console.log(chosenSkillToSwap);
+    async acceptSwapRequest(swapRequestId, chosenSkill) {
+      const chosenSkillToSwap = chosenSkill[swapRequestId]
+
       try {
         await this.$store.dispatch('swapRequests/acceptSwapRequest', {
           swapRequestId,

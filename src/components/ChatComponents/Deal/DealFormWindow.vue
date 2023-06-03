@@ -34,6 +34,8 @@
         :isFormChanged="isFormChanged"
         :isBothFormsFilled="isBothFormsFilled"
         :isConfirmButtonVisible="isConfirmButtonVisible"
+        :skillsToTeach="skillsToTeach"
+        :skillsToLearn="skillsToLearn"
         @submit-deal-form="emitSubmitForm"
         @close-form="emitClose"
       />
@@ -131,6 +133,34 @@ export default {
       }
     },
 
+    skillsToTeach() {
+      const swapRequest = this.getCurrentSwapRequest;
+      if (swapRequest && swapRequest.senderData && swapRequest.receiverData) {
+        const skill = swapRequest.senderData.skillsToTeach?.[0] || swapRequest.receiverData.skillsToLearn?.[0];
+        if (skill) {
+          return {
+            _id: skill._id,
+            skill: skill.skill
+          };
+        }
+      }
+      return null;
+    },
+
+    skillsToLearn() {
+      const swapRequest = this.getCurrentSwapRequest;
+      if (swapRequest && swapRequest.senderData && swapRequest.receiverData) {
+        const skill = swapRequest.senderData.skillsToLearn?.[0] || swapRequest.receiverData.skillsToTeach?.[0];
+        if (skill) {
+          return {
+            _id: skill._id,
+            skill: skill.skill
+          };
+        }
+      }
+      return null;
+    },
+
     tabs() {
       const deal = this.getCurrentDeal;
       const tabs = [];
@@ -139,11 +169,11 @@ export default {
       let formIsNotCompleted2 = !deal || !deal.form2 || !deal.form2.isCompleted || deal.form2.isCompleted === false;
 
       if (this.skillsToLearn && formIsNotCompleted1) {
-        tabs.push(this.skillsToLearn);
+        tabs.push(this.skillsToLearn.skill);
       }
 
       if (this.skillsToTeach && formIsNotCompleted2) {
-        tabs.push(this.skillsToTeach);
+        tabs.push(this.skillsToTeach.skill);
       }
 
       return tabs;
@@ -261,22 +291,6 @@ export default {
 
       // Возвращаем true, если хотя бы одна из форм изменена или продолжительность встречи изменена
       return form1Changed || form2Changed || durationChanged;
-    },
-
-    skillsToTeach() {
-      const swapRequest = this.getCurrentSwapRequest;
-      if (swapRequest && swapRequest.senderData && swapRequest.receiverData) {
-        return swapRequest.senderData.skillsToTeach?.[0]?.skill || swapRequest.receiverData.skillsToLearn?.[0]?.skill;
-      }
-      return null;
-    },
-
-    skillsToLearn() {
-      const swapRequest = this.getCurrentSwapRequest;
-      if (swapRequest && swapRequest.senderData && swapRequest.receiverData) {
-        return swapRequest.senderData.skillsToLearn?.[0]?.skill || swapRequest.receiverData.skillsToTeach?.[0]?.skill;
-      }
-      return null;
     },
   },
 
