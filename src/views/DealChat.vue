@@ -6,7 +6,7 @@
         :key="message._id"
         :message="message"
         :allMessages="messages"
-        @open-deal-form="handleOpenDealForm"
+        @open-deal-form="emitOpenDealForm"
         @approve-cancellation="handleApproveCancellation"
         @reject-cancellation="handleRejectCancellation"
         @approve-continuation="handleApproveContinuation"
@@ -16,8 +16,8 @@
     <div class="bottom-bar">
       <div style="display: flex; justify-content: space-between;">
         <DealComponentWrapper
-          ref="dealForm"
           :disabled="!showCancelButton && !ishalfCompletedStatus || isSender"
+          @open-deal-form="emitOpenDealForm"
           @submit-deal-form="emitSubmitForm"
           @confirm-deal="emitConfirmDeal"
           @confirm-reschedule="emitConfirmReschedule"
@@ -25,7 +25,7 @@
         />
         <ContinuationButton
           v-if="showContinuationButton"
-          @propose-continuation="handleRequestContinuation"
+          @propose-continuation="emitProposeContinuation"
         />
         <ReviewForm
           v-if="showReviewForm"
@@ -253,15 +253,11 @@ export default {
     },
 
     onReviewSubmitted() {
-      // Здесь вы можете обработать успешную отправку отзыва, например:
-      // 1. Вывести уведомление или сообщение об успешной отправке отзыва
-      // 2. Очистить и закрыть форму отзыва
-      // 3. Обновить чат или список отзывов
       console.log("Review submitted successfully");
     },
 
-    async handleOpenDealForm() {
-      this.$refs.dealForm.openDialog();
+    async emitOpenDealForm() {
+      this.$emit("open-deal-form");
     },
 
     emitSubmitForm() {
@@ -283,16 +279,9 @@ export default {
       }
     },
 
-    async handleRequestContinuation() {
-      try {
-        await this.sendMessage("continuation_request", " ");
-        await this.$store.dispatch("deal/requestContinuation", {
-          dealId: this.getCurrentDeal._id
-        });
-        this.newMessage = "";
-      } catch (error) {
-        console.error("Error requesting continuation:", error);
-      }
+    emitProposeContinuation() {
+      this.newMessage = "";
+      this.$emit("propose-continuation");
     },
 
     async handleApproveCancellation() {

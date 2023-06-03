@@ -2,7 +2,7 @@
   <v-btn
     color="primary"
     :disabled="isDisabledButton"
-    @click="proposeContinuation"
+    @click="handleRequestContinuation"
   >
     {{ getButtonText }}
   </v-btn>
@@ -29,9 +29,19 @@ export default {
   },
 
   methods: {
-    proposeContinuation() {
-      this.$emit("propose-continuation");
+    async handleRequestContinuation() {
+      try {
+        await this.sendMessage("continuation_request", " ");
+        await this.$store.dispatch("deal/requestContinuation", {
+          dealId: this.getCurrentDeal._id
+        });
+
+        this.$emit("propose-continuation");
+      } catch (error) {
+        console.error("Error requesting continuation:", error);
+      }
     },
+    
   },
 };
 </script>

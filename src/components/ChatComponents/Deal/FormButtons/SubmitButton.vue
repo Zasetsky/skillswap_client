@@ -181,8 +181,5 @@ export default {
     },
 
   },
-  mounted() {
-    console.log(this.isFormChanged);
-  }
 }
 </script>

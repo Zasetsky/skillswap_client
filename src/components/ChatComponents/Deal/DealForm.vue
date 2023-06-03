@@ -88,17 +88,6 @@ export default {
       this.$store.dispatch('dealFormLocalState/setCommonMeetingDuration', this.form.meetingDuration);
     },
   },
-
-  watch: {
-    getForm1(a) {
-      console.log('getForm1:', a);
-    },
-    getForm2(a) {
-      console.log('getForm2:', a);
-    }
-    
-
-  }
 };
 </script>
 

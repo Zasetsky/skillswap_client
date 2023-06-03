@@ -58,10 +58,12 @@ export default {
         await this.$store.dispatch('deal/fetchCurrentDeal', {
           chatId: this.getCurrentChat._id,
         })
+
         } catch (error) {
           console.error("Error fetching current deal: ", error);
         } 
       this.dialog = true;
+      this.$emit('open-deal-form');
     },
 
     emitSubmitForm() {
