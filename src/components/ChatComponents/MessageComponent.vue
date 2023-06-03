@@ -202,9 +202,6 @@ export default {
       this.$emit('reject-cancellation');
     },
   },
-  mounted() {
-
-  }
 };
 </script>
 

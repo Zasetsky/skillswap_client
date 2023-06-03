@@ -49,7 +49,7 @@ const actions = {
   },
 
   handleFormFilling({ dispatch, getters }, { formFromDeal, form2FromDeal }) {
-    if(formFromDeal && form2FromDeal) {
+    if(formFromDeal || form2FromDeal) {
       const completedForms = getters.completedForms;
       if (!completedForms.form1 && !completedForms.form2) {
         dispatch('fillForm', { formName: 'form1', source: formFromDeal });
@@ -100,7 +100,7 @@ const mutations = {
     Object.keys(form).forEach((field) => {
       form[field] = source[field] || null;
     });
-    state[formName] = JSON.parse(JSON.stringify(form));  // Глубокая копия
+    // state[formName] = JSON.parse(JSON.stringify(form));  // Глубокая копия
   },
 
   SET_COMMON_MEETING_DURATION(state, duration) {
