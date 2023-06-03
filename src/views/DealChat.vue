@@ -18,11 +18,10 @@
         <DealComponentWrapper
           ref="dealForm"
           :disabled="!showCancelButton && !ishalfCompletedStatus || isSender"
-          :completedForms="completedForms"
-          @submit-deal-form="handleDealFormSubmit"
-          @confirm-deal="confirmDeal"
-          @confirm-reschedule="confirmReschedule"
-          @reject-reschedule="rejectReschedule"
+          @submit-deal-form="emitSubmitForm"
+          @confirm-deal="emitConfirmDeal"
+          @confirm-reschedule="emitConfirmReschedule"
+          @reject-reschedule="emitRejectReschedule"
         />
         <ContinuationButton
           v-if="showContinuationButton"
@@ -75,6 +74,7 @@ export default {
     ...mapGetters('chat', ['getCurrentChat']),
     ...mapGetters('deal', ['getCurrentDeal']),
     ...mapGetters('auth', ['currentUser']),
+    ...mapGetters('dealFormLocalState', ['completedForms']),
     ...mapGetters('swapRequests', ['getCurrentSwapRequest']),
     ...mapGetters('review', ['getCurrentDealReviews']),
 
@@ -214,21 +214,6 @@ export default {
 
       return showForm1Button || showForm2Button;
     },
-
-    completedForms() {
-      const deal = this.getCurrentDeal;
-      const completed = { form1: false, form2: false };
-
-      if (deal && deal.form && deal.form.isCompleted) {
-        completed.form1 = true;
-      }
-
-      if (deal && deal.form2 && deal.form2.isCompleted) {
-        completed.form2 = true;
-      }
-
-      return completed;
-    }
   },
 
   methods: {
@@ -275,40 +260,12 @@ export default {
       console.log("Review submitted successfully");
     },
 
-    async handleDealFormSubmit({ formData1, formData2 }) {
-      this.$refs.dealForm.isSubmitting = true;
-
-      const statusesOfReschedule = ["confirmed", "half_completed", "reschedule_offer", "reschedule_offer_update", "confirmed_reschedule", "half_completed_confirmed_reschedule"];
-      try {
-        if (!statusesOfReschedule.includes(this.getCurrentDeal.status)) {
-          await this.$store.dispatch("deal/updateDeal", {
-            dealId: this.getCurrentDeal._id,
-            formData1,
-            formData2,
-          });
-
-          await this.sendMessage("deal_proposal", " ");
-
-        } else {
-          const rescheduleFormData = this.completedForms.form1 || this.completedForms.form2 ? { formData1 } : { formData1, formData2 };
-          console.log('resch:', rescheduleFormData);
-          await this.$store.dispatch("deal/proposeRescheduleDeal", {
-            dealId: this.getCurrentDeal._id,
-            ...rescheduleFormData
-          });
-
-          await this.sendMessage("reschedule_proposal", " ");
-        }
-
-      } catch (error) {
-        console.error("Error during async submit:", error);
-      } finally {
-        this.$refs.dealForm.isSubmitting = false;
-      }
-    }, 
-
     async handleOpenDealForm() {
       this.$refs.dealForm.openDialog();
+    },
+
+    emitSubmitForm() {
+      this.$emit('submit-deal-form');
     },
 
     async handleCancelDeal() {
@@ -380,38 +337,17 @@ export default {
       }
     },
 
-    async confirmDeal() {
-      try {
-        await this.$store.dispatch("deal/confirmDeal", {
-          dealId: this.getCurrentDeal._id,
-        });
-
-      } catch (error) {
-        console.error("Error confirming deal:", error);
-      }
+    emitConfirmDeal() {
+      this.$emit("confirm-deal");
     },
 
-    async confirmReschedule() {
-      try {
-        await this.$store.dispatch("deal/confirmReschedule", {
-          dealId: this.getCurrentDeal._id,
-        });
-
-      } catch (error) {
-        console.error("Error confirming deal:", error);
-      }
+    emitConfirmReschedule() {
+      this.$emit("confirm-reschedule");
     },
 
-    async rejectReschedule() {
-      try {
-        await this.$store.dispatch("deal/rejectReschedule", {
-          dealId: this.getCurrentDeal._id,
-        });
-
-      } catch (error) {
-        console.error("Error confirming deal:", error);
-      }
-    }
+    emitRejectReschedule() {
+      this.$emit("reject-reschedule");
+    },
   },
 
   watch: {

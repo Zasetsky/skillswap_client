@@ -4,7 +4,7 @@
       v-if="showAcceptRejectButtons"
       color="green darken-1"
       text
-      @click="emitConfirmReschedule"
+      @click="confirmReschedule"
     >
       Принять
     </v-btn>
@@ -12,7 +12,7 @@
       v-if="showAcceptRejectButtons"
       color="red darken-1"
       text
-      @click="emitRejectReschedule"
+      @click="rejectReschedule"
     >
       Отклонить
     </v-btn>
@@ -52,13 +52,29 @@ export default {
   },
 
   methods: {
-    emitConfirmReschedule() {
-      this.$emit("confirm-reschedule");
+    async confirmReschedule() {
+      try {
+        await this.$store.dispatch("deal/confirmReschedule", {
+          dealId: this.getCurrentDeal._id,
+        });
+
+        this.$emit("confirm-reschedule");
+      } catch (error) {
+        console.error("Error confirming deal:", error);
+      }
     },
 
-    emitRejectReschedule() {
-      this.$emit("reject-reschedule");
-    },
+    async rejectReschedule() {
+      try {
+        await this.$store.dispatch("deal/rejectReschedule", {
+          dealId: this.getCurrentDeal._id,
+        });
+
+        this.$emit("reject-reschedule");
+      } catch (error) {
+        console.error("Error confirming deal:", error);
+      }
+    }
   }
 };
 </script>

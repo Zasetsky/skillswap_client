@@ -11,7 +11,7 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-text-field
-              v-model="localForm.meetingDate"
+              v-model="form.meetingDate"
               label="В какой день"
               readonly
               v-bind="attrs"
@@ -20,23 +20,23 @@
             ></v-text-field>
           </template>
         <v-date-picker
-          v-model="localForm.meetingDate"
-          @input="menu = false; updateForm('meetingDate', localForm.meetingDate)"
+          v-model="form.meetingDate"
+          @input="menu = false; updateForm('meetingDate', form.meetingDate)"
         ></v-date-picker>
       </v-menu>
     </v-col>
     <v-col cols="12">
       <v-time-picker
-        v-model="localForm.meetingTime"
+        v-model="form.meetingTime"
         format="24hr"
         :class="{ 'highlight-field': highlightMismatchedFields.meetingTime }"
-        @input="updateForm('meetingTime', localForm.meetingTime)"
+        @input="updateForm('meetingTime', form.meetingTime)"
       >
       </v-time-picker>
     </v-col>
     <v-col cols="12">
       <v-text-field
-        v-model="localForm.meetingDuration"
+        v-model="form.meetingDuration"
         label="Продолжительность встречи (минут)"
         type="number"
         min="30"
@@ -48,45 +48,60 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+
 export default {
   props: {
     highlightMismatchedFields: {
       type: Object,
       default: () => ({}),
     },
-    form: {
-      type: Object,
+    formName: {
+      type: String,
       required: true,
-    },
+    }
   },
   data() {
     return {
       menu: false,
-      localForm: {
-        meetingDate: this.form.meetingDate,
-        meetingTime: this.form.meetingTime,
-        meetingDuration: this.form.meetingDuration,
-      },
     };
+  },
+  computed: {
+    ...mapGetters('dealFormLocalState', ['getForm1', 'getForm2']),
+    ...mapGetters('dealFormLocalState', ['commonMeetingDuration']),
+    form() {
+      const form = this.formName === 'form1' ? this.getForm1 : this.getForm2;
+      return { ...form, meetingDuration: this.commonMeetingDuration };
+    }
   },
   methods: {
     updateForm(key, value) {
-      this.$emit("update:form", { ...this.form, [key]: value });
+      const updatedForm = { ...this.form, [key]: value };
+      if (this.formName === 'form1') {
+        this.$store.dispatch('dealFormLocalState/setForm1', updatedForm);
+      } else {
+        this.$store.dispatch('dealFormLocalState/setForm2', updatedForm);
+      }
     },
+
     updateMeetingDuration() {
-      this.$emit('update:meetingDuration', this.localForm.meetingDuration);
-    }
-  },
-  watch: {
-    form: {
-      deep: true,
-      handler(newValue) {
-        this.localForm = { ...newValue };
-      },
+      this.$store.dispatch('dealFormLocalState/setCommonMeetingDuration', this.form.meetingDuration);
     },
   },
+
+  watch: {
+    getForm1(a) {
+      console.log('getForm1:', a);
+    },
+    getForm2(a) {
+      console.log('getForm2:', a);
+    }
+    
+
+  }
 };
 </script>
+
 <style scoped>
 .highlight-field {
   border: 2px solid red;

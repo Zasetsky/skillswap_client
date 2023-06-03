@@ -11,13 +11,10 @@
       </template>
 
       <deal-form-window
-        ref="formWindow"
-        :completedForms="completedForms"
         @confirm-deal="emitConfirmDeal"
         @confirm-reschedule="emitConfirmReschedule"
         @reject-reschedule="emitRejectReschedule"
         @submit-deal-form="emitSubmitForm"
-        @close-form="close"
       />
     </v-dialog>
   </div>
@@ -40,10 +37,6 @@ export default {
       type: Boolean,
       default: false,
     },
-    completedForms: {
-      type: Object,
-      required: true,
-    }
   },
 
   data() {
@@ -72,27 +65,29 @@ export default {
     },
 
     emitSubmitForm() {
+      this.dialog = false;
       this.$emit('submit-deal-form');
     },
 
     emitConfirmDeal() {
-      this.$emit("confirm-deal");
       this.dialog = false;
+      this.$emit("confirm-deal");
     },
 
     emitConfirmReschedule() {
-      this.$emit("confirm-reschedule");
       this.dialog = false;
+      this.$emit("confirm-reschedule");
     },
     
     emitRejectReschedule() {
-      this.$emit("reject-reschedule");
       this.dialog = false;
+      this.$emit("reject-reschedule");
+      
     },
 
     close() {
       this.dialog = false;
-      this.$refs.formWindow.resetForm();
+      this.$store.dispatch('dealFormLocalState/resetForm');
     },
   },
 };
