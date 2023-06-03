@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     async openDialog() {
-      this.$emit('open-dialog');
+      this.$emit('open-deal-form');
     }
   }
 }

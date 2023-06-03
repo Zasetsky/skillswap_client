@@ -17,18 +17,14 @@ const getters = {
 
   commonMeetingDuration: state => state.commonMeetingDuration,
 
-  completedForms: state => {
-    const completed = { form1: false, form2: false };
+  completedForms: (state, getters, rootState, rootGetters) => {
+    const form1IsCompleted = rootGetters['deal/getCurrentDeal']?.form?.isCompleted;
+    const form2IsCompleted = rootGetters['deal/getCurrentDeal']?.form2?.isCompleted;
 
-    if (state.form1 && state.form1.isCompleted) {
-      completed.form1 = true;
-    }
-
-    if (state.form2 && state.form2.isCompleted) {
-      completed.form2 = true;
-    }
-
-    return completed;
+    return {
+      form1: form1IsCompleted,
+      form2: form2IsCompleted
+    };
   }
 };
 

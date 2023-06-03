@@ -178,6 +178,7 @@ export default {
       } catch (error) {
         console.error("Error during async submit:", error);
       }
+      this.$store.dispatch('dealButtonsLocalState/setIsDialogOpen', false);
     },
 
   },

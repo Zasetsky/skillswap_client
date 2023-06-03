@@ -6,7 +6,7 @@
         :key="message._id"
         :message="message"
         :allMessages="messages"
-        @open-deal-form="emitOpenDealForm"
+        @open-deal-form="openDialog"
         @approve-cancellation="handleApproveCancellation"
         @reject-cancellation="handleRejectCancellation"
         @approve-continuation="handleApproveContinuation"
@@ -17,7 +17,7 @@
       <div style="display: flex; justify-content: space-between;">
         <DealComponentWrapper
           :disabled="!showCancelButton && !ishalfCompletedStatus || isSender"
-          @open-deal-form="emitOpenDealForm"
+          @open-deal-form="openDialog"
           @submit-deal-form="emitSubmitForm"
           @confirm-deal="emitConfirmDeal"
           @confirm-reschedule="emitConfirmReschedule"
@@ -256,7 +256,9 @@ export default {
       console.log("Review submitted successfully");
     },
 
-    async emitOpenDealForm() {
+
+    async openDialog() {
+      this.$store.dispatch('dealButtonsLocalState/setIsDialogOpen', true);
       this.$emit("open-deal-form");
     },
 

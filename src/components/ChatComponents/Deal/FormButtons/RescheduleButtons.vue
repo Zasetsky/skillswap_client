@@ -62,6 +62,7 @@ export default {
       } catch (error) {
         console.error("Error confirming deal:", error);
       }
+      this.$store.dispatch('dealButtonsLocalState/setIsDialogOpen', false);
     },
 
     async rejectReschedule() {
@@ -74,6 +75,7 @@ export default {
       } catch (error) {
         console.error("Error confirming deal:", error);
       }
+      this.$store.dispatch('dealButtonsLocalState/setIsDialogOpen', false);
     }
   }
 };

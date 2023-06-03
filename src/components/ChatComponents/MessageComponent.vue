@@ -21,7 +21,7 @@
           @reject-cancellation="rejectCancellation"
           @approve-continuation="approveContinuation"
           @reject-continuation="rejectContinuation"
-          @open-deal-form="openDealForm"
+          @open-deal-form="emitOpenDealForm"
         />
       </v-card-text>
     </v-card>
@@ -186,7 +186,7 @@ export default {
   },
 
   methods: {
-    openDealForm() {
+    emitOpenDealForm() {
       this.$emit('open-deal-form');
     },
     approveContinuation() {
