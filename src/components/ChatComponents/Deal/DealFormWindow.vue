@@ -153,7 +153,7 @@ export default {
             form1Highlights[field] = isFieldChanged;
           });
         }
-
+        console.log('source:', deal.form2);
         // Проверяем вторую форму, если она есть
         if(form2Source) {
           Object.keys(form2Source).forEach((field) => {
@@ -196,7 +196,7 @@ export default {
       if (deal.status === "pending_update" || deal.status === "reschedule_offer_update" || deal.status === "reschedule_offer") {
         referenceForm1 = deal.update?.form || referenceForm1;
         referenceForm2 = deal.update?.form2 || referenceForm2;
-        referenceDuration = deal.update?.form?.meetingDuration || referenceDuration;
+        referenceDuration = deal.update?.form?.meetingDuration || deal.update?.form2?.meetingDuration;
       }
 
       // Проверяем каждую форму в зависимости от завершенности форм

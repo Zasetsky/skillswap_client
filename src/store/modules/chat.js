@@ -3,21 +3,38 @@ import Vue from 'vue';
 
 const state = {
     currentChat: null,
+    isBusy: false,
     chats: [],
 };
 
 const getters = {
     getCurrentChat: (state) => state.currentChat,
 
-    getAllChats: (state) => state.chats
+    getAllChats: (state) => state.chats,
+
+    getIsBusy: (state) => state.isBusy,
 };
 
 const actions = {
+  switchPartnerIsBusy({ commit }) {
+    const socket = getSocket();
+
+    socket.on("isBusy", () => {
+      console.log("partner");
+      commit("SET_IS_BUSY", true);
+    });
+  },
+
   createChat({ commit }, { receiverId, senderId, requestId }) {
     return new Promise((resolve, reject) => {
       const socket = getSocket();
 
       socket.emit("createChat", { receiverId, senderId, requestId });
+
+      socket.on("notCreatingChat", () => {
+        commit("SET_IS_BUSY", true);
+        socket.emit("toggleIsBusy", requestId);
+      });
 
       socket.once("chat", (newChat) => {
         commit("SET_CURRENT_CHAT", newChat);
@@ -31,12 +48,12 @@ const actions = {
     });
   },
   
-  listenForNewChat(context) {
+  listenForNewChat({ commit }) {
     try {
         const socket = getSocket();
 
         socket.on("newChat", (newChat) => {
-          context.commit("ADD_CHAT", newChat);
+          commit("ADD_CHAT", newChat);
         });
     } catch (error) {
         console.error("Error listening for new chat:", error);
@@ -106,11 +123,11 @@ const actions = {
 
   listenForNewMessage(context) {
     try {
-        const socket = getSocket();
+      const socket = getSocket();
 
-        socket.on("message", (newMessage) => {
-          context.commit("ADD_MESSAGE_TO_CHAT", newMessage);
-        });
+      socket.on("message", (newMessage) => {
+        context.commit("ADD_MESSAGE_TO_CHAT", newMessage);
+      });
     } catch (error) {
         console.error("Error listening for New Message:", error);
     }
@@ -152,6 +169,11 @@ const mutations = {
 
   ADD_CHAT: (state, newChat) => {
     state.chats.push(newChat);
+  },
+
+  SET_IS_BUSY: (state, isBusy) => {
+    state.isBusy = isBusy;
+    console.log('isBusy:', state.isBusy);
   },
 
   logout(state) {

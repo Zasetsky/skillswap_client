@@ -4,6 +4,7 @@
     <strong-skills-card
       v-for="acceptedRequest in acceptedRequests"
       :key="acceptedRequest._id"
+      :class="{ 'disabled-component': disabled }"
       :request="acceptedRequest"
       @open-chat="emitOpenChat"
     >
@@ -25,6 +26,14 @@ export default {
   components: {
     StrongSkillsCard
   },
+
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false
+    }
+  },
+
   computed: {
     ...mapGetters("swapRequests", ["getSwapRequests"]),
 
@@ -43,6 +52,7 @@ export default {
       });
     },
   },
+
   methods: {
     emitOpenChat(receiverId, senderId, requestId, chatId, status) {
       this.$emit('open-chat', receiverId, senderId, requestId, chatId, status);
@@ -52,4 +62,8 @@ export default {
 </script>
 
 <style scoped>
+.disabled-component {
+  pointer-events: none;
+  opacity: 0.5;
+}
 </style>

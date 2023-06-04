@@ -11,6 +11,7 @@
     <v-row>
       <v-col cols="12" sm="6">
         <accepted-requests
+          :disabled="getIsBusy"
           @open-chat="openChat"
         >
         </accepted-requests>
@@ -53,7 +54,7 @@ export default {
   
   computed: {
     ...mapGetters("auth", ["currentUser"]),
-    ...mapGetters("deal", ["getIsSending"]),
+    ...mapGetters("chat", ["getIsBusy"]),
     ...mapGetters("chat", ["getCurrentChat"]),
     ...mapGetters("swapRequests", ["getSwapRequests"]),
 
@@ -72,6 +73,7 @@ export default {
     try {
       await this.$store.dispatch("user/fetchCurrentUser");
       await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
+      await this.$store.dispatch("chat/switchPartnerIsBusy");
     } catch (error) {
       console.error('Error fetching swap request:', error);
     } finally {
@@ -130,7 +132,7 @@ export default {
         return;
       }
 
-      if (this.getIsSending && !chatId) {
+      if (this.getIsBusy && !chatId) {
         console.log('Is BUSY!!!');
         return;
       }
@@ -138,8 +140,6 @@ export default {
       let localChatId;
 
       if (!chatId) {
-        this.$store.dispatch("deal/toggleIsSending");
-
         await this.createChat(receiverId, senderId, requestId);
         localChatId = this.getCurrentChat._id;
 

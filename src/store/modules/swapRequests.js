@@ -145,9 +145,8 @@ const actions = {
     socket.on("swapRequestUpdated", (updatedSwapRequest) => {
       if (rootState.route.name === 'WeakSkillsPage' || rootState.route.name === 'StrongSkillsPage') {
         commit("updateSwapRequest", updatedSwapRequest);
-        if (rootState.deal.isSending) {
-          commit("deal/SET_IS_SENDING", null, { root: true });
-        }
+        console.log("newChat");
+        commit("chat/SET_IS_BUSY", false, { root: true });
       } else {
         commit("setCurrentSwapRequest", updatedSwapRequest);
       }

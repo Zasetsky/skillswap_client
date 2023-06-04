@@ -100,7 +100,7 @@ const mutations = {
     Object.keys(form).forEach((field) => {
       form[field] = source[field] || null;
     });
-    // state[formName] = JSON.parse(JSON.stringify(form));  // Глубокая копия
+    state[formName] = JSON.parse(JSON.stringify(form));  // Глубокая копия
   },
 
   SET_COMMON_MEETING_DURATION(state, duration) {

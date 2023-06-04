@@ -13,8 +13,12 @@ const getters = {
 };
 
 const actions = {
-  toggleIsSending({ commit }) {
-    commit("SET_IS_SENDING");
+  listenIsSending({ commit }) {
+    const socket = getSocket();
+
+    socket.on("isSending", () => {
+      commit("SET_IS_SENDING");
+    });
   },
 
   createDeal({ commit }, { participants, requestId, chatId }) {
@@ -27,7 +31,6 @@ const actions = {
 
     socket.once("newDeal", (newDeal) => {
       commit("SET_CURRENT_DEAL", newDeal);
-      commit("SET_IS_SENDING");
       resolve(newDeal);
     });
 
@@ -62,6 +65,9 @@ const actions = {
     socket.on('dealUpdated', (updatedDeal) => {
       if (state.currentDeal && updatedDeal._id === state.currentDeal._id) {
         commit('SET_CURRENT_DEAL', updatedDeal);
+        if(state.isSending === true) {
+          commit("SET_IS_SENDING");
+        }
       }
     });
   
@@ -250,13 +256,23 @@ const actions = {
   },
 
   // продолжение
-  requestContinuation(context, dealId) {
+  requestContinuation({ commit }, dealId) {
     const socket = getSocket();
+  
+    return new Promise((resolve, reject) => {
 
-    socket.emit("requestContinuation", dealId);
-
-    socket.on("error", (error) => {
-      console.error("Error during sending request continuation deal:", error.message);
+      socket.emit("requestContinuation", dealId);
+    
+      socket.on("error", (error) => {
+        console.error("Error during sending request continuation deal:", error.message);
+        reject(error);
+      });
+    
+      socket.on("notActiveSkills", () => {
+        resolve();
+        commit("SET_IS_SENDING")
+        socket.emit("toggleIsSending", dealId);
+      });
     });
   },
 
@@ -267,6 +283,9 @@ const actions = {
       socket.on("continuationRequested", (deal) => {
         if (state.currentDeal && deal._id === state.currentDeal._id) {
           commit("SET_CURRENT_DEAL", deal);
+          if(state.isSending === true) {
+            commit("SET_IS_SENDING");
+          } 
         }
       });
     } catch (error) {
@@ -284,17 +303,22 @@ const actions = {
     });
   },
 
-  approveContinuation(context, { dealId }) {
+  approveContinuation({ commit }, { dealId }) {
     const socket = getSocket();
 
     socket.emit("approveContinuation", { dealId });
+
+    socket.on("notActiveSkills", () => {
+      commit("SET_IS_SENDING")
+      socket.emit("toggleIsSending", dealId);
+    });
 
     socket.on("error", (error) => {
       console.error("Error during approving request continuation deal:", error.message);
     });
   },
 
-  listenForApproveContinuation({ commit, rootState }) {
+  listenForApproveContinuation({ commit, state, rootState }) {
     try {
       const socket = getSocket();
   
@@ -302,7 +326,9 @@ const actions = {
         const currentChat = rootState.chat.currentChat;
         if (currentChat && deal.chatId === currentChat._id) {
           commit("SET_CURRENT_DEAL", deal);
-          commit("SET_IS_SENDING");
+          if(state.isSending === true) {
+            commit("SET_IS_SENDING");
+          }
         }
       });
     } catch (error) {
@@ -314,7 +340,7 @@ const actions = {
 const mutations = {
   SET_IS_SENDING: (state) => {
     state.isSending = !state.isSending
-    console.log("coming:", state.isSending);
+    console.log('isSending:', state.isSending);
   },
   
   SET_CURRENT_DEAL: (state, deal) => {

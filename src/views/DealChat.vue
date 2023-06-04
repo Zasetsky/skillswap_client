@@ -256,7 +256,6 @@ export default {
       console.log("Review submitted successfully");
     },
 
-
     async openDialog() {
       try {
         await this.$store.dispatch('deal/fetchCurrentDeal', {
@@ -305,7 +304,6 @@ export default {
     },
 
     async handleApproveContinuation() {
-      this.$store.dispatch("deal/toggleIsSending");
       try {
         await this.$store.dispatch("deal/approveContinuation", {
           dealId: this.getCurrentDeal._id,
@@ -371,6 +369,8 @@ export default {
 
       await this.$store.dispatch("swapRequests/fetchCurrentSwapRequest", this.getCurrentDeal.swapRequestId);
       await this.$store.dispatch("review/getCurrentDealReviews", this.getCurrentDeal._id);
+
+      await this.$store.dispatch("deal/listenIsSending");
 
       this.$nextTick(() => {
         this.scrollToBottom();

@@ -13,6 +13,7 @@
     </v-row>
     <v-row>
       <active-requests
+        :disabled="getIsBusy"
         :filteredActiveRequests="filteredActiveRequests"
         @cancel-request="cancelSwapRequest"
         @open-chat="openChat"
@@ -43,6 +44,7 @@ export default {
   computed: {
     ...mapGetters("auth", ["currentUser"]),
     ...mapGetters("chat", ["getCurrentChat"]),
+    ...mapGetters("chat", ["getIsBusy"]),
     ...mapGetters("swapRequests", ["getSwapRequests"]),
 
     filteredActiveRequests() {
@@ -117,7 +119,7 @@ export default {
         return;
       }
 
-      if (this.getIsSending && !chatId) {
+      if (this.getIsBusy && !chatId) {
         console.log('Is BUSY!!!');
         return;
       }
@@ -125,8 +127,6 @@ export default {
       let localChatId;
 
       if (!chatId) {
-        this.$store.dispatch("deal/toggleIsSending");
-
         await this.createChat(receiverId, senderId, requestId);
         localChatId = this.getCurrentChat._id;
 
@@ -154,6 +154,7 @@ export default {
 
       await this.$store.dispatch("user/fetchCurrentUser");
       await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
+      await this.$store.dispatch("chat/switchPartnerIsBusy");
       } catch (error) {
         console.error('Error creating swap request:', error);
     }

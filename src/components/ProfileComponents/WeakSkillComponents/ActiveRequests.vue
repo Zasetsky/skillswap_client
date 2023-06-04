@@ -4,6 +4,7 @@
     <weak-skills-card
       v-for="request in filteredActiveRequests"
       :key="request._id"
+      :class="{ 'disabled-component': disabled }"
       :request="request"
       @open-chat="emitOpenChat"
     >
@@ -33,6 +34,10 @@ export default {
   },
 
   props: {
+    disabled: {
+      type: Boolean,
+      default: false
+    },
     filteredActiveRequests: {
       type: Array,
       required: true,
@@ -50,3 +55,9 @@ export default {
   }
 }
 </script>
+<style scoped>
+.disabled-component {
+  pointer-events: none;
+  opacity: 0.5;
+}
+</style>
