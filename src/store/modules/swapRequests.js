@@ -149,6 +149,7 @@ const actions = {
         commit("chat/SET_IS_BUSY", false, { root: true });
       } else {
         commit("setCurrentSwapRequest", updatedSwapRequest);
+        commit("chat/SET_IS_BUSY", false, { root: true });
       }
     });
   },

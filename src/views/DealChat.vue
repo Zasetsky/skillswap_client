@@ -117,12 +117,8 @@ export default {
         return false;
       }
 
-      // Проверка завершенности форм
-      const isFormCompleted = currentDeal.form && currentDeal.form.isCompleted;
-      const isForm2Completed = currentDeal.form2 && currentDeal.form2.isCompleted;
-
       // Если одна из форм завершена, то кнопка не должна отображаться
-      if (isFormCompleted || isForm2Completed) {
+      if (this.completedForms.form1 || this.completedForms.form2) {
         return false;
       }
 
@@ -162,32 +158,37 @@ export default {
 
     isCancelButtonCloseToDeadline() {
       const deal = this.getCurrentDeal;
+
       if (!deal) {
         return true;
       }
 
+      const validStatuses = ['confirmed', 'reschedule_offer', 'reschedule_offer_update', 'confirmed_reschedule'];
+
       const formTypes = ['form', 'form2'];
       const threeHoursInMilliseconds = 3 * 60 * 60 * 1000;
 
-      for (let formType of formTypes) {
-        const form = deal[formType];
-        if (form && form.meetingDate && form.meetingTime) {
-          const meetingDate = new Date(form.meetingDate);
-          const meetingTime = form.meetingTime.split(':');
-          const deadline = new Date(
-            meetingDate.getFullYear(),
-            meetingDate.getMonth(),
-            meetingDate.getDate(),
-            parseInt(meetingTime[0]),
-            parseInt(meetingTime[1])
-          );
-          
-          const now = new Date();
+      if (validStatuses.includes(deal.status)) {
+        for (let formType of formTypes) {
+          const form = deal[formType];
+          if (form && form.meetingDate && form.meetingTime) {
+            const meetingDate = new Date(form.meetingDate);
+            const meetingTime = form.meetingTime.split(':');
+            const deadline = new Date(
+              meetingDate.getFullYear(),
+              meetingDate.getMonth(),
+              meetingDate.getDate(),
+              parseInt(meetingTime[0]),
+              parseInt(meetingTime[1])
+            );
+            
+            const now = new Date();
 
-          const remainingTimeInMilliseconds = deadline - now;
+            const remainingTimeInMilliseconds = deadline - now;
 
-          if (remainingTimeInMilliseconds <= threeHoursInMilliseconds) {
-            return true;
+            if (remainingTimeInMilliseconds <= threeHoursInMilliseconds) {
+              return true;
+            }
           }
         }
       }
