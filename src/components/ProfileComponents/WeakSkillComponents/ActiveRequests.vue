@@ -7,16 +7,9 @@
       :class="{ 'disabled-component': disabled }"
       :request="request"
       @open-chat="emitOpenChat"
-    >
-      <v-btn
-        v-if="request.status !== 'accepted'"
-        class="mt-4"
-        color="primary"
-        @click.stop="emitCancelSwapRequest(request._id)"
-      >
-        Отменить запрос
-      </v-btn>
-    </weak-skills-card>
+      @cancel-request="emitCancelSwapRequest"
+    />
+
     <v-card v-if="filteredActiveRequests.length === 0">
       <v-card-text>
         Здесь будет информация об активных запросов этого навыка
@@ -49,8 +42,8 @@ export default {
       this.$emit('open-chat', receiverId, senderId, requestId, chatId, status);
     },
 
-    emitCancelSwapRequest(swapRequestId) {
-      this.$emit('cancel-request', swapRequestId);
+    emitCancelSwapRequest() {
+      this.$emit('cancel-request');
     },
   }
 }

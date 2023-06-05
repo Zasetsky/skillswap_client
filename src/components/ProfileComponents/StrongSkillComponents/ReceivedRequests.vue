@@ -5,29 +5,9 @@
       v-for="receivedRequest in filteredReceivedRequests"
       :key="receivedRequest._id"
       :request="receivedRequest"
-    >
-      <v-select
-        v-model="selectedSkillsMap[receivedRequest._id]"
-        :items="receivedRequest.senderData.skillsToTeach"
-        label="Выберите навык для обучения"
-        class="mt-4"
-        item-text="skill"
-        item-value="item"
-        return-object
-      />
-
-      <v-btn 
-        class="mt-4"
-        color="primary"
-        :disabled="!selectedSkillsMap[receivedRequest._id]?.skill"
-        @click="emitAcceptSwapRequest(receivedRequest._id)"
-      >
-        Принять запрос
-      </v-btn>
-      <v-btn class="mt-4 ml-2" color="error" @click="emitRejectSwapRequest(receivedRequest._id)">
-        Отклонить запрос
-      </v-btn>
-    </strong-skills-card>
+      @accept-swap-request="emitAcceptSwapRequest"
+      @reject-swap-request="emitRejectSwapRequest"
+    />
     <v-card v-if="filteredReceivedRequests.length === 0">
       <v-card-text>
         Здесь будет информация о полученных запросах на обмен этого навыка
@@ -44,11 +24,6 @@ import { mapGetters } from "vuex";
 export default {
   components: {
     StrongSkillsCard,
-  },
-  data() {
-    return {
-      selectedSkillsMap: {},
-    }
   },
 
   computed: {
@@ -69,23 +44,18 @@ export default {
   },
 
   methods: {
-    async emitAcceptSwapRequest(swapRequestId) {
-        this.$emit('accept-request', swapRequestId, this.selectedSkillsMap);
+    emitAcceptSwapRequest() {
+      this.$emit('accept-request');
     },
 
-    async emitRejectSwapRequest(swapRequestId) {
-        this.$emit('reject-request', swapRequestId);
-    },
-  },
-
-  watch: {
-    filteredReceivedRequests() {
-      for (const requestId in this.selectedSkillsMap) {
-        if (!this.filteredReceivedRequests.find(req => req._id === requestId)) {
-          this.$delete(this.selectedSkillsMap, requestId);
-        }
-      }
+    emitRejectSwapRequest() {
+      this.$emit('reject-request');
     },
   },
 };
 </script>
+<style>
+.select-area .v-select__selections {
+  pointer-events: auto;
+}
+</style>

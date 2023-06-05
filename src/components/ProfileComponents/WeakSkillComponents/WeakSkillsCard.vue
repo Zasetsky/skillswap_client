@@ -16,6 +16,15 @@
         <template v-if="request.receiverData && request.status !== 'rejected'">
           <strong>Навык для обмена:</strong> {{ request.status === 'pending' ? '???' : (request.receiverData.skillsToTeach[0]?.skill ?? '') }}<br>
         </template>
+
+        <v-btn
+          v-if="request.status === 'pending'"
+          class="btn mt-4"
+          color="primary"
+          @click.stop="cancelSwapRequest"
+        >
+          Отменить запрос
+        </v-btn>
   
         <slot></slot>
       </v-card-text>
@@ -89,17 +98,31 @@
         
         this.$emit('open-chat', receiverId, senderId, requestId, chatId, status);
       },
+
+      async cancelSwapRequest() {
+        const swapRequestId = this.request._id;
+        try {
+          await this.$store.dispatch("swapRequests/deleteSwapRequest", swapRequestId);
+          await this.$store.dispatch("user/fetchCurrentUser");
+        } catch (error) {
+          console.error('Error creating swap request:', error);
+        }
+      },
     }
   };
   </script>
-  <style>
+  <style scoped>
   .skill_card {
     cursor: pointer;
     transition: all 0.3s ease;
   }
   
   .skill_card_pending {
-    cursor: default;
+    pointer-events: none;
+  }
+
+  .btn {
+    pointer-events: auto;
   }
   
   .skill_card:hover {

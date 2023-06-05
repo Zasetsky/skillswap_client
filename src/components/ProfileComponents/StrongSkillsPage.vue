@@ -17,8 +17,8 @@
         </accepted-requests>
 
         <received-requests
-          @accept-request="acceptSwapRequest"
-          @reject-request="rejectSwapRequest"
+          @accept-request="emitAcceptSwapRequest"
+          @reject-request="emitRejectSwapRequest"
         >
         </received-requests>
       </v-col>
@@ -35,7 +35,7 @@
 <script>
 import AcceptedRequests from "./StrongSkillComponents/AcceptedRequests.vue";
 import ReceivedRequests from "./StrongSkillComponents/ReceivedRequests.vue";
-import PastRequests from "./StrongSkillComponents/PastRequestsHistory.vue";
+import PastRequests from "./StrongSkillComponents/PastRequests.vue";
 
 import { mapGetters } from "vuex";
 
@@ -82,25 +82,12 @@ export default {
   },
 
   methods: {
-    async acceptSwapRequest(swapRequestId, chosenSkill) {
-      const chosenSkillToSwap = chosenSkill[swapRequestId]
-
-      try {
-        await this.$store.dispatch('swapRequests/acceptSwapRequest', {
-          swapRequestId,
-          chosenSkillToSwap
-        });
-      } catch (error) {
-        console.error('Error accepting swap request:', error);
-      }
+    emitAcceptSwapRequest() {
+      this.$emit('accept-request');
     },
 
-    async rejectSwapRequest(swapRequestId) {
-      try {
-        await this.$store.dispatch('swapRequests/rejectSwapRequest', swapRequestId);
-      } catch (error) {
-        console.error('Error rejecting swap request:', error);
-      }
+    emitRejectSwapRequest() {
+      this.$emit('reject-request');
     },
 
     async createChat(receiverId, senderId, requestId) {
@@ -155,19 +142,3 @@ export default {
   },
 };
 </script>
-<style>
-.skill_card {
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.skill_card_pending {
-  cursor: default;
-}
-
-.skill_card:hover {
-  /* transform: scale(1.005); */
-  background-color: rgba(0, 0, 0, 0.05);;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-</style>

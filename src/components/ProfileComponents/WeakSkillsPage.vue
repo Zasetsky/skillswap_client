@@ -15,7 +15,7 @@
       <active-requests
         :disabled="getIsBusy"
         :filteredActiveRequests="filteredActiveRequests"
-        @cancel-request="cancelSwapRequest"
+        @cancel-request="emitCancelSwapRequest"
         @open-chat="openChat"
       />
       <past-requests @open-chat="openChat" />
@@ -81,13 +81,8 @@ export default {
   },
 
   methods: {
-    async cancelSwapRequest(swapRequestId) {
-      try {
-        await this.$store.dispatch("swapRequests/deleteSwapRequest", swapRequestId);
-        await this.$store.dispatch("user/fetchCurrentUser");
-      } catch (error) {
-        console.error('Error creating swap request:', error);
-      }
+    emitCancelSwapRequest() {
+      this.$emit('cancel-request');
     },
 
     async createChat(receiverId, senderId, requestId) {
