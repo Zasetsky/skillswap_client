@@ -7,9 +7,7 @@
       :key="pastRequest._id"
       :request="pastRequest"
       @open-chat="emitOpenChat"
-    >
-      <strong>Статус:</strong> {{ pastRequest.status }}
-    </strong-skills-card>
+    />
     <v-card v-if="pastRequests.length === 0">
       <v-card-text>Здесь будет информация о прошлых запросах этого навыка</v-card-text>
     </v-card>
@@ -28,18 +26,34 @@ export default {
 
   computed: {
     ...mapGetters("swapRequests", ["getSwapRequests"]),
+    ...mapGetters("auth", ["currentUser"]),
 
     pastRequests() {
       if (!this.getSwapRequests || this.getSwapRequests.length === 0) {
         return [];
       }
+
+      const currentUserId = this.currentUser._id;
       const localSkillId = localStorage.getItem("strongSkillId");
 
       return this.getSwapRequests.filter(request => {
+        let userIsSender = request.senderId === currentUserId;
+        let userIsReceiver = request.receiverId === currentUserId;
+        
+        let skillsToCheck;
+
+        if (userIsSender) {
+          skillsToCheck = request.senderData.skillsToTeach;
+        } else if (userIsReceiver) {
+          skillsToCheck = request.senderData.skillsToLearn;
+        }
+
         return (
-          (request.senderData.skillsToLearn.some(skill => skill._id === localSkillId) ||
-          request.senderData.skillsToTeach.some(skill => skill._id === localSkillId)) &&
-          ["rejected", "cancelled", "completed"].includes(request.status)
+          skillsToCheck.some(skill => skill._id === localSkillId) &&
+          (
+            userIsReceiver && ["rejected", "cancelled", "completed"].includes(request.status) ||
+            userIsSender && ["cancelled", "completed"].includes(request.status)
+          )
         );
       });
     },

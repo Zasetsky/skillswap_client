@@ -39,11 +39,11 @@ const actions = {
     }
   },
 
-  acceptSwapRequest(context, { swapRequestId, chosenSkillToSwap }) {
+  acceptSwapRequest(context, { swapRequestId, chosenSkill }) {
     try {
       const socket = getSocket();
-
-      socket.emit("acceptSwapRequest", { swapRequestId, chosenSkillToSwap });
+      console.log(chosenSkill);
+      socket.emit("acceptSwapRequest", { swapRequestId, chosenSkill });
 
     } catch (error) {
       console.error("Error accepting swap request:", error);

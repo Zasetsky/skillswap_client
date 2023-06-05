@@ -6,9 +6,7 @@
       :key="pastRequest._id"
       :request="pastRequest"
       @open-chat="emitOpenChat"
-    >
-      <strong>Статус:</strong> {{ pastRequest.status }}
-    </weak-skills-card>
+    />
     <v-card v-if="filteredPastRequests.length === 0">
       <v-card-text>Здесь будет информация об активной сделке</v-card-text>
     </v-card>

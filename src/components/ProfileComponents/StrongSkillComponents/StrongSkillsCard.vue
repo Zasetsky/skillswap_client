@@ -20,6 +20,10 @@
           </span><br>
       </template>
 
+      <template v-if="isPast">
+        <strong>Статус:</strong> {{ request.status }}
+      </template>
+
       <div v-if="request.status === 'pending'">
         <v-select
           v-model="selectedSkill"
@@ -72,6 +76,11 @@ export default {
 
   computed: {
     ...mapGetters("auth", ["currentUser"]),
+
+    isPast() {
+      const validStauses = ["completed", "rejected", "cancelled"].includes(this.request.status);
+      return validStauses;
+    },
 
     senderData() {
       return this.request.senderData;
@@ -130,7 +139,6 @@ export default {
     async acceptSwapRequest() {
       const swapRequestId = this.request._id;
       const chosenSkill = this.selectedSkill;
-
       try {
         await this.$store.dispatch('swapRequests/acceptSwapRequest', {
           swapRequestId,
