@@ -19,3 +19,16 @@ export default {
   }
 };
 </script>
+<style scoped>
+.skill-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.v-chip {
+  font-size: 1.5rem;
+  padding: 0.5rem 1rem;
+}
+</style>

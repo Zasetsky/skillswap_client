@@ -1,6 +1,7 @@
 <template>
-  <div class="step3-strong-skills">
-    <h3 class="title">Сильные стороны</h3>
+  <div class="skills-kit">
+    <h3 v-if="skillKit === 'Strong'" class="title">Сильные стороны</h3>
+    <h3 v-if="skillKit === 'Weak'" class="title">Слабые стороны</h3>
     <v-form class="form" ref="form">
       <template v-if="!selectedTheme">
         <theme-buttons
@@ -12,9 +13,9 @@
           :selectedTheme="selectedTheme"
           :selectedCategory="selectedCategory"
           :selectedSubcategory="selectedSubcategory"
-          @resetThemeCategorySubCategory="resetThemeCategorySubCategory"
-          @resetCategorySubCategory="resetCategorySubCategory"
-          @resetSubCategory="resetSubCategory"
+          @resetThemeCategorySubcategory="resetThemeCategorySubcategory"
+          @resetCategorySubcategory="resetCategorySubcategory"
+          @resetSubcategory="resetSubcategory"
         />
         <template v-if="!selectedCategory">
           <category-buttons
@@ -32,38 +33,38 @@
           <template v-else>
             <skill-chips
               :skills="selectedSubcategory.skills"
-              :selectedSkills="strongSkills"
+              :selectedSkills="skills"
               @skillToggled="toggleSkill"
             />
           </template>
         </template>
       </template>
       <selected-skills
-        :selectedSkills="strongSkills"
+        :selectedSkills="skills"
         @remove-skill="removeSkill"
       />
-      <v-btn
-        class="next-button"
-        color="primary"
-        @click="goToNextStep"
-        :disabled="strongSkills.length < minSkillsRequired"
-      >
-        Далее
-      </v-btn>
-      <div v-if="strongSkills.length < minSkillsRequired" class="error-message">
-      Выберите хотя бы 1 навык
-    </div>
+
+      <confirmation-dialog
+        v-model="showModal"
+        :disabled="skills.length < minSkillsRequired"
+        @open-window="checkSkillsAndProceed"
+        @go-to-next-step="goToNextStep"
+      />
+      <div v-if="skills.length < minSkillsRequired" class="error-message">
+        Выберите хотя бы 1 навык
+      </div>
     </v-form>
   </div>
 </template>
 
 <script>
-import ThemeButtons from "./Step3/ThemeButtons.vue";
-import NavigationContainer from "./Step3/NavigationContainer.vue";
-import CategoryButtons from "./Step3/CategoryButtons.vue";
-import SubcategoryButtons from "./Step3/SubcategoryButtons.vue";
-import SkillChips from "./Step3/SkillChips.vue";
-import SelectedSkills from "./Step3/SelectedSkills.vue";
+import ThemeButtons from "./SkillsParts/ThemeButtons.vue";
+import NavigationContainer from "./SkillsParts/NavigationContainer.vue";
+import CategoryButtons from "./SkillsParts/CategoryButtons.vue";
+import SubcategoryButtons from "./SkillsParts/SubcategoryButtons.vue";
+import SkillChips from "./SkillsParts/SkillChips.vue";
+import SelectedSkills from "./SkillsParts/SelectedSkills.vue";
+import ConfirmationDialog  from "./SkillsParts/ConfirmationDialog.vue";
 
 import { mapGetters, mapActions } from 'vuex';
 
@@ -74,24 +75,34 @@ export default {
     CategoryButtons,
     SubcategoryButtons,
     SkillChips,
-    SelectedSkills
+    SelectedSkills,
+    ConfirmationDialog 
   },
 
-  computed: {
-    ...mapGetters('skills', ['getSkillList']),
+  props: {
+    skillKit: String
   },
-
 
   data() {
     return {
-      strongSkills: [],
       selectedTheme: null,
       selectedCategory: null,
       selectedSubcategory: null,
       minSkillsRequired: 1,
+      showModal: false,
+      skills: [],
+      modalMessage: '',
       };
   },
 
+  computed: {
+    ...mapGetters('skills', ['getSkillList']),
+    ...mapGetters("auth", ["currentUser"]),
+
+    maxSkillsAllowed() {
+      return this.currentUser && this.currentUser.vip ? 9 : 3;
+    },
+  },
 
   methods: {
     ...mapActions('skills', ['fetchAvailableSkills', 'addStrongSkills']),
@@ -100,18 +111,18 @@ export default {
       this.selectedTheme = theme;
     },
 
-    resetThemeCategorySubCategory() {
+    resetThemeCategorySubcategory() {
       this.selectedTheme = null;
       this.selectedCategory = null;
       this.selectedSubcategory = null;
     },
 
-    resetCategorySubCategory() {
+    resetCategorySubcategory() {
       this.selectedCategory = null;
       this.selectedSubcategory = null;
     },
 
-    resetSubCategory() {
+    resetSubcategory() {
       this.selectedSubcategory = null;
     },
 
@@ -127,7 +138,7 @@ export default {
     },
 
     removeSkill(index) {
-      this.strongSkills.splice(index, 1);
+      this.skills.splice(index, 1);
     },
 
     selectCategory(category) {
@@ -139,7 +150,7 @@ export default {
     },
 
     isSkillSelected(skill) {
-      return this.strongSkills.some(
+      return this.skills.some(
         (s) =>
           s.theme === this.selectedTheme.theme &&
           s.category === this.selectedCategory.category &&
@@ -159,7 +170,7 @@ export default {
         skill        
       };
 
-      const index = this.strongSkills.findIndex(
+      const index = this.skills.findIndex(
         (s) =>
           s.theme === selectedSkill.theme &&
           s.category === selectedSkill.category &&
@@ -168,32 +179,51 @@ export default {
       );
 
       if (index === -1) {
-        this.strongSkills.push(selectedSkill);
+        this.skills.push(selectedSkill);
       } else {
-        this.strongSkills.splice(index, 1);
+        this.skills.splice(index, 1);
       }
-      console.log(this.strongSkills);
+
       this.selectedTheme = null;
       this.selectedCategory = null;
       this.selectedSubcategory = null;
     },
 
-    async goToNextStep() {
-      if (this.strongSkills.length >= this.minSkillsRequired) {
-        await this.addStrongSkills(this.strongSkills);
-        this.$emit("go-to-next-step");
+    checkSkillsAndProceed() {
+      if (this.skills.length >= this.minSkillsRequired && this.skills.length < this.maxSkillsAllowed) {
+        this.showModal = true;
+      } else {
+        this.goToNextStep();
       }
     },
+
+    async goToNextStep() {
+      if (this.skillKit === 'Strong') {
+        // await this.addStrongSkills(this.skills);
+        this.$emit("go-to-next-step");
+      } else {
+        await this.addWeakSkills(this.skills);
+        await this.$store.dispatch('user/isPreSetupToggle');
+        this.$emit('finish-profile-setup');
+      }
+    }
   },
 
+  watch: {
+    skills(v) {
+      console.log(v);
+    }
+  },
+ 
   mounted() {
     this.fetchAvailableSkills();
+    console.log(this.maxSkillsAllowed);
   },
 };
 </script>
 
-<style lang="scss">
-.step3-strong-skills {
+<style scoped lang="scss">
+.skills-kit {
   .title {
     font-size: 2rem;
     margin-bottom: 1.5rem;
@@ -203,115 +233,9 @@ export default {
     margin-bottom: 1.5rem;
   }
 
-  .theme-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-
-    .theme-button {
-      font-size: 1.5rem;
-      padding: 0.5rem 1rem;
-    }
-  }
-
-  .category-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-
-    .category-button {
-      font-size: 1.5rem;
-      padding: 0.5rem 1rem;
-    }
-  }
-
-  .subcategory-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-
-    .subcategory-button {
-      font-size: 1.5rem;
-      padding: 0.5rem 1rem;
-    }
-  }
-
-  .skill-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-
-    .v-chip {
-      font-size: 1.5rem;
-      padding: 0.5rem 1rem;
-    }
-  }
-
-  .selected-skills {
-    margin-bottom: 1.5rem;
-
-    h4 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    v-btn {
-      font-size: 1.5rem;
-      margin-right: 1rem;
-      margin-bottom: 1rem;
-      text-transform: none;
-    }
-  }
-
-  .next-button {
-    font-size: 1.5rem;
-    padding: 0.5rem 1rem;
-    text-transform: none;
-    max-width: 10rem;
-  }
-
-  .navigation-container {
-    margin-bottom: 1.5rem;
-
-    .navigation-button {
-      font-size: 1.5rem;
-      padding: 0.5rem 1rem;
-      margin-right: 1rem;
-    }
-  }
-
   .error-message {
     margin-bottom: 1.5rem;
     font-size: 1.5rem;
-  }
-}
-
-@media (max-width: 767px) {
-  .step3-strong-skills {
-    .title {
-      font-size: 1.5rem;
-    }
-
-    .theme-button, .category-button, .subcategory-button, .v-chip, .next-button, .navigation-button {
-      font-size: 1rem;
-      padding: 0.5rem 1rem;
-    }
-
-    .error-message {
-      font-size: 1rem;
-    }
-
-    .navigation-container {
-      .navigation-button {
-        font-size: 1rem;
-        padding: 0.5rem;
-        margin-right: 0.5rem;
-      }
-    }
   }
 }
 </style>

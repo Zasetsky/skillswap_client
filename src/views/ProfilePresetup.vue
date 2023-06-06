@@ -1,18 +1,6 @@
 <template>
   <v-container>
     <v-stepper v-model="step">
-      <!-- <v-stepper-header>
-        <v-stepper-step step="1" complete-icon="mdi-check">Аватар</v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step step="2" complete-icon="mdi-check">Основная информация</v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step step="3" complete-icon="mdi-check">Сильные навыки</v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step step="4" complete-icon="mdi-check">Слабые навыки</v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step step="5" complete-icon="mdi-check">Предпочтения обмена</v-stepper-step>
-      </v-stepper-header> -->
-
       <v-stepper-items>
         <v-stepper-content step="1">
           <Step1_Avatar @go-to-next-step="goToNextStep" />
@@ -23,16 +11,22 @@
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <Step3_StrongSkills @go-to-next-step="goToNextStep" />
+          <Step3_4_Strong_And_WeakSkills
+            :skillKit="'Strong'"
+            @go-to-next-step="goToNextStep"
+          />
         </v-stepper-content>
 
         <v-stepper-content step="4">
-          <Step4_WeakSkills @go-to-next-step="goToNextStep" />
+          <Step3_4_Strong_And_WeakSkills
+            :skillKit="'Weak'"  
+            @go-to-next-step="goToNextStep"
+          />
         </v-stepper-content>
 
-        <v-stepper-content step="5">
+        <!-- <v-stepper-content step="5">
           <Step5_ExchangePreferences @finish-profile-setup="finishProfileSetup" />
-        </v-stepper-content>
+        </v-stepper-content> -->
 
       </v-stepper-items>
     </v-stepper>
@@ -42,9 +36,8 @@
 <script>
 import Step1_Avatar from '@/components/PrsetupUserProfile/Step1_Avatar.vue';
 import Step2_BasicInfo from '@/components/PrsetupUserProfile/Step2_BasicInfo.vue';
-import Step3_StrongSkills from '@/components/PrsetupUserProfile/Step3_StrongSkills.vue';
-import Step4_WeakSkills from '@/components/PrsetupUserProfile/Step4_WeakSkills.vue';
-import Step5_ExchangePreferences from '@/components/PrsetupUserProfile/Step5_ExchangePreferences.vue';
+import Step3_4_Strong_And_WeakSkills from '@/components/PrsetupUserProfile/Step3_4_Strong_And_WeakSkills.vue';
+// import Step5_ExchangePreferences from '@/components/PrsetupUserProfile/Step5_ExchangePreferences.vue';
 
 export default {
   
@@ -52,9 +45,8 @@ export default {
   components: {
     Step1_Avatar,
     Step2_BasicInfo,
-    Step3_StrongSkills,
-    Step4_WeakSkills,
-    Step5_ExchangePreferences,
+    Step3_4_Strong_And_WeakSkills,
+    // Step5_ExchangePreferences,
   },
   data() {
     return {
