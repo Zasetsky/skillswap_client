@@ -3,56 +3,45 @@
     <h3 class="title">Сильные стороны</h3>
     <v-form class="form" ref="form">
       <template v-if="!selectedTheme">
-        <div class="theme-buttons" v-for="(theme, themeIndex) in groupedSkills" :key="themeIndex">
-          <v-btn class="theme-button" @click="selectTheme(theme)">{{ theme.theme }}</v-btn>
-        </div>
+        <theme-buttons
+          @selected-theme="selectTheme"
+        />
       </template>
       <template v-else>
-        <v-container class="navigation-container">
-          <v-row>
-            <v-btn class="navigation-button" outlined color="primary" @click="selectedTheme = null; selectedCategory = null; selectedSubCategory = null">
-              <v-icon left>mdi-arrow-left</v-icon>
-              {{ selectedTheme.theme }}
-            </v-btn>
-            <v-btn v-if="selectedCategory" class="navigation-button" outlined color="primary" @click="selectedCategory = null; selectedSubCategory = null">
-              <v-icon left>mdi-arrow-left</v-icon>
-              {{ selectedCategory.category }}
-            </v-btn>
-            <v-btn v-if="selectedSubCategory" class="navigation-button" outlined color="primary" @click="selectedSubCategory = null">
-              <v-icon left>mdi-arrow-left</v-icon>
-              {{ selectedSubCategory.subCategory }}
-            </v-btn>
-          </v-row>
-        </v-container>
+        <navigation-container
+          :selectedTheme="selectedTheme"
+          :selectedCategory="selectedCategory"
+          :selectedSubcategory="selectedSubcategory"
+          @resetThemeCategorySubCategory="resetThemeCategorySubCategory"
+          @resetCategorySubCategory="resetCategorySubCategory"
+          @resetSubCategory="resetSubCategory"
+        />
         <template v-if="!selectedCategory">
-          <div class="category-buttons" v-for="(category, categoryIndex) in selectedTheme.categories" :key="categoryIndex">
-            <v-btn class="category-button" @click="selectCategory(category); selectedSubCategory = null">{{ category.category }}</v-btn>
-          </div>
+          <category-buttons
+            :categories="selectedTheme.categories"
+            @category-selected="selectCategory"
+          />
         </template>
         <template v-else>
-          <template v-if="!selectedSubCategory">
-            <div class="subcategory-buttons" v-for="(subCategory, subCategoryIndex) in selectedCategory.subCategories" :key="subCategoryIndex">
-              <v-btn class="subcategory-button" @click="selectSubCategory(subCategory)">{{ subCategory.subCategory }}</v-btn>
-            </div>
+          <template v-if="!selectedSubcategory">
+            <subcategory-buttons
+              :subcategories="selectedCategory.subcategories"
+              @subcategory-selected="selectSubcategory"
+            />
           </template>
           <template v-else>
-            <div class="skill-chips" v-for="(skill, skillIndex) in selectedSubCategory.skills" :key="skillIndex">
-              <v-chip :input-value="isSkillSelected(skill)" @click="toggleSkill(skill)">{{ skill }}</v-chip>
-            </div>
+            <skill-chips
+              :skills="selectedSubcategory.skills"
+              :selectedSkills="strongSkills"
+              @skillToggled="toggleSkill"
+            />
           </template>
         </template>
       </template>
-      <div v-if="strongSkills.length > 0" class="selected-skills">
-        <h4>Выбранные навыки:</h4>
-        <v-btn v-for="(strongSkill, index) in strongSkills" :key="index" text @click="removeSkill(index)">
-          <template v-if="strongSkill.theme !== 'Языки'">
-            {{ strongSkill.subCategory }} - {{ strongSkill.skill }}
-          </template>
-          <template v-else>
-            {{ strongSkill.theme }} - {{ strongSkill.category }}
-          </template>
-        </v-btn>
-      </div>
+      <selected-skills
+        :selectedSkills="strongSkills"
+        @remove-skill="removeSkill"
+      />
       <v-btn
         class="next-button"
         color="primary"
@@ -69,16 +58,27 @@
 </template>
 
 <script>
+import ThemeButtons from "./Step3/ThemeButtons.vue";
+import NavigationContainer from "./Step3/NavigationContainer.vue";
+import CategoryButtons from "./Step3/CategoryButtons.vue";
+import SubcategoryButtons from "./Step3/SubcategoryButtons.vue";
+import SkillChips from "./Step3/SkillChips.vue";
+import SelectedSkills from "./Step3/SelectedSkills.vue";
+
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
-  name: "Step3_StrongSkills",
+  components: {
+    ThemeButtons,
+    NavigationContainer,
+    CategoryButtons,
+    SubcategoryButtons,
+    SkillChips,
+    SelectedSkills
+  },
 
   computed: {
     ...mapGetters('skills', ['getSkillList']),
-    groupedSkills() {
-      return this.groupSkills(this.getSkillList);
-    },
   },
 
 
@@ -87,7 +87,7 @@ export default {
       strongSkills: [],
       selectedTheme: null,
       selectedCategory: null,
-      selectedSubCategory: null,
+      selectedSubcategory: null,
       minSkillsRequired: 1,
       };
   },
@@ -100,12 +100,27 @@ export default {
       this.selectedTheme = theme;
     },
 
+    resetThemeCategorySubCategory() {
+      this.selectedTheme = null;
+      this.selectedCategory = null;
+      this.selectedSubcategory = null;
+    },
+
+    resetCategorySubCategory() {
+      this.selectedCategory = null;
+      this.selectedSubcategory = null;
+    },
+
+    resetSubCategory() {
+      this.selectedSubcategory = null;
+    },
+
     findSkillId(skill) {
       const skillItem = this.getSkillList.find(
         (s) =>
           s.theme === this.selectedTheme.theme &&
           s.category === this.selectedCategory.category &&
-          s.subCategory === this.selectedSubCategory.subCategory &&
+          s.subcategory === this.selectedSubcategory.subcategory &&
           s.skill === skill
       );
       return skillItem ? skillItem._id : null;
@@ -118,18 +133,21 @@ export default {
     selectCategory(category) {
       this.selectedCategory = category;
     },
-    selectSubCategory(subCategory) {
-      this.selectedSubCategory = subCategory;
+
+    selectSubcategory(subcategory) {
+      this.selectedSubcategory = subcategory;
     },
+
     isSkillSelected(skill) {
       return this.strongSkills.some(
         (s) =>
           s.theme === this.selectedTheme.theme &&
           s.category === this.selectedCategory.category &&
-          s.subCategory === this.selectedSubCategory.subCategory &&
+          s.subcategory === this.selectedSubcategory.subcategory &&
           s.skill === skill
       );
     },
+
     toggleSkill(skill) {
       const skillId = this.findSkillId(skill);
 
@@ -137,7 +155,7 @@ export default {
         _id: skillId,
         theme: this.selectedTheme.theme,
         category: this.selectedCategory.category,
-        subCategory: this.selectedSubCategory.subCategory,
+        subcategory: this.selectedSubcategory.subcategory,
         skill        
       };
 
@@ -145,7 +163,7 @@ export default {
         (s) =>
           s.theme === selectedSkill.theme &&
           s.category === selectedSkill.category &&
-          s.subCategory === selectedSkill.subCategory &&
+          s.subcategory === selectedSkill.subcategory &&
           s.skill === selectedSkill.skill
       );
 
@@ -157,7 +175,7 @@ export default {
       console.log(this.strongSkills);
       this.selectedTheme = null;
       this.selectedCategory = null;
-      this.selectedSubCategory = null;
+      this.selectedSubcategory = null;
     },
 
     async goToNextStep() {
@@ -166,48 +184,7 @@ export default {
         this.$emit("go-to-next-step");
       }
     },
-
-    groupSkills() {
-      const grouped = [];
-
-      this.getSkillList.forEach((skillItem) => {
-        let themeItem = grouped.find((item) => item.theme === skillItem.theme);
-
-        if (!themeItem) {
-          themeItem = {
-            theme: skillItem.theme,
-            categories: [],
-          };
-          grouped.push(themeItem);
-        }
-
-        let categoryItem = themeItem.categories.find((item) => item.category === skillItem.category);
-
-        if (!categoryItem) {
-          categoryItem = {
-            category: skillItem.category,
-            subCategories: [],
-          };
-          themeItem.categories.push(categoryItem);
-        }
-
-        let subCategoryItem = categoryItem.subCategories.find((item) => item.subCategory === skillItem.subCategory);
-
-        if (!subCategoryItem) {
-          subCategoryItem = {
-            subCategory: skillItem.subCategory,
-            skills: [],
-          };
-          categoryItem.subCategories.push(subCategoryItem);
-        }
-
-        subCategoryItem.skills.push(skillItem.skill);
-      });
-
-      return grouped;
-    },
-},
-
+  },
 
   mounted() {
     this.fetchAvailableSkills();
@@ -215,7 +192,7 @@ export default {
 };
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 .step3-strong-skills {
   .title {
     font-size: 2rem;

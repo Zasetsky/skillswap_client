@@ -40,11 +40,11 @@
 </template>
 
 <script>
-import Step1_Avatar from '@/components/SetupUserProfile/Step1_Avatar.vue';
-import Step2_BasicInfo from '@/components/SetupUserProfile/Step2_BasicInfo.vue';
-import Step3_StrongSkills from '@/components/SetupUserProfile/Step3_StrongSkills.vue';
-import Step4_WeakSkills from '@/components/SetupUserProfile/Step4_WeakSkills.vue';
-import Step5_ExchangePreferences from '@/components/SetupUserProfile/Step5_ExchangePreferences.vue';
+import Step1_Avatar from '@/components/PrsetupUserProfile/Step1_Avatar.vue';
+import Step2_BasicInfo from '@/components/PrsetupUserProfile/Step2_BasicInfo.vue';
+import Step3_StrongSkills from '@/components/PrsetupUserProfile/Step3_StrongSkills.vue';
+import Step4_WeakSkills from '@/components/PrsetupUserProfile/Step4_WeakSkills.vue';
+import Step5_ExchangePreferences from '@/components/PrsetupUserProfile/Step5_ExchangePreferences.vue';
 
 export default {
   
@@ -58,7 +58,7 @@ export default {
   },
   data() {
     return {
-      step: 1,
+      step: 3,
     };
   },
 

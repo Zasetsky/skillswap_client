@@ -17,9 +17,9 @@ const router = new Router({
       meta: { requiresAuth: false },
     },
     {
-      path: '/profile_setup',
-      name: 'ProfileSetup',
-      component: () => import('@/views/ProfileSetup.vue'),
+      path: '/presetup',
+      name: 'ProfilePresetup',
+      component: () => import('@/views/ProfilePresetup.vue'),
       meta: { requiresAuth: true },
     },
     {
@@ -92,13 +92,13 @@ router.beforeEach((to, from, next) => {
 
   else if (loggedIn) {
     if (!isProfilePresetup) {
-      if (to.path !== '/profile_setup') {
-        next({ path: '/profile_setup', replace: true });
+      if (to.path !== '/presetup') {
+        next({ path: '/presetup', replace: true });
       } else {
         next();
       }
     } else {
-      if (to.path === '/profile_setup') {
+      if (to.path === '/presetup') {
         next({ path: '/home', replace: true });
       } else if (to.path === '/') {
         next({ path: '/home', replace: true });

@@ -71,7 +71,6 @@ export default {
   async created() {
     this.isLoading = true;
     try {
-      await this.$store.dispatch("user/fetchCurrentUser");
       await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
       await this.$store.dispatch("chat/switchPartnerIsBusy");
     } catch (error) {

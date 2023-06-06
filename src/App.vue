@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <nav v-if="isAuthenticated && !isLoginPage">
+    <nav v-if="isPreSetup && !isLoginPage">
       <NavbarComponent />
     </nav>
     <v-main>
@@ -11,7 +11,7 @@
 
 <script>
 import NavbarComponent from './components/NavbarComponent.vue';
-// import { mapActions } from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   name: 'App',
@@ -19,32 +19,25 @@ export default {
     NavbarComponent,
   },
   computed: {
-    isAuthenticated() {
-      return this.$store.getters['auth/isAuthenticated'];
+    ...mapGetters("auth", ["currentUser"]),
+
+    isPreSetup() {
+      if (!this.currentUser) {
+        return false;
+      }
+
+      return this.currentUser.isPreSetup;
     },
+
     isLoginPage() {
       return this.$route.path === '/';
     },
   },
-  methods: {
-    // ...mapActions('user', ['getCurrentLocation']),
-    // async getUserLocation() {
-    //   try {
-    //     const location = await this.getCurrentLocation();
-    //     console.log('User location:', location);
-    //   } catch (error) {
-    //     console.error('Error getting user location:', error);
-    //   }
-    // },
-  },
-  // mounted() {
-  //   this.getUserLocation();
-  // }
+  mounted() {
+    this.$store.dispatch("user/fetchCurrentUser");
+  }
 };
 </script>
 
 <style lang="scss">
-body {
-  
-}
 </style>
