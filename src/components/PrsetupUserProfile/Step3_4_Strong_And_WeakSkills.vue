@@ -5,6 +5,7 @@
     <v-form class="form" ref="form">
       <template v-if="!selectedTheme">
         <theme-buttons
+          :disabled="isSkillLimitReached"
           @selected-theme="selectTheme"
         />
       </template>
@@ -19,6 +20,7 @@
         />
         <template v-if="!selectedCategory">
           <category-buttons
+            :disabled="isSkillLimitReached"
             :categories="selectedTheme.categories"
             @category-selected="selectCategory"
           />
@@ -26,12 +28,14 @@
         <template v-else>
           <template v-if="!selectedSubcategory">
             <subcategory-buttons
+              :disabled="isSkillLimitReached"
               :subcategories="selectedCategory.subcategories"
               @subcategory-selected="selectSubcategory"
             />
           </template>
           <template v-else>
             <skill-chips
+              :disabled="isSkillLimitReached"
               :skills="selectedSubcategory.skills"
               :selectedSkills="skills"
               @skillToggled="toggleSkill"
@@ -46,12 +50,19 @@
 
       <confirmation-dialog
         v-model="showModal"
-        :disabled="skills.length < minSkillsRequired"
+        :disabled="skills.length < minSkillsRequired || !allSkillsHaveLevel"
         @open-window="checkSkillsAndProceed"
         @go-to-next-step="goToNextStep"
       />
       <div v-if="skills.length < minSkillsRequired" class="error-message">
         Выберите хотя бы 1 навык
+      </div>
+
+      <div v-if="!allSkillsHaveLevel && skills.length > 0 && skillKit === 'Strong'" class="error-message">
+        Выберите какой уровень владения навыком вы ожидаете от партнёра, которому будете преподавать
+      </div>
+      <div v-if="!allSkillsHaveLevel && skills.length > 0 && skillKit === 'Weak'" class="error-message">
+        Выберите свой уровень владения навыком, который хотите изучить
       </div>
     </v-form>
   </div>
@@ -91,7 +102,6 @@ export default {
       minSkillsRequired: 1,
       showModal: false,
       skills: [],
-      modalMessage: '',
       };
   },
 
@@ -102,10 +112,19 @@ export default {
     maxSkillsAllowed() {
       return this.currentUser && this.currentUser.vip ? 9 : 3;
     },
+
+    allSkillsHaveLevel() {
+      return this.skills.length > 0 && this.skills.every(skill => skill.level !== null);
+    },
+
+    isSkillLimitReached() {
+      return this.skills.length >= this.maxSkillsAllowed;
+    }
   },
 
   methods: {
     ...mapActions('skills', ['fetchAvailableSkills', 'addStrongSkills']),
+    ...mapActions('user', ['isPreSetupToggle']),
 
     selectTheme(theme) {
       this.selectedTheme = theme;
@@ -160,6 +179,7 @@ export default {
     },
 
     toggleSkill(skill) {
+      console.log(this.allSkillsHaveLevel);
       const skillId = this.findSkillId(skill);
 
       const selectedSkill = {
@@ -167,7 +187,8 @@ export default {
         theme: this.selectedTheme.theme,
         category: this.selectedCategory.category,
         subcategory: this.selectedSubcategory.subcategory,
-        skill        
+        skill,
+        level: null
       };
 
       const index = this.skills.findIndex(
@@ -198,27 +219,35 @@ export default {
     },
 
     async goToNextStep() {
-      if (this.skillKit === 'Strong') {
-        // await this.addStrongSkills(this.skills);
-        this.$emit("go-to-next-step");
-      } else {
-        await this.addWeakSkills(this.skills);
-        await this.$store.dispatch('user/isPreSetupToggle');
-        this.$emit('finish-profile-setup');
+      if (!this.allSkillsHaveLevel) {
+        return;
       }
-    }
-  },
 
-  watch: {
-    skills(v) {
-      console.log(v);
+      try {
+        if (this.skillKit === 'Strong') {
+          await this.addStrongSkills(this.skills);
+          this.$emit("go-to-next-step");
+        } else {
+          await this.addWeakSkills(this.skills);
+          await this.isPreSetupToggle();
+          this.$emit('finish-profile-setup');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        // здесь вы можете добавить обработку ошибки, например, показать сообщение об ошибке пользователю
+      }
     }
   },
  
   mounted() {
     this.fetchAvailableSkills();
-    console.log(this.maxSkillsAllowed);
+    console.log(this.allSkillsHaveLevel);
   },
+  watch: {
+    allSkillsHaveLevel(v) {
+      console.log(v);
+    }
+  }
 };
 </script>
 

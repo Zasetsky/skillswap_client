@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="subcategory-buttons" v-for="(subcategory, subcategoryIndex) in subcategories" :key="subcategoryIndex">
-      <v-btn class="subcategory-button" @click="selectSubcategory(subcategory)">{{ subcategory.subcategory }}</v-btn>
+      <v-btn :disabled="disabled" class="subcategory-button" @click="selectSubcategory(subcategory)">{{ subcategory.subcategory }}</v-btn>
     </div>
   </div>
 </template>
@@ -10,6 +10,7 @@
 export default {
   props: {
     subcategories: Array,
+    disabled: Boolean
   },
   methods: {
     selectSubcategory(subcategory) {

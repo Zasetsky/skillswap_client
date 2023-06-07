@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="theme-buttons" v-for="(theme, themeIndex) in groupedSkills" :key="themeIndex">
-      <v-btn class="theme-button" @click="selectTheme(theme)">{{ theme.theme }}</v-btn>
+      <v-btn :disabled="disabled" class="theme-button" @click="selectTheme(theme)">{{ theme.theme }}</v-btn>
     </div>
   </div>
 </template>
@@ -12,6 +12,7 @@ import { mapGetters } from 'vuex';
 export default {
   props: {
     themes: Array,
+    disabled: Boolean
   },
 
   computed: {

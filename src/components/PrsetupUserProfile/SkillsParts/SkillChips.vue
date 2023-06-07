@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="skill-chips" v-for="(skill, skillIndex) in skills" :key="skillIndex">
-      <v-chip :input-value="isSkillSelected(skill)" @click="$emit('skillToggled', skill)">{{ skill }}</v-chip>
+      <v-chip :disabled="disabled" :input-value="isSkillSelected(skill)" @click="$emit('skillToggled', skill)">{{ skill }}</v-chip>
     </div>
   </div>
 </template>
@@ -11,6 +11,7 @@ export default {
   props: {
     skills: Array,
     selectedSkills: Array,
+    disabled: Boolean
   },
   methods: {
     isSkillSelected(skill) {
