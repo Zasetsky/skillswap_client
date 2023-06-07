@@ -123,8 +123,8 @@ export default {
   },
 
   methods: {
-    ...mapActions('skills', ['fetchAvailableSkills', 'addStrongSkills']),
-    ...mapActions('user', ['isPreSetupToggle']),
+    ...mapActions('skills', ['fetchAvailableSkills', 'addStrongSkills', 'addWeakSkills']),
+    ...mapActions('user', ['isPreSetupToggle', 'fetchCurrentUser']),
 
     selectTheme(theme) {
       this.selectedTheme = theme;
@@ -179,7 +179,6 @@ export default {
     },
 
     toggleSkill(skill) {
-      console.log(this.allSkillsHaveLevel);
       const skillId = this.findSkillId(skill);
 
       const selectedSkill = {
@@ -230,7 +229,8 @@ export default {
         } else {
           await this.addWeakSkills(this.skills);
           await this.isPreSetupToggle();
-          this.$emit('finish-profile-setup');
+          await this.fetchCurrentUser();
+          this.$router.push('/home');
         }
       } catch (error) {
         console.error('Error:', error);
@@ -241,13 +241,7 @@ export default {
  
   mounted() {
     this.fetchAvailableSkills();
-    console.log(this.allSkillsHaveLevel);
   },
-  watch: {
-    allSkillsHaveLevel(v) {
-      console.log(v);
-    }
-  }
 };
 </script>
 
