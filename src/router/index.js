@@ -44,14 +44,14 @@ const router = new Router({
     {
       path: '/weak-skill',
       name: 'WeakSkillsPage',
-      component: () => import('@/components/ProfileComponents/Skills/WeakSkillComponents.vue'),
+      component: () => import('@/components/ProfileComponents/Skills/WeakSkillsPage.vue'),
       props: true,
       meta: { requiresAuth: true },
     },
     {
       path: '/strong-skill',
       name: 'StrongSkillsPage',
-      component: () => import('@/components/ProfileComponents/Skills/StrongSkillComponents.vue'),
+      component: () => import('@/components/ProfileComponents/Skills/StrongSkillsPage.vue'),
       props: true,
       meta: { requiresAuth: true },
     },

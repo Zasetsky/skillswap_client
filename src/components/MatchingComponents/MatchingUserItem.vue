@@ -17,7 +17,7 @@
   </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   computed: {
@@ -26,6 +26,8 @@ export default {
   },
 
   methods: {
+    ...mapActions("user", ["fetchUserProfile"]),
+
     findSkillLevel(skillsToTeach) {
       const skill = skillsToTeach.find(skill => skill._id === this.getSelectedSkill._id);
       const skillLevel = skill ? skill.level : 'unknown';
@@ -45,12 +47,13 @@ export default {
       return skill ? skill.rating : 'unknown';
     },
 
-    openUserProfile(userId) {
+    async openUserProfile(userId) {
       this.$router.push({ 
         name: 'UserProfile', 
         params: { userId },
         query: { skillToLearnId: this.getSelectedSkill._id } 
       });
+      await this.fetchUserProfile(userId);
     }
   },
 };
