@@ -16,6 +16,7 @@
     </v-row>
     <v-row>
       <v-col>
+        <h4 style="margin-left: 50px;">Прогресс в сильных навыках:</h4>
         <user-statistics-diagram
           :user="currentUser"
         />

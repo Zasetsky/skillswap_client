@@ -17,10 +17,17 @@ export default {
     }
   },
   mounted() {
-    this.renderChart();
+    this.unwatchUser = this.$watch('user', (newVal) => {
+      if (newVal && newVal.skillsToTeach) {
+        this.renderChart();
+      }
+    }, { immediate: true });
     window.addEventListener('resize', this.renderChart);
   },
   beforeDestroy() {
+    if (this.unwatchUser) {
+      this.unwatchUser();
+    }
     window.removeEventListener('resize', this.renderChart);
     this.destroyChart();
   },

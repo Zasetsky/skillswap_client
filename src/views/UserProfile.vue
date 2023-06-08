@@ -9,23 +9,8 @@
           <h2>{{ getUserProfile.firstname }} {{ getUserProfile.lastname }}</h2>
           <h4>Биография:</h4>
           <p>{{ getUserProfile.bio }}</p>
-          <v-btn v-if="!isSwapRequestAlreadySent && !isSwapRequestReceived" color="primary" @click="proposeSkillExchange">
-            Предложить обмен навыками
-          </v-btn>
-          <v-btn class="grey lighten-2" v-else-if="isSwapRequestAlreadySent" @click="cancelSwapRequest">
-            <v-hover>
-              <template v-slot:default="{ hover }">
-                <span style="min-width: 286px;">{{ hover ? 'Отменить запрос' : 'Запрос на обмен уже отправлен' }}</span>
-              </template>
-            </v-hover>
-          </v-btn>
-          <v-btn class="grey lighten-2" v-else @click="cancelSwapRequest" style="min-width: 300px;">
-            <v-hover>
-              <template v-slot:default="{ hover }">
-                <span style="min-width: 269px;">{{ hover ? 'Отклонить запрос' : 'Запрос на обмен уже получен' }}</span>
-              </template>
-            </v-hover>
-          </v-btn>
+
+          <request-button />
         </v-col>
       </v-row>
       <v-row>
@@ -43,6 +28,7 @@
 
 <script>
 import ProfileAvatar from '@/components/ProfileComponents/Avatar/ProfileAvatar.vue';
+import RequestButton from '@/components/ProfileComponents/Buttons/RequestButton.vue';
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
 
 import { mapActions, mapGetters } from 'vuex';
@@ -50,7 +36,8 @@ import { mapActions, mapGetters } from 'vuex';
 export default {
   components: {
     ProfileAvatar,
-    UserStatisticsDiagram
+    UserStatisticsDiagram,
+    RequestButton
   },
 
   props: {
@@ -66,86 +53,17 @@ export default {
   },
   computed: {
     ...mapGetters("user", ["getUserProfile"]),
-    ...mapGetters("auth", ["currentUser"]),
-    ...mapGetters("swapRequests", ["getSwapRequests"]),
-    myStrongSkillsForUser() {
-      const mySkills = this.currentUser.skillsToTeach;
-      const userSkills = this.getUserProfile.skillsToLearn || [];
-      const skillsForUser = userSkills.filter(userSkill => {
-        return mySkills.some(mySkill => {
-          return mySkill._id === userSkill._id;
-        });
-      });
-      return skillsForUser;
-    },
-    swapRequestId() {
-      if (!this.getSwapRequests || this.getSwapRequests.length === 0) {
-        return "";
-      }
-      const request = this.getSwapRequests.find((request) => request.senderId === this.localUserId ||
-        request.receiverId === this.localUserId);
-      return request ? request._id : "";
-    },
-    mySkillToLearn() {
-      return this.currentUser.skillsToLearn.find(skill => skill._id === this.$route.query.skillToLearnId) || {};
-    },
-    isSwapRequestAlreadySent() {
-      if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
-        return this.getSwapRequests.some((request) => request.receiverId === this.localUserId && (request.status === "pending" || request.status === "accepted"));
-      }
-      else {
-        return false;
-      }
-    },
-    isSwapRequestReceived() {
-      if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
-        return this.getSwapRequests.some((request) => request.senderId === this.localUserId && (request.status === "pending" || request.status === "accepted"));
-      }
-      else {
-        return false;
-      }
-    },
   },
+
   methods: {
     ...mapActions("user", ["fetchUserProfile"]),
-    ...mapActions("swapRequests", ["sendSwapRequest", "deleteSwapRequest", "fetchAllSwapRequests"]),
-    async proposeSkillExchange() {
-      const senderData = {
-        avatar: this.currentUser.avatar,
-        firstname: this.currentUser.firstname,
-        lastname: this.currentUser.lastname,
-        bio: this.currentUser.bio,
-        skillsToLearn: this.mySkillToLearn,
-        skillsToTeach: this.myStrongSkillsForUser,
-      };
-      const receiverData = {
-        avatar: this.getUserProfile.avatar,
-        firstname: this.getUserProfile.firstname,
-        lastname: this.getUserProfile.lastname,
-        bio: this.getUserProfile.bio,
-        skillsToLearn: this.mySkillToLearn,
-      };
-      try {
-        await this.sendSwapRequest({ senderId: this.currentUser._id, receiverId: this.localUserId, senderData, receiverData });
-        localStorage.setItem("weakSkillId", this.mySkillToLearn._id);
-        this.$router.push({ name: "WeakSkillsPage" });
-      }
-      catch (error) {
-        console.error("Error creating swap request:", error);
-      }
-    },
-    async cancelSwapRequest() {
-      try {
-        await this.deleteSwapRequest(this.swapRequestId);
-      }
-      catch (error) {
-        console.error("Error creating swap request:", error);
-      }
-    }
+    ...mapActions("swapRequests", ["fetchAllSwapRequests"]),
   },
+
   async mounted() {
     try {
       await this.fetchUserProfile(this.localUserId);
+      console.log(this.getUserProfile);
       await this.fetchAllSwapRequests();
     }
     catch (error) {

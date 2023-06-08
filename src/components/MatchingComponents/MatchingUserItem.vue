@@ -7,10 +7,10 @@
         </div>
         <v-card-text>
           <div></div>
-          <div>Рейтинг навыка: {{ findSkillRating(user.skillsToTeach) }}</div>
+          <div>Рейтинг навыка {{ findSkillName(user.skillsToTeach) }}: {{ findSkillRating(user.skillsToTeach) }}</div>
           <div>Рейтинг надежности: {{ user.reliabilityRating }}</div>
           <div>Рейтинг лояльности: {{ user.loyaltyRating }}</div>
-          <div>Карма: {{ user.karma }}</div>
+          <!-- <div>Карма: {{ user.karma }}</div> -->
         </v-card-text>
       </v-card>
     </div>
@@ -45,6 +45,11 @@ export default {
     findSkillRating(skillsToTeach) {
       const skill = skillsToTeach.find(skill => skill._id === this.getSelectedSkill._id);
       return skill ? skill.rating : 'unknown';
+    },
+
+    findSkillName(skillsToTeach) {
+      const skill = skillsToTeach.find(skill => skill._id === this.getSelectedSkill._id);
+      return skill ? skill.skill : 'unknown';
     },
 
     async openUserProfile(userId) {
