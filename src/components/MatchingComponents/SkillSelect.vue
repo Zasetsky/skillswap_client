@@ -59,7 +59,6 @@ export default {
 
     async findMatchingUsers() {
       try {
-        console.log(this.getSelectedSkill._id);
         await this.fetchMatchingUsers(this.getSelectedSkill._id);
         
       } catch (error) {

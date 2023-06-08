@@ -4,14 +4,14 @@
         <v-row>
             <v-col>
                 <v-avatar size="120">
-                <img v-if="userProfile.avatar" :src="userProfile.avatar" alt="User avatar">
+                <img v-if="getUserProfile.avatar" :src="getUserProfile.avatar" alt="User avatar">
                 <img v-else src="https://via.placeholder.com/150" alt="User avatar">
                 </v-avatar>
             </v-col>
             <v-col>
-                <h2>{{ userProfile.firstname }} {{ userProfile.lastname }}</h2>
+                <h2>{{ getUserProfile.firstname }} {{ getUserProfile.lastname }}</h2>
                 <h4>Биография:</h4>
-                <p>{{ userProfile.bio }}</p>
+                <p>{{ getUserProfile.bio }}</p>
                 <v-btn
                     v-if="!isSwapRequestAlreadySent && !isSwapRequestReceived"
                     color="primary"
@@ -48,7 +48,7 @@
           <v-col>
             <h4>Прогресс в сильных навыках:</h4>
             <v-progress-linear 
-                v-for="skill in userProfile.strongSkills" 
+                v-for="skill in getUserProfile.strongSkills" 
                 :key="skill.name" 
                 :value="skill.progress" 
                 :buffer-value="100" 
@@ -64,7 +64,7 @@
   
   
 <script>
-import { mapState, mapActions, mapGetters  } from 'vuex';
+import { mapActions, mapGetters  } from 'vuex';
 
 export default {
     props: {
@@ -81,13 +81,13 @@ export default {
 
 
     computed: {
-        ...mapState('user', ['userProfile']),
+        ...mapGetters('user', ['getUserProfile']),
         ...mapGetters('auth', ['currentUser']),
         ...mapGetters("swapRequests", ["getSwapRequests"]),
 
         myStrongSkillsForUser() {
             const mySkills = this.currentUser.skillsToTeach;
-            const userSkills = this.userProfile.skillsToLearn || [];
+            const userSkills = this.getUserProfile.skillsToLearn || [];
             const skillsForUser = userSkills.filter(userSkill => {
                 return mySkills.some(mySkill => {
                 return mySkill._id === userSkill._id;
@@ -151,10 +151,10 @@ export default {
             };
 
             const receiverData = {
-                avatar: this.userProfile.avatar,
-                firstname: this.userProfile.firstname,
-                lastname: this.userProfile.lastname,
-                bio: this.userProfile.bio,
+                avatar: this.getUserProfile.avatar,
+                firstname: this.getUserProfile.firstname,
+                lastname: this.getUserProfile.lastname,
+                bio: this.getUserProfile.bio,
                 skillsToLearn: this.mySkillToLearn,
             };
             try {
@@ -178,7 +178,7 @@ export default {
 
     async mounted() {
         try {
-            console.log(this.userProfile);
+            console.log(this.localUserId);
             await this.fetchUserProfile(this.localUserId);
             await this.fetchAllSwapRequests();
         } catch (error) {

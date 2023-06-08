@@ -8,8 +8,6 @@
       </v-col>
       <v-col cols="12" sm="8" md="9">
         <h2>{{ name }}</h2>
-        <!-- <p>{{ user.title }}</p>
-        <p>{{ user.location }}</p> -->
         <v-chip-group>
           <v-chip
             label color="primary"
@@ -19,13 +17,9 @@
             class="swap-request-chip"
           >
             {{ skill.skill || skill.category || skill.subCategory }}
-            <!-- <span v-if="receivedSwapRequests[skill._id]" class="swap-request-counter">
-              {{ receivedSwapRequests[skill._id] }}
-            </span> -->
           </v-chip>
         </v-chip-group>
         <v-chip-group>
-          <!-- :color="weakSkillsWithSwapRequests.includes(skill._id) ? 'purple' : 'secondary'" -->
           <v-chip
             label
             :color="'secondary'"
@@ -48,35 +42,6 @@ import { mapGetters } from "vuex";
 export default {
   computed: {
     ...mapGetters("auth", ["currentUser"]),
-
-    // receivedSwapRequests() {
-    //   if (!this.currentUser || !this.currentUser.swapRequests) return [];
-
-    //   return this.currentUser.swapRequests.reduce((acc, request) => {
-    //     if (request.status !== "pending") return acc;
-
-    //     request.senderData.skillsToLearn.forEach(skill => {
-    //       const skillId = skill._id;
-    //       acc[skillId] = (acc[skillId] || 0) + 1;
-    //     });
-
-    //     return acc;
-    //   }, {});
-    // },
-
-
-    // weakSkillsWithSwapRequests() {
-    //   if (!this.currentUser || !this.currentUser.swapRequests.length) return [];
-    //   const swapRequests = this.currentUser.swapRequests;
-
-    //   return swapRequests.reduce((ids, request) => {
-    //     if (request.receiverData.skillsToLearn.some(skill => skill._id)) {
-    //       ids.push(request.receiverData.skillsToLearn[0]._id);
-    //     }
-    //     return ids;
-    //   }, []);
-    // },
-
     name() {
       if (!this.currentUser || !this.currentUser.firstname || !this.currentUser.lastname) return "NaN NaN";
       const firstname = this.currentUser.firstname.toLowerCase();

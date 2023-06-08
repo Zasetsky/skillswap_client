@@ -49,13 +49,10 @@ export default {
       this.$router.push({ 
         name: 'UserProfile', 
         params: { userId },
+        query: { skillToLearnId: this.getSelectedSkill._id } 
       });
-      localStorage.setItem("weakSkillId", this.getSelectedSkill._id);
     }
   },
-  mounted() {
-    console.log(this.getSelectedSkill.level);
-  }
 };
 </script>
 <style scoped>
