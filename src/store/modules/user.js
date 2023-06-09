@@ -91,7 +91,7 @@ const actions = {
     try {
       const response = await axios.get(`${API_URL}/current/${userId}`);
       
-      commit('setUserProfile', response.data.user);
+      commit('setUserProfile', response.data);
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }

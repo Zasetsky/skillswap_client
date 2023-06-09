@@ -7,7 +7,9 @@
             style="margin-top: 50px;"
             :user="getUserProfile" 
           />
-          <user-rating-card />
+          <user-rating-card
+            :user="getUserProfile" 
+          />
         </v-col>
         <v-col style="margin-top: 50px;">
           <h2>{{ getUserProfile.firstname }} {{ getUserProfile.lastname }}</h2>
@@ -26,7 +28,7 @@
       </v-row>
       <v-row>
         <v-col>
-          <h4 style="margin-left: 50px;">Прогресс в сильных навыках:</h4>
+          <h4 style="margin-left: 90px;">Сильные навыки:</h4>
           <user-statistics-diagram
             :user="getUserProfile"
           />

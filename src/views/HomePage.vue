@@ -6,7 +6,9 @@
           style="margin-top: 50px;"
           :user="currentUser"
         />
-        <user-rating-card />
+        <user-rating-card
+          :user="currentUser"
+        />
       </v-col>
       <v-col style="margin-top: 50px;">
         <h2>{{ name }}</h2>
@@ -19,7 +21,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <h4 style="margin-left: 50px;">Прогресс в сильных навыках:</h4>
+        <h4 style="margin-left: 60px;">Ваши сильные навыки:</h4>
         <user-statistics-diagram
           :user="currentUser"
         />
