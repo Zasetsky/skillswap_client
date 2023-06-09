@@ -26,6 +26,13 @@
           :user="currentUser"
         />
       </v-col>
+      <v-col>
+        <h4 class="ml-9">Отзывы о вас:</h4>
+        <review-card
+          v-if="currentUser"
+          :currentUserId="currentUser._id"
+        />
+      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -35,6 +42,7 @@ import ProfileAvatar from "@/components/ProfileComponents/Avatar/ProfileAvatar.v
 import SkillChips from "@/components/ProfileComponents/Skills/SkillsChip/SkillChipGroup.vue";
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
 import UserRatingCard from "@/components/ProfileComponents/Rating/UserRatingCard.vue";
+import ReviewCard from "@/components/ProfileComponents/Reviews/ReviewCard.vue";
 
 import { mapGetters } from "vuex";
 
@@ -43,7 +51,8 @@ export default {
     ProfileAvatar,
     SkillChips,
     UserStatisticsDiagram,
-    UserRatingCard
+    UserRatingCard,
+    ReviewCard
 },
 
   computed: {
