@@ -3,14 +3,17 @@
     <v-row class="mt-5 ml-16">
       <v-col style="display: flex;">
         <profile-avatar 
+          style="margin-top: 50px;"
           :user="currentUser"
         />
+        <user-rating-card />
       </v-col>
-      <v-col>
+      <v-col style="margin-top: 50px;">
         <h2>{{ name }}</h2>
 
-        <skill-chips />
+        <skill-chips/>
 
+        <h4>Биография:</h4>
         <p v-if="bio">{{ bio }}</p>
       </v-col>
     </v-row>
@@ -29,6 +32,7 @@
 import ProfileAvatar from "@/components/ProfileComponents/Avatar/ProfileAvatar.vue";
 import SkillChips from "@/components/ProfileComponents/Skills/SkillsChip/SkillChipGroup.vue";
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
+import UserRatingCard from "@/components/ProfileComponents/Rating/UserRatingCard.vue";
 
 import { mapGetters } from "vuex";
 
@@ -36,7 +40,8 @@ export default {
   components: {
     ProfileAvatar,
     SkillChips,
-    UserStatisticsDiagram
+    UserStatisticsDiagram,
+    UserRatingCard
 },
 
   computed: {
@@ -56,10 +61,6 @@ export default {
         return this.currentUser.bio;
     }
   },
-  // mounted() {
-  //   console.log(this.currentUser);
-  //   this.renderChart(this.chartData, this.options)
-  // }
 };
 </script>
 

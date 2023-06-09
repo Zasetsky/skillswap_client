@@ -10,7 +10,7 @@
           <div>Рейтинг навыка {{ findSkillName(user.skillsToTeach) }}: {{ findSkillRating(user.skillsToTeach) }}</div>
           <div>Рейтинг надежности: {{ user.reliabilityRating }}</div>
           <div>Рейтинг лояльности: {{ user.loyaltyRating }}</div>
-          <!-- <div>Карма: {{ user.karma }}</div> -->
+          <div>Карма: {{ user.karma }}</div>
         </v-card-text>
       </v-card>
     </div>

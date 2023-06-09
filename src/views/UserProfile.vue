@@ -2,10 +2,14 @@
   <div>
     <v-container>
       <v-row class="mt-5 ml-16">
-        <v-col>
-          <profile-avatar :user="getUserProfile" />
+        <v-col style="display: flex;">
+          <profile-avatar
+            style="margin-top: 50px;"
+            :user="getUserProfile" 
+          />
+          <user-rating-card />
         </v-col>
-        <v-col>
+        <v-col style="margin-top: 50px;">
           <h2>{{ getUserProfile.firstname }} {{ getUserProfile.lastname }}</h2>
           <h4>Биография:</h4>
           <p>{{ getUserProfile.bio }}</p>
@@ -38,6 +42,7 @@ import ProfileAvatar from '@/components/ProfileComponents/Avatar/ProfileAvatar.v
 import RequestButton from '@/components/ProfileComponents/Buttons/RequestButton.vue';
 import CancelButton from '@/components/ProfileComponents/Buttons/RequestCancelButton.vue';
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
+import UserRatingCard from "@/components/ProfileComponents/Rating/UserRatingCard.vue";
 
 import { mapActions, mapGetters } from 'vuex';
 
@@ -46,7 +51,8 @@ export default {
     ProfileAvatar,
     UserStatisticsDiagram,
     RequestButton,
-    CancelButton
+    CancelButton,
+    UserRatingCard
   },
 
   props: {
