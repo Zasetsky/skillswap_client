@@ -34,13 +34,13 @@ export default {
     strongSkills() {
       if (!this.currentUser || !this.currentUser.skillsToTeach.length)
         return "NaN";
-      return this.currentUser.skillsToTeach; // Возвращаем полный массив объектов, а не только имена навыков
+      return this.currentUser.skillsToTeach;
     },
 
     weakSkills() {
       if (!this.currentUser || !this.currentUser.skillsToLearn.length)
         return "NaN";
-      return this.currentUser.skillsToLearn; // Возвращаем полный массив объектов, а не только имена навыков
+      return this.currentUser.skillsToLearn;
     },
   },
 

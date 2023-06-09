@@ -10,7 +10,14 @@
           <h4>Биография:</h4>
           <p>{{ getUserProfile.bio }}</p>
 
-          <request-button />
+          <request-button
+            :isSwapRequestAlreadySent="isSwapRequestAlreadySent" 
+            :isSwapRequestReceived="isSwapRequestReceived"
+            />
+          <cancel-button
+            :isSwapRequestAlreadySent="isSwapRequestAlreadySent"
+            :isSwapRequestReceived="isSwapRequestReceived"
+            />
         </v-col>
       </v-row>
       <v-row>
@@ -29,6 +36,7 @@
 <script>
 import ProfileAvatar from '@/components/ProfileComponents/Avatar/ProfileAvatar.vue';
 import RequestButton from '@/components/ProfileComponents/Buttons/RequestButton.vue';
+import CancelButton from '@/components/ProfileComponents/Buttons/RequestCancelButton.vue';
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
 
 import { mapActions, mapGetters } from 'vuex';
@@ -37,7 +45,8 @@ export default {
   components: {
     ProfileAvatar,
     UserStatisticsDiagram,
-    RequestButton
+    RequestButton,
+    CancelButton
   },
 
   props: {
@@ -53,6 +62,25 @@ export default {
   },
   computed: {
     ...mapGetters("user", ["getUserProfile"]),
+    ...mapGetters("swapRequests", ["getSwapRequests"]),
+
+    isSwapRequestAlreadySent() {
+      if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
+        return this.getSwapRequests.some((request) => request.receiverId === this.localUserId && (request.status === "pending" || request.status === "accepted"));
+      }
+      else {
+        return false;
+      }
+    },
+
+    isSwapRequestReceived() {
+      if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
+        return this.getSwapRequests.some((request) => request.senderId === this.localUserId && (request.status === "pending" || request.status === "accepted"));
+      }
+      else {
+        return false;
+      }
+    },
   },
 
   methods: {
@@ -63,7 +91,6 @@ export default {
   async mounted() {
     try {
       await this.fetchUserProfile(this.localUserId);
-      console.log(this.getUserProfile);
       await this.fetchAllSwapRequests();
     }
     catch (error) {

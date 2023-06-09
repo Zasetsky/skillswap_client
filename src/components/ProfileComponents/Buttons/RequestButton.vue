@@ -3,20 +3,6 @@
     <v-btn v-if="!isSwapRequestAlreadySent && !isSwapRequestReceived" color="primary" @click="proposeSkillExchange">
       Предложить обмен навыками
     </v-btn>
-    <v-btn class="grey lighten-2" v-else-if="isSwapRequestAlreadySent" @click="cancelSwapRequest">
-      <v-hover>
-        <template v-slot:default="{ hover }">
-          <span style="min-width: 286px;">{{ hover ? 'Отменить запрос' : 'Запрос на обмен уже отправлен' }}</span>
-        </template>
-      </v-hover>
-    </v-btn>
-    <v-btn class="grey lighten-2" v-else @click="cancelSwapRequest" style="min-width: 300px;">
-      <v-hover>
-        <template v-slot:default="{ hover }">
-          <span style="min-width: 269px;">{{ hover ? 'Отклонить запрос' : 'Запрос на обмен уже получен' }}</span>
-        </template>
-      </v-hover>
-    </v-btn>
   </div>
 </template>
 
@@ -24,10 +10,21 @@
 import { mapActions, mapGetters } from 'vuex';
 
 export default {
+  props: {
+    isSwapRequestAlreadySent: {
+      type: Boolean,
+      default: false
+    },
+
+    isSwapRequestReceived: {
+      type: Boolean,
+      default: false
+    },
+  },
+
   computed: {
     ...mapGetters("user", ["getUserProfile"]),
     ...mapGetters("auth", ["currentUser"]),
-    ...mapGetters("swapRequests", ["getSwapRequests"]),
 
     myStrongSkillsForUser() {
       const mySkills = this.currentUser.skillsToTeach;
@@ -43,37 +40,10 @@ export default {
     mySkillToLearn() {
       return this.currentUser.skillsToLearn.find(skill => skill._id === this.$route.query.skillToLearnId) || {};
     },
-
-    isSwapRequestAlreadySent() {
-      if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
-        return this.getSwapRequests.some((request) => request.receiverId === this.localUserId && (request.status === "pending" || request.status === "accepted"));
-      }
-      else {
-        return false;
-      }
-    },
-
-    isSwapRequestReceived() {
-      if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
-        return this.getSwapRequests.some((request) => request.senderId === this.localUserId && (request.status === "pending" || request.status === "accepted"));
-      }
-      else {
-        return false;
-      }
-    },
-
-    swapRequestId() {
-      if (!this.getSwapRequests || this.getSwapRequests.length === 0) {
-        return "";
-      }
-      const request = this.getSwapRequests.find((request) => request.senderId === this.localUserId ||
-        request.receiverId === this.localUserId);
-      return request ? request._id : "";
-    },
   },
 
   methods: {
-    ...mapActions("swapRequests", ["sendSwapRequest", "deleteSwapRequest"]),
+    ...mapActions("swapRequests", ["sendSwapRequest"]),
 
     async proposeSkillExchange() {
       const senderData = {
@@ -92,7 +62,7 @@ export default {
         skillsToLearn: this.mySkillToLearn,
       };
       try {
-        await this.sendSwapRequest({ senderId: this.currentUser._id, receiverId: this.localUserId, senderData, receiverData });
+        await this.sendSwapRequest({ senderId: this.currentUser._id, receiverId: this.getUserProfile._id, senderData, receiverData });
 
         localStorage.setItem("weakSkillId", this.mySkillToLearn._id);
         this.$router.push({ name: "WeakSkillsPage" });
@@ -101,15 +71,6 @@ export default {
         console.error("Error creating swap request:", error);
       }
     },
-
-    async cancelSwapRequest() {
-      try {
-        await this.deleteSwapRequest(this.swapRequestId);
-      }
-      catch (error) {
-        console.error("Error creating swap request:", error);
-      }
-    }
   }
 }
 </script>

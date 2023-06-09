@@ -230,6 +230,8 @@ export default {
           await this.addWeakSkills(this.skills);
           await this.isPreSetupToggle();
           await this.fetchCurrentUser();
+
+          localStorage.removeItem(`currentStep_${this.currentUser._id}`);
           this.$router.push('/home');
         }
       } catch (error) {
