@@ -1,13 +1,12 @@
 <template>
   <div>
     <v-autocomplete
-      :value="getSelectedSkill"
+      v-model="selectedSkillLocal"
       :items="listSkillsToLearn"
       :item-text="item => item.skill"
       label="Выберите навык, который хотите улучшить"
       outlined
       return-object
-      @input="onSkillChange"
     ></v-autocomplete>
     <v-btn color="primary" @click="findMatchingUsers">Найти</v-btn>
   </div>
@@ -17,6 +16,12 @@
 import { mapGetters, mapActions } from "vuex";
 
 export default {
+  data() {
+    return {
+      selectedSkillLocal: null,
+    };
+  },
+
   computed: {
       ...mapGetters('auth', ['currentUser']),
       ...mapGetters('swapRequests', ['getSwapRequests']),
@@ -48,7 +53,7 @@ export default {
         (skill) => skill._id === skillToLearnId
       );
       if (skillToLearn) {
-        this.setSelectedSkill(skillToLearn);
+        this.selectedSkillLocal = skillToLearn;
         this.findMatchingUsers();
       }
     }
@@ -59,16 +64,13 @@ export default {
 
     async findMatchingUsers() {
       try {
-        await this.fetchMatchingUsers(this.getSelectedSkill._id);
-        
+        await this.fetchMatchingUsers(this.selectedSkillLocal._id);
+
+        this.setSelectedSkill(this.selectedSkillLocal);
       } catch (error) {
         console.error(error);
       }
     },
-
-    onSkillChange(selectedSkill) {
-      this.setSelectedSkill(selectedSkill);
-    }
   },
 };
 </script>

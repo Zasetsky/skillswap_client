@@ -27,7 +27,7 @@
 
 <script>
 import ProfileAvatar from "@/components/ProfileComponents/Avatar/ProfileAvatar.vue";
-import SkillChips from "@/components/ProfileComponents/Skills/SkillChips/SkillChipGroup.vue";
+import SkillChips from "@/components/ProfileComponents/Skills/SkillsChip/SkillChipGroup.vue";
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
 
 import { mapGetters } from "vuex";
