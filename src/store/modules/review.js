@@ -6,10 +6,24 @@ const API_URL = 'http://localhost:3000/api/reviews'
 const state = {
     reviews: {},
     dealReviews: [],
+    ratingFilter: 0,
+    selectedSkill: null,
 }
 
 const getters = {
-    getUserReviews: (state) => (userId) => state.reviews[userId] || [],
+    getFilteredReviews: (state) => (userId) => {
+      let reviews = state.reviews[userId] || [];
+      
+      if (state.selectedSkill) {
+        reviews = reviews.filter(review => review.skill.skill === state.selectedSkill);
+      }
+      
+      if (state.ratingFilter > 0) {
+        reviews = reviews.filter(review => review.skillRating === state.ratingFilter);
+      }
+  
+      return reviews;
+    },
 
     getCurrentDealReviews: (state) => state.dealReviews
 }
@@ -64,20 +78,28 @@ const actions = {
 const mutations = {
   ADD_REVIEW_TO_EXISTING_REVIEWS(state, review) {
     const userId = review.receiver;
-
+  
     if (!state.reviews[userId]) {
       state.reviews = { ...state.reviews, [userId]: [review] };
     } else {
       const existingReviewIndex = state.reviews[userId].findIndex(
         (r) => r._id === review._id
       );
-
+  
       if (existingReviewIndex === -1) {
-        state.reviews[userId].push(review);
+        state.reviews[userId].unshift(review);
       } else {
         state.reviews[userId][existingReviewIndex] = review;
       }
     }
+  },
+
+  SET_RATING_FILTER(state, rating) {
+    state.ratingFilter = rating;
+  },
+
+  SET_SELECTED_SKILL(state, skill) {
+    state.selectedSkill = skill;
   },
 
   SET_USER_REVIEWS(state, { userId, reviews }) {

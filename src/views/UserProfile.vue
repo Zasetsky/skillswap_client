@@ -39,6 +39,9 @@
           v-if="getUserProfile && getUserProfile._id"
           :currentUserId="getUserProfile._id"
         />
+        <review-list 
+          :currentUserId="getUserProfile._id"
+        />
       </v-col>
       </v-row>
     </v-container>

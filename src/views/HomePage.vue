@@ -32,6 +32,9 @@
           v-if="currentUser"
           :currentUserId="currentUser._id"
         />
+        <review-list 
+          :currentUserId="currentUser._id"
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -45,6 +48,7 @@ import UserRatingCard from "@/components/ProfileComponents/Rating/UserRatingCard
 import ReviewFilter from "@/components/ProfileComponents/Reviews/ReviewFilter.vue";
 
 import { mapGetters } from "vuex";
+import ReviewList from "@/components/ProfileComponents/Reviews/ReviewList.vue";
 
 export default {
   components: {
@@ -52,7 +56,8 @@ export default {
     SkillChips,
     UserStatisticsDiagram,
     UserRatingCard,
-    ReviewFilter
+    ReviewFilter,
+    ReviewList
 },
 
   computed: {

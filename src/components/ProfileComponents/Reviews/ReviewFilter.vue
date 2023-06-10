@@ -2,27 +2,20 @@
   <div>
     <div class="d-flex align-center my-3">
       <v-rating
-        v-model="ratingFilter"
+        v-model="rating"
         color="gold"
         :half-increments="false"
         size="24"
         @click.native="handleRatingClick"
       ></v-rating>
     </div>
-
-    <ReviewList :reviews="filteredReviews" />
   </div>
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
-import ReviewList from './ReviewList.vue';
+import { mapActions, mapMutations } from 'vuex';
 
 export default {
-  components: {
-    ReviewList
-  },
-
   props: {
     currentUserId: {
       type: String,
@@ -32,42 +25,26 @@ export default {
 
   data() {
     return {
-      ratingFilter: 0,
+      rating: 0,
       lastRating: null,
       clickCount: 0,
     };
   },
 
-  computed: {
-    ...mapGetters("review", ["getUserReviews"]),
-
-    filteredReviews() {
-      let reviews = [];
-      
-      if (this.ratingFilter > 0) {
-        reviews = this.getUserReviews(this.currentUserId).filter(
-          review => review.skillRating === this.ratingFilter
-        );
-      } else {
-        reviews = this.getUserReviews(this.currentUserId);
-      }
-      
-      return reviews.reverse();
-    },
-  },
-
   methods: {
     ...mapActions("review", ["fetchUserReviews", "listenCreateReview"]),
+    ...mapMutations('review', ['SET_RATING_FILTER']),
 
     handleRatingClick() {
       this.clickCount++;
       if (this.clickCount === 2) {
         this.clickCount = 0;
-        if (this.ratingFilter === this.lastRating) {
-          this.ratingFilter = 0;
+        if (this.rating === this.lastRating) {
+          this.rating = 0;
         }
       }
-      this.lastRating = this.ratingFilter;
+      this.lastRating = this.rating;
+      this.SET_RATING_FILTER(this.rating);
     }
   },
 
@@ -94,6 +71,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-</style>

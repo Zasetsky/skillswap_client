@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card v-for="(review, index) in reviews" :key="index" class="my-3">
+    <v-card v-for="(review, index) in getFilteredReviews(currentUserId)" :key="index" class="my-3">
       <v-card-title>{{ review.sender.firstname + ' ' + review.sender.lastname }}</v-card-title>
       <v-card-subtitle>
         <div class="d-flex justify-space-between align-center">
@@ -21,13 +21,19 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+
 export default {
   props: {
-    reviews: {
-      type: Array,
+    currentUserId: {
+      type: String,
       required: true
     }
   },
+
+  computed: {
+    ...mapGetters("review", ["getFilteredReviews"]),
+  }
 }
 </script>
 

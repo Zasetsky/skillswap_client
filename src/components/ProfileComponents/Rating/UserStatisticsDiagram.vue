@@ -90,6 +90,15 @@ export default {
                 precision: 2
               }
             }
+          },
+          onClick: (event, elements) => {
+            if (elements.length > 0) {
+              const chartElement = elements[0];
+              const clickedSkill = this.chart.data.labels[chartElement.index];
+              
+              console.log('Clicked skill:', clickedSkill);
+              this.$store.commit('review/SET_SELECTED_SKILL', clickedSkill);
+            }
           }
         }
       });
