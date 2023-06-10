@@ -4,7 +4,7 @@
       <v-col>
         <div class="caption">Total Skills</div>
         <div class="rating_row">
-          <v-rating :value="user.totalSkillsRating" readonly half-increments color="gold" size="16"></v-rating>
+          <v-rating :value="roundedRating(user.totalSkillsRating)" readonly half-increments color="gold" size="16"></v-rating>
           <pre>{{ user.totalSkillsRating }}</pre>
         </div>
       </v-col>
@@ -12,7 +12,7 @@
       <v-col>
         <div class="caption">Loyalty</div>
         <div class="rating_row">
-          <v-rating :value="user.loyaltyRating" readonly half-increments color="gold" size="16"></v-rating>
+          <v-rating :value="roundedRating(user.loyaltyRating)" readonly half-increments color="gold" size="16"></v-rating>
           <pre>{{ user.loyaltyRating }}</pre>
         </div>
       </v-col>
@@ -20,7 +20,7 @@
       <v-col>
         <div class="caption">Reliability</div>
         <div class="rating_row">
-          <v-rating :value="user.reliabilityRating" readonly half-increments color="gold" size="16"></v-rating>
+          <v-rating :value="roundedRating(user.reliabilityRating)" readonly half-increments color="gold" size="16"></v-rating>
           <pre>{{ user.reliabilityRating }}</pre>
         </div>
       </v-col>
@@ -36,6 +36,17 @@ export default {
       required: true
     }
   },
+  methods: {
+    roundedRating(rating) {
+      const decimalPart = rating % 1;
+      const integerPart = Math.floor(rating);
+      if (decimalPart < 0.5) {
+        return integerPart;
+      } else if (decimalPart >= 0.5) {
+        return integerPart + 0.5;
+      }
+    }
+  }
 }
 </script>
 
