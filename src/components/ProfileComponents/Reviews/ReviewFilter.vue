@@ -42,19 +42,22 @@ export default {
     ...mapGetters("review", ["getUserReviews"]),
 
     filteredReviews() {
+      let reviews = [];
+      
       if (this.ratingFilter > 0) {
-        return this.getUserReviews(this.currentUserId).filter(
+        reviews = this.getUserReviews(this.currentUserId).filter(
           review => review.skillRating === this.ratingFilter
         );
       } else {
-        return this.getUserReviews(this.currentUserId);
+        reviews = this.getUserReviews(this.currentUserId);
       }
       
+      return reviews.reverse();
     },
   },
 
   methods: {
-    ...mapActions("review", ["fetchUserReviews"]),
+    ...mapActions("review", ["fetchUserReviews", "listenCreateReview"]),
 
     handleRatingClick() {
       this.clickCount++;
@@ -83,7 +86,8 @@ export default {
   async mounted() {
     try {
       await this.fetchUserReviews(this.currentUserId);
-      console.log(this.getUserReviews(this.currentUserId));
+
+      await this.listenCreateReview();
     } catch (error) {
       console.log(error);
     }

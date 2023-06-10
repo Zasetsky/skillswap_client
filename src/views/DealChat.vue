@@ -29,7 +29,6 @@
         />
         <ReviewForm
           v-if="showReviewForm"
-          @review-submitted="onReviewSubmitted"
         />
         <CancelDealButton
           v-if="!isCancelButtonCloseToDeadline && showCancelButton"
@@ -251,10 +250,6 @@ export default {
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
       });
-    },
-
-    onReviewSubmitted() {
-      console.log("Review submitted successfully");
     },
 
     async openDialog() {

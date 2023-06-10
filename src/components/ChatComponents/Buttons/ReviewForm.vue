@@ -153,7 +153,6 @@ export default {
       try {
         await this.$store.dispatch("review/createReview", review);
 
-        this.$emit("review-submitted");
         this.dialog = false;
       } catch (error) {
         console.error("Error submitting review:", error);
