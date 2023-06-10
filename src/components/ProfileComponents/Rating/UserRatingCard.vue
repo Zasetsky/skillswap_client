@@ -4,7 +4,7 @@
       <v-col>
         <div class="caption">Total Skills</div>
         <div class="rating_row">
-          <v-rating :value="user.totalSkillsRating" readonly half-increments color="gold"></v-rating>
+          <v-rating :value="user.totalSkillsRating" readonly half-increments color="gold" size="16"></v-rating>
           <pre>{{ user.totalSkillsRating }}</pre>
         </div>
       </v-col>
@@ -12,7 +12,7 @@
       <v-col>
         <div class="caption">Loyalty</div>
         <div class="rating_row">
-          <v-rating :value="user.loyaltyRating" readonly half-increments color="gold"></v-rating>
+          <v-rating :value="user.loyaltyRating" readonly half-increments color="gold" size="16"></v-rating>
           <pre>{{ user.loyaltyRating }}</pre>
         </div>
       </v-col>
@@ -20,7 +20,7 @@
       <v-col>
         <div class="caption">Reliability</div>
         <div class="rating_row">
-          <v-rating :value="user.reliabilityRating" readonly half-increments color="gold"></v-rating>
+          <v-rating :value="user.reliabilityRating" readonly half-increments color="gold" size="16"></v-rating>
           <pre>{{ user.reliabilityRating }}</pre>
         </div>
       </v-col>
@@ -44,5 +44,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 1em;
+}
+.rating_wrapper {
+  margin-left: 1rem;
 }
 </style>

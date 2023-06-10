@@ -131,8 +131,8 @@ export default {
       }
 
       return currentUserId === swapRequest.senderId
-        ? senderData.skillsToLearn[0]._id
-        : senderData.skillsToTeach[0]._id;
+        ? senderData.skillsToLearn[0]
+        : senderData.skillsToTeach[0];
     },
   },
 

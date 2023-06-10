@@ -35,7 +35,7 @@
         </v-col>
         <v-col>
         <h4 class="ml-9">Отзывы о пользователе:</h4>
-        <review-card
+        <review-filter
           v-if="getUserProfile && getUserProfile._id"
           :currentUserId="getUserProfile._id"
         />
@@ -52,7 +52,7 @@ import RequestButton from '@/components/ProfileComponents/Buttons/RequestButton.
 import CancelButton from '@/components/ProfileComponents/Buttons/RequestCancelButton.vue';
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
 import UserRatingCard from "@/components/ProfileComponents/Rating/UserRatingCard.vue";
-import ReviewCard from "@/components/ProfileComponents/Reviews/ReviewCard.vue";
+import ReviewFilter from "@/components/ProfileComponents/Reviews/ReviewFilter.vue";
 
 import { mapActions, mapGetters } from 'vuex';
 
@@ -63,7 +63,7 @@ export default {
     RequestButton,
     CancelButton,
     UserRatingCard,
-    ReviewCard
+    ReviewFilter
   },
 
   props: {
