@@ -4,12 +4,13 @@ import router from './router';
 import store from './store';
 import vuetify from './plugins/vuetify';
 import Vuelidate from 'vuelidate';
-import '@/assets/styles/main.scss';
 import AsyncComputed from "vue-async-computed";
+
 import { sync } from 'vuex-router-sync'
 
-Vue.use(AsyncComputed);
+import '@/assets/styles/main.scss';
 
+Vue.use(AsyncComputed);
 Vue.use(Vuelidate);
 
 Vue.config.productionTip = false;
