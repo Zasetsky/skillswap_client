@@ -6,6 +6,7 @@
         color="gold"
         :half-increments="false"
         size="24"
+        hover
         @click.native="handleRatingClick"
       ></v-rating>
     </div>

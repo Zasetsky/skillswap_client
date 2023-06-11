@@ -60,7 +60,7 @@ export default {
       const skillLabels = skillsToTeach.map(skill => skill.skill);
 
       const pointRadii = skillLabels.map(label => label === this.selectedSkill ? 7 : 3);
-      const pointHoverRadii = skillLabels.map(label => label === this.selectedSkill ? 7 : 5);
+      const pointHoverRadii = skillLabels.map(label => label === this.selectedSkill ? 5 : 5);
       const pointBorderColors = skillLabels.map(label => label === this.selectedSkill ? 'rgba(0, 123, 255, 1)' : '#fff');
 
       this.chart.data.datasets[0].pointRadius = pointRadii;
