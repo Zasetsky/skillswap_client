@@ -13,30 +13,6 @@ const getters = {
   getCurrentSwapRequest: (state) => {
     return state.currentSwapRequest;
   },
-
-  getFilteredActiveRequests: (state, getters) => (skillId) => {
-    const currentUser = getters['auth/currentUser'];
-    const swapRequests = getters['swapRequests/getSwapRequests'];
-    
-    if (!currentUser || !swapRequests || swapRequests.length === 0) {
-      return [];
-    }
-
-    const currentActiveSkill = currentUser.skillsToLearn.find(
-      (skill) => skill._id === skillId && skill.isActive
-    );
-
-    const filteredRequests = swapRequests.filter((request) => {
-      return (
-        (request.receiverData.skillsToLearn.some((skill) => skill._id === skillId) ||
-        request.receiverData.skillsToTeach.some((skill) => skill._id === skillId)) &&
-        currentActiveSkill &&
-        (request.status === "pending" || request.status === "accepted")
-      );
-    });
-
-    return filteredRequests;
-  },
 };
 
 const actions = {
@@ -54,10 +30,9 @@ const actions = {
   listenForSwapRequestSent(context) {
     try {
         const socket = getSocket();
-
-        socket.on("swapRequestSent", (data) => {
-            console.log(data.message);
-            context.dispatch("fetchAllSwapRequests");
+  
+        socket.on("swapRequestSent", (newSwapRequest) => {
+            context.commit("addSwapRequest", newSwapRequest);
         });
     } catch (error) {
         console.error("Error listening for swap requests:", error);
@@ -184,9 +159,15 @@ const mutations = {
   setSwapRequests(state, swapRequests) {
     state.swapRequests = swapRequests;
   },
+
   setCurrentSwapRequest(state, swapRequest) {
     state.currentSwapRequest = swapRequest;
   },
+
+  addSwapRequest(state, newSwapRequest) {
+    state.swapRequests.unshift(newSwapRequest);
+  },
+
   updateSwapRequest(state, updatedSwapRequest) {
     const index = state.swapRequests.findIndex((request) => request._id === updatedSwapRequest._id);
 

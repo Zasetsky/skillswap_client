@@ -46,9 +46,9 @@ import SkillChips from "@/components/ProfileComponents/Skills/SkillsChip/SkillCh
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
 import UserRatingCard from "@/components/ProfileComponents/Rating/UserRatingCard.vue";
 import ReviewFilter from "@/components/ProfileComponents/Reviews/ReviewFilter.vue";
+import ReviewList from "@/components/ProfileComponents/Reviews/ReviewList.vue";
 
 import { mapGetters } from "vuex";
-import ReviewList from "@/components/ProfileComponents/Reviews/ReviewList.vue";
 
 export default {
   components: {

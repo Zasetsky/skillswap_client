@@ -8,7 +8,7 @@
         <div class="header-container">
           <h2>{{ (weakSkillObject.skill ?? '') || (weakSkillObject.category ?? '') || (weakSkillObject.subCategory ?? '') }}</h2>
 
-          <v-btn v-if="getFilteredActiveRequests(localSkillId).length === 0" color="primary" @click="goToMatchingUsers">
+          <v-btn v-if="filteredActiveRequests.length === 0" color="primary" @click="goToMatchingUsers">
             Найти совпадения
           </v-btn>
         </div>
@@ -17,7 +17,7 @@
     <v-row>
       <active-requests
         :disabled="getIsBusy"
-        :localSkillId="localSkillId"
+        :filteredActiveRequests="filteredActiveRequests"
       />
       <past-requests/>
     </v-row>
@@ -46,7 +46,7 @@ export default {
   computed: {
     ...mapGetters("auth", ["currentUser"]),
     ...mapGetters("chat", ["getCurrentChat", "getIsBusy"]),
-    ...mapGetters("swapRequests", ["getSwapRequests", "getFilteredActiveRequests"]),
+    ...mapGetters("swapRequests", ["getSwapRequests"]),
 
     weakSkillObject() {
       if (!this.currentUser) {
@@ -57,6 +57,27 @@ export default {
       const weakSkill = this.currentUser.skillsToLearn.find(skill => skill._id === skillId) || {};
 
       return weakSkill;
+    },
+
+    filteredActiveRequests() {
+      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
+        return [];
+      }
+
+      const currentActiveSkill = this.currentUser.skillsToLearn.find(
+        (skill) => skill._id === this.localSkillId && skill.isActive
+      );
+
+      const filteredRequests = this.getSwapRequests.filter((request) => {
+        return (
+          (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
+          request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
+          currentActiveSkill &&
+          (request.status === "pending" || request.status === "accepted")
+        );
+      });
+
+      return filteredRequests;
     },
   },
 

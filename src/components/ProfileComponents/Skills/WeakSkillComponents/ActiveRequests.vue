@@ -2,13 +2,13 @@
   <v-col cols="12" sm="6">
     <h3>Активный запрос</h3>
     <weak-skills-card
-      v-for="request in getFilteredActiveRequests(localSkillId)"
+      v-for="request in filteredActiveRequests"
       :key="request._id"
       :class="{ 'disabled-component': disabled }"
       :request="request"
     />
 
-    <v-card v-if="getFilteredActiveRequests(localSkillId).length === 0">
+    <v-card v-if="filteredActiveRequests.length === 0">
       <v-card-text>
         Здесь будет информация об активных запросов этого навыка
       </v-card-text>
@@ -32,8 +32,8 @@ export default {
       default: false
     },
 
-    localSkillId: {
-      type: String,
+    filteredActiveRequests: {
+      type: Array,
       required: true
     }
   },

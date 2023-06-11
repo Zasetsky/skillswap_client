@@ -39,7 +39,8 @@
           v-if="getUserProfile && getUserProfile._id"
           :currentUserId="getUserProfile._id"
         />
-        <review-list 
+        <review-list
+          v-if="getUserProfile && getUserProfile._id"
           :currentUserId="getUserProfile._id"
         />
       </v-col>
@@ -56,6 +57,7 @@ import CancelButton from '@/components/ProfileComponents/Buttons/RequestCancelBu
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
 import UserRatingCard from "@/components/ProfileComponents/Rating/UserRatingCard.vue";
 import ReviewFilter from "@/components/ProfileComponents/Reviews/ReviewFilter.vue";
+import ReviewList from "@/components/ProfileComponents/Reviews/ReviewList.vue";
 
 import { mapActions, mapGetters } from 'vuex';
 
@@ -66,7 +68,8 @@ export default {
     RequestButton,
     CancelButton,
     UserRatingCard,
-    ReviewFilter
+    ReviewFilter,
+    ReviewList
   },
 
   props: {
