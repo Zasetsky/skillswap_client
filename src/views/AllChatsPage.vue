@@ -145,11 +145,11 @@ export default {
     async openChat(chatId) {
       try {
         await this.fetchCurrentChat(chatId);
-        const chat = this.getCurrentChat;
 
-        localStorage.setItem("chatId", chat._id);
-
-        this.$router.push(`/${chat._id}`);
+        this.$router.push({
+          name: 'Chat',
+          query: { chatId },
+        });
       } catch (error) {
         console.error('Error opening chat:', error);
       }

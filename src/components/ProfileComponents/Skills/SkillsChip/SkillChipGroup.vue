@@ -54,7 +54,7 @@ export default {
 
     handleOnStrongSkillClick(skillId) {
       this.$router.push({ 
-        name: "StrongSkillsPage", 
+        name: "StrongSkillsPage",
         query: { strongSkillId: skillId } 
       });
     }

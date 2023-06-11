@@ -46,8 +46,10 @@ export default {
         localChatId = chatId;
       }
 
-      localStorage.setItem("chatId", localChatId);
-      this.$router.push(`/${localChatId}`);
+      this.$router.push({
+        name: 'Chat',
+        query: { chatId: localChatId },
+      });
     },
   },
 };

@@ -353,7 +353,7 @@ export default {
 
   async mounted() {
     try {
-      const chatId = localStorage.getItem("chatId");
+      const chatId = this.$route.query.chatId;
       
       await this.$store.dispatch("chat/fetchCurrentChat", chatId);
       await this.$store.dispatch("deal/fetchCurrentDeal", {

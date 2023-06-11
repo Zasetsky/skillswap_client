@@ -62,10 +62,9 @@ const router = new Router({
       meta: { requiresAuth: true },
     }, 
     {
-      path: '/:chatId([0-9a-zA-Z-_]+)',
+      path: '/chat',
       name: 'Chat',
       component: () => import('@/views/DealChat.vue'),
-      props: route => ({ chatId: route.params.chatId }),
       meta: { requiresAuth: true },
     }, 
   ],
