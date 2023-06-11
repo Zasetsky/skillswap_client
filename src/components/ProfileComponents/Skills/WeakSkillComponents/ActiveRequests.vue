@@ -2,13 +2,13 @@
   <v-col cols="12" sm="6">
     <h3>Активный запрос</h3>
     <weak-skills-card
-      v-for="request in filteredActiveRequests"
+      v-for="request in getFilteredActiveRequests(localSkillId)"
       :key="request._id"
       :class="{ 'disabled-component': disabled }"
       :request="request"
     />
 
-    <v-card v-if="filteredActiveRequests.length === 0">
+    <v-card v-if="getFilteredActiveRequests(localSkillId).length === 0">
       <v-card-text>
         Здесь будет информация об активных запросов этого навыка
       </v-card-text>
@@ -18,6 +18,8 @@
 
 <script>
 import WeakSkillsCard from "./WeakSkillsCard.vue";
+
+import { mapGetters } from "vuex";
 
 export default {
   components: {
@@ -29,11 +31,16 @@ export default {
       type: Boolean,
       default: false
     },
-    filteredActiveRequests: {
-      type: Array,
-      required: true,
-    },
+
+    localSkillId: {
+      type: String,
+      required: true
+    }
   },
+
+  computed: {
+    ...mapGetters("swapRequests", ["getFilteredActiveRequests"]),
+  }
 }
 </script>
 <style scoped>

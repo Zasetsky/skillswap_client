@@ -1,11 +1,14 @@
 <template>
-  <v-container>
+  <v-container v-if="isLoading">
+    Загрузка...
+  </v-container>
+  <v-container v-else>
     <v-row>
       <v-col cols="12">
         <div class="header-container">
           <h2>{{ (weakSkillObject.skill ?? '') || (weakSkillObject.category ?? '') || (weakSkillObject.subCategory ?? '') }}</h2>
 
-          <v-btn v-if="filteredActiveRequests.length === 0" color="primary" @click="goToMatchingUsers">
+          <v-btn v-if="getFilteredActiveRequests(localSkillId).length === 0" color="primary" @click="goToMatchingUsers">
             Найти совпадения
           </v-btn>
         </div>
@@ -14,7 +17,7 @@
     <v-row>
       <active-requests
         :disabled="getIsBusy"
-        :filteredActiveRequests="filteredActiveRequests"
+        :localSkillId="localSkillId"
       />
       <past-requests/>
     </v-row>
@@ -36,35 +39,14 @@ export default {
   data() {
     return {
       localSkillId: '',
+      isLoading: true,
     }
   },
 
   computed: {
     ...mapGetters("auth", ["currentUser"]),
-    ...mapGetters("chat", ["getCurrentChat"]),
-    ...mapGetters("chat", ["getIsBusy"]),
-    ...mapGetters("swapRequests", ["getSwapRequests"]),
-
-    filteredActiveRequests() {
-      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
-        return [];
-      }
-
-      const currentActiveSkill = this.currentUser.skillsToLearn.find(
-        (skill) => skill._id === this.localSkillId && skill.isActive
-      );
-
-      const filteredRequests = this.getSwapRequests.filter((request) => {
-        return (
-          (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
-          request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
-          currentActiveSkill &&
-          (request.status === "pending" || request.status === "accepted")
-        );
-      });
-
-      return filteredRequests;
-    },
+    ...mapGetters("chat", ["getCurrentChat", "getIsBusy"]),
+    ...mapGetters("swapRequests", ["getSwapRequests", "getFilteredActiveRequests"]),
 
     weakSkillObject() {
       if (!this.currentUser) {
@@ -88,13 +70,16 @@ export default {
   },
 
   async mounted() {
+    this.isLoading = true;
     try {
-      this.localSkillId = localStorage.getItem("weakSkillId");
+      this.localSkillId = this.$route.query.weakSkillId;
 
       await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
       await this.$store.dispatch("chat/switchPartnerIsBusy");
       } catch (error) {
         console.error('Error creating swap request:', error);
+    } finally {
+      this.isLoading = false;
     }
   }
 };

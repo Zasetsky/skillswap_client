@@ -54,13 +54,14 @@ export default {
         return {};
       }
 
-      const localSkillId = localStorage.getItem("strongSkillId");
+      const localSkillId = this.$route.query.strongSkillId;
       return this.currentUser.skillsToTeach.find(skill => skill._id === localSkillId) || {};
     },
   },
 
   async created() {
     this.isLoading = true;
+    console.log(this.$route.query.strongSkillId);
     try {
       await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
       await this.$store.dispatch("chat/switchPartnerIsBusy");

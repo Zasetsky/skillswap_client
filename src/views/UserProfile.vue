@@ -111,7 +111,7 @@ export default {
   async mounted() {
     try {
       await this.fetchUserProfile(this.localUserId);
-      console.log(this.getUserProfile);
+
       await this.fetchAllSwapRequests();
     }
     catch (error) {

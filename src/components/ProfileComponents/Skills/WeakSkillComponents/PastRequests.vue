@@ -31,7 +31,7 @@ export default {
         return [];
       }
 
-      const localSkillId = localStorage.getItem("weakSkillId");
+      const localSkillId = this.$route.query.weakSkillId;
 
       const filteredRequests = this.getSwapRequests.filter(request => {
         return (

@@ -33,7 +33,7 @@ export default {
         return [];
       }
 
-      const localSkillId = localStorage.getItem("strongSkillId");
+      const localSkillId = this.$route.query.strongSkillId;
 
       return this.getSwapRequests.filter(request => {
         return request.status === "pending" && request.senderData.skillsToLearn.some(skill => skill._id === localSkillId) && request.receiverId === this.currentUser._id;

@@ -33,7 +33,7 @@ export default {
       }
 
       const currentUserId = this.currentUser._id;
-      const localSkillId = localStorage.getItem("strongSkillId");
+      const localSkillId = this.$route.query.strongSkillId;
 
       return this.getSwapRequests.filter(request => {
         let userIsSender = request.senderId === currentUserId;

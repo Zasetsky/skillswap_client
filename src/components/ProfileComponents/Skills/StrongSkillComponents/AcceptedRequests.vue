@@ -37,7 +37,7 @@ export default {
     ...mapGetters("swapRequests", ["getSwapRequests"]),
 
     acceptedRequests() {
-      const localSkillId = localStorage.getItem("strongSkillId");
+      const localSkillId = this.$route.query.strongSkillId;
 
       if (!this.getSwapRequests || this.getSwapRequests.length === 0) {
         return [];

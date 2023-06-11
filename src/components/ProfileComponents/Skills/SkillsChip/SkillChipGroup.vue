@@ -45,14 +45,18 @@ export default {
   },
 
   methods: {
-    handleOnWeakSkillClick(skill) {
-      localStorage.setItem("weakSkillId", skill);
-      this.$router.push({ name: "WeakSkillsPage" });
+    handleOnWeakSkillClick(skillId) {
+      this.$router.push({ 
+        name: "WeakSkillsPage", 
+        query: { weakSkillId: skillId } 
+      });
     },
 
-    handleOnStrongSkillClick(skill) {
-      localStorage.setItem("strongSkillId", skill);
-      this.$router.push({ name: "StrongSkillsPage" });
+    handleOnStrongSkillClick(skillId) {
+      this.$router.push({ 
+        name: "StrongSkillsPage", 
+        query: { strongSkillId: skillId } 
+      });
     }
   },
 }
