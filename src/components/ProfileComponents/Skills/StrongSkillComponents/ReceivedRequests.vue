@@ -5,8 +5,6 @@
       v-for="receivedRequest in filteredReceivedRequests"
       :key="receivedRequest._id"
       :request="receivedRequest"
-      @accept-swap-request="emitAcceptSwapRequest"
-      @reject-swap-request="emitRejectSwapRequest"
     />
     <v-card v-if="filteredReceivedRequests.length === 0">
       <v-card-text>
@@ -40,16 +38,6 @@ export default {
       return this.getSwapRequests.filter(request => {
         return request.status === "pending" && request.senderData.skillsToLearn.some(skill => skill._id === localSkillId) && request.receiverId === this.currentUser._id;
       });
-    },
-  },
-
-  methods: {
-    emitAcceptSwapRequest() {
-      this.$emit('accept-request');
-    },
-
-    emitRejectSwapRequest() {
-      this.$emit('reject-request');
     },
   },
 };

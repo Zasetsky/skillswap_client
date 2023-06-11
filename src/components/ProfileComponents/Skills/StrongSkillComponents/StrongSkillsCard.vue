@@ -59,8 +59,11 @@
 
 <script>
 import { mapGetters } from "vuex";
+import chatMixin from '@/mixins/chatMixin.js';
 
 export default {
+  mixins: [chatMixin],
+
   props: {
     request: {
       type: Object,
@@ -133,7 +136,7 @@ export default {
         status = this.request.status;
       }
       
-      this.$emit('open-chat', receiverId, senderId, requestId, chatId, status);
+      this.openOrCreateChat(receiverId, senderId, requestId, chatId, status);
     },
 
     async acceptSwapRequest() {

@@ -6,7 +6,6 @@
       v-for="pastRequest in pastRequests"
       :key="pastRequest._id"
       :request="pastRequest"
-      @open-chat="emitOpenChat"
     />
     <v-card v-if="pastRequests.length === 0">
       <v-card-text>Здесь будет информация о прошлых запросах этого навыка</v-card-text>
@@ -57,12 +56,6 @@ export default {
         );
       });
     },
-  },
-
-  methods: {
-    emitOpenChat(receiverId, senderId, requestId, chatId, status) {
-      this.$emit('open-chat', receiverId, senderId, requestId, chatId, status);
-    }
   },
 };
 </script>

@@ -12,21 +12,12 @@
       <v-col cols="12" sm="6">
         <accepted-requests
           :disabled="getIsBusy"
-          @open-chat="openChat"
-        >
-        </accepted-requests>
+        />
 
-        <received-requests
-          @accept-request="emitAcceptSwapRequest"
-          @reject-request="emitRejectSwapRequest"
-        >
-        </received-requests>
+        <received-requests />
       </v-col>
       <v-col cols="12" sm="6">
-        <past-requests
-          @open-chat="openChat"
-        >
-        </past-requests>
+        <past-requests />
       </v-col>
     </v-row>
   </v-container>
@@ -78,66 +69,6 @@ export default {
     } finally {
       this.isLoading = false;
     }
-  },
-
-  methods: {
-    emitAcceptSwapRequest() {
-      this.$emit('accept-request');
-    },
-
-    emitRejectSwapRequest() {
-      this.$emit('reject-request');
-    },
-
-    async createChat(receiverId, senderId, requestId) {
-      try {
-        await this.$store.dispatch("chat/createChat", {
-          receiverId,
-          senderId,
-          requestId,
-        });
-      } catch (error) {
-        console.error("Error creating chat:", error);
-      }
-    },
-
-    async createDeal(receiverId, senderId, requestId, chatId) {
-      try {
-        await this.$store.dispatch("deal/createDeal", {
-          participants: [receiverId, senderId],
-          chatId,
-          requestId,
-        });
-      } catch (error) {
-        console.error("Error creating deal:", error);
-      }
-    },
-
-    async openChat(receiverId, senderId, requestId, chatId, status) {
-      if (status === 'rejected' || status === 'pending') {
-        return;
-      }
-
-      if (this.getIsBusy && !chatId) {
-        console.log('Is BUSY!!!');
-        return;
-      }
-
-      let localChatId;
-
-      if (!chatId) {
-        await this.createChat(receiverId, senderId, requestId);
-        localChatId = this.getCurrentChat._id;
-
-        await this.createDeal(receiverId, senderId, requestId, localChatId);
-      } else {
-        await this.$store.dispatch("chat/fetchCurrentChat", chatId);
-        localChatId = chatId;
-      }
-
-      localStorage.setItem("chatId", localChatId);
-      this.$router.push(`/${localChatId}`);
-    },
   },
 };
 </script>

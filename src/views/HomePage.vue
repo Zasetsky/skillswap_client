@@ -72,9 +72,9 @@ export default {
     },
   
     bio() {
-        if (!this.currentUser || !this.currentUser.bio)
-            return "";
-        return this.currentUser.bio;
+      if (!this.currentUser || !this.currentUser.bio)
+          return "";
+      return this.currentUser.bio;
     }
   },
 };

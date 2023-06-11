@@ -6,7 +6,6 @@
       :key="acceptedRequest._id"
       :class="{ 'disabled-component': disabled }"
       :request="acceptedRequest"
-      @open-chat="emitOpenChat"
     >
     </strong-skills-card>
     <v-card v-if="acceptedRequests.length === 0">
@@ -51,12 +50,6 @@ export default {
         );
       });
     },
-  },
-
-  methods: {
-    emitOpenChat(receiverId, senderId, requestId, chatId, status) {
-      this.$emit('open-chat', receiverId, senderId, requestId, chatId, status);
-    }
   },
 };
 </script>

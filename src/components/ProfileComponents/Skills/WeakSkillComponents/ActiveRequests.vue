@@ -6,8 +6,6 @@
       :key="request._id"
       :class="{ 'disabled-component': disabled }"
       :request="request"
-      @open-chat="emitOpenChat"
-      @cancel-request="emitCancelSwapRequest"
     />
 
     <v-card v-if="filteredActiveRequests.length === 0">
@@ -36,16 +34,6 @@ export default {
       required: true,
     },
   },
-
-  methods: {
-    emitOpenChat(receiverId, senderId, requestId, chatId, status) {
-      this.$emit('open-chat', receiverId, senderId, requestId, chatId, status);
-    },
-
-    emitCancelSwapRequest() {
-      this.$emit('cancel-request');
-    },
-  }
 }
 </script>
 <style scoped>

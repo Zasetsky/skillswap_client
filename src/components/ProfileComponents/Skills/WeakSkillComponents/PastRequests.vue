@@ -5,7 +5,6 @@
       v-for="pastRequest in filteredPastRequests"
       :key="pastRequest._id"
       :request="pastRequest"
-      @open-chat="emitOpenChat"
     />
     <v-card v-if="filteredPastRequests.length === 0">
       <v-card-text>Здесь будет информация об активной сделке</v-card-text>
@@ -45,14 +44,5 @@ export default {
       return filteredRequests;
     },
   },
-
-  methods: {
-    emitOpenChat(receiverId, senderId, requestId, chatId, status) {
-      this.$emit('open-chat', receiverId, senderId, requestId, chatId, status);
-    }
-  },
-  mounted() {
-    console.log(this.filteredPastRequests);
-  }
 }
 </script>
