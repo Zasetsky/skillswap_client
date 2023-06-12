@@ -1,19 +1,19 @@
 <template>
-  <v-col cols="12" sm="6">
+  <div>
     <h3>Активный запрос</h3>
     <weak-skills-card
-      v-for="request in filteredActiveRequests"
+      v-for="request in filteredSwapRequests"
       :key="request._id"
-      :class="{ 'disabled-component': disabled }"
+      :class="{ 'disabled-component': getIsBusy }"
       :request="request"
     />
 
-    <v-card v-if="filteredActiveRequests.length === 0">
+    <v-card v-if="filteredSwapRequests.length === 0">
       <v-card-text>
-        Здесь будет информация об активных запросов этого навыка
+        Здесь будет информация об активных сделках этого навыка
       </v-card-text>
     </v-card>
-  </v-col>
+  </div>
 </template>
 
 <script>
@@ -26,21 +26,19 @@ export default {
     WeakSkillsCard,
   },
 
-  props: {
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-
-    filteredActiveRequests: {
-      type: Array,
-      required: true
-    }
+  computed: {
+    ...mapGetters('swapRequests', ['filteredSwapRequests']),
+    ...mapGetters("chat", [ "getIsBusy"]),
   },
 
-  computed: {
-    ...mapGetters("swapRequests", ["getFilteredActiveRequests"]),
-  }
+  watch: {
+    '$route.query.weakSkillId': {
+      immediate: true,
+      handler(newVal) {
+        this.$store.commit('swapRequests/setFilterSkillId', newVal);
+      },
+    },
+  },
 }
 </script>
 <style scoped>

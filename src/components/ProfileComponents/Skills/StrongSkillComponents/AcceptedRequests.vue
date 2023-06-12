@@ -2,15 +2,15 @@
   <div>
     <h3>Принятые запросы и начатые сделки</h3>
     <strong-skills-card
-      v-for="acceptedRequest in acceptedRequests"
+      v-for="acceptedRequest in filteredSwapRequests"
       :key="acceptedRequest._id"
-      :class="{ 'disabled-component': disabled }"
+      :class="{ 'disabled-component': getIsBusy }"
       :request="acceptedRequest"
-    >
-    </strong-skills-card>
-    <v-card v-if="acceptedRequests.length === 0">
+    />
+
+    <v-card v-if="filteredSwapRequests.length === 0">
       <v-card-text>
-        Здесь будет информация об принятых запросах и активных сделках этого навыка
+        Здесь будет информация об активных сделках этого навыка
       </v-card-text>
     </v-card>
   </div>
@@ -26,29 +26,17 @@ export default {
     StrongSkillsCard
   },
 
-  props: {
-    disabled: {
-      type: Boolean,
-      default: false
-    }
+  computed: {
+    ...mapGetters('swapRequests', ['filteredSwapRequests']),
+    ...mapGetters("chat", ["getIsBusy"]),
   },
 
-  computed: {
-    ...mapGetters("swapRequests", ["getSwapRequests"]),
-
-    acceptedRequests() {
-      const localSkillId = this.$route.query.strongSkillId;
-
-      if (!this.getSwapRequests || this.getSwapRequests.length === 0) {
-        return [];
-      }
-      return this.getSwapRequests.filter(request => {
-        return (
-          (request.senderData.skillsToLearn.some(skill => skill._id === localSkillId) ||
-          request.senderData.skillsToTeach.some(skill => skill._id === localSkillId)) &&
-          (request.status === "accepted" || request.status === "active")
-        );
-      });
+  watch: {
+    '$route.query.strongSkillId': {
+      immediate: true,
+      handler(newVal) {
+        this.$store.commit('swapRequests/setFilterSkillId', newVal);
+      },
     },
   },
 };

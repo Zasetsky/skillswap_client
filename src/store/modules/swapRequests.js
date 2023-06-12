@@ -3,11 +3,26 @@ import { getSocket } from "../../soket";
 const state = {
   swapRequests: [],
   currentSwapRequest: null,
+  filterSkillId: null,
 };
 
 const getters = {
   getSwapRequests: (state) => {
     return state.swapRequests;
+  },
+
+  filteredSwapRequests: (state) => {
+    if (!state.swapRequests || state.swapRequests.length === 0 || !state.filterSkillId) {
+      return [];
+    }
+
+    return state.swapRequests.filter((request) => {
+      return (
+        (request.receiverData.skillsToLearn.some((skill) => skill._id === state.filterSkillId) ||
+        request.receiverData.skillsToTeach.some((skill) => skill._id === state.filterSkillId)) &&
+        (request.status === "accepted")
+      );
+    });
   },
 
   getCurrentSwapRequest: (state) => {
@@ -27,15 +42,15 @@ const actions = {
     }
   },
 
-  listenForSwapRequestSent(context) {
+  listenForSwapRequestSent({ commit }) {
     try {
-        const socket = getSocket();
-  
-        socket.on("swapRequestSent", (newSwapRequest) => {
-            context.commit("addSwapRequest", newSwapRequest);
-        });
+      const socket = getSocket();
+
+      socket.on("swapRequestSent", (newSwapRequest) => {
+        commit("addSwapRequest", newSwapRequest);
+      });
     } catch (error) {
-        console.error("Error listening for swap requests:", error);
+      console.error("Error listening for swap requests:", error);
     }
   },
 
@@ -50,13 +65,15 @@ const actions = {
     }
   },
 
-  listenForSwapRequestAccepted(context) {
+  listenForSwapRequestAccepted({ dispatch }) {
     try {
         const socket = getSocket();
 
         socket.on("swapRequestAccepted", (data) => {
           console.log(data.message);
-          context.dispatch("fetchAllSwapRequests");
+          dispatch("fetchAllSwapRequests");
+
+          dispatch("user/fetchCurrentUser", null, { root: true });
         });
     } catch (error) {
         console.error("Error listening for swap requests:", error);
@@ -160,12 +177,16 @@ const mutations = {
     state.swapRequests = swapRequests;
   },
 
+  setFilterSkillId(state, id) {
+    state.filterSkillId = id;
+  },
+
   setCurrentSwapRequest(state, swapRequest) {
     state.currentSwapRequest = swapRequest;
   },
 
   addSwapRequest(state, newSwapRequest) {
-    state.swapRequests.unshift(newSwapRequest);
+    state.swapRequests = [newSwapRequest, ...state.swapRequests];
   },
 
   updateSwapRequest(state, updatedSwapRequest) {

@@ -1,15 +1,16 @@
 <template>
-  <v-col cols="12" sm="6">
+  <div>
     <h3>История запросов и выполненных сделок</h3>
     <weak-skills-card
       v-for="pastRequest in filteredPastRequests"
       :key="pastRequest._id"
       :request="pastRequest"
     />
+
     <v-card v-if="filteredPastRequests.length === 0">
       <v-card-text>Здесь будет информация об активной сделке</v-card-text>
     </v-card>
-  </v-col>
+  </div>
 </template>
 
 <script>

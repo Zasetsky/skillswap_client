@@ -2,99 +2,72 @@
   <v-container v-if="isLoading">
     Загрузка...
   </v-container>
+
   <v-container v-else>
     <v-row>
       <v-col cols="12">
         <div class="header-container">
           <h2>{{ (weakSkillObject.skill ?? '') || (weakSkillObject.category ?? '') || (weakSkillObject.subCategory ?? '') }}</h2>
-
-          <v-btn v-if="filteredActiveRequests.length === 0" color="primary" @click="goToMatchingUsers">
-            Найти совпадения
-          </v-btn>
+          <matching-button/>
         </div>
       </v-col>
     </v-row>
+
     <v-row>
-      <active-requests
-        :disabled="getIsBusy"
-        :filteredActiveRequests="filteredActiveRequests"
-      />
-      <past-requests/>
+      <v-col cols="12" sm="6">
+        <active-requests/>
+
+        <sent-request/>
+      </v-col>
+
+      <v-col cols="12" sm="6">
+        <past-requests/>
+      </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
 import ActiveRequests from "./WeakSkillComponents/ActiveRequests.vue";
+import SentRequest from "./WeakSkillComponents/SentRequest.vue";
+import MatchingButton from "./WeakSkillComponents/MatchingButton.vue";
 import PastRequests from "./WeakSkillComponents/PastRequests.vue";
 
 import { mapGetters } from "vuex";
 
+
 export default {
   components: {
-      ActiveRequests,
-      PastRequests
-  },
+    ActiveRequests,
+    PastRequests,
+    MatchingButton,
+    SentRequest
+},
 
   data() {
     return {
-      localSkillId: '',
       isLoading: true,
     }
   },
 
   computed: {
     ...mapGetters("auth", ["currentUser"]),
-    ...mapGetters("chat", ["getCurrentChat", "getIsBusy"]),
-    ...mapGetters("swapRequests", ["getSwapRequests"]),
 
     weakSkillObject() {
       if (!this.currentUser) {
         return {};
       }
 
-      const skillId = this.localSkillId;
+      const skillId = this.$route.query.weakSkillId
       const weakSkill = this.currentUser.skillsToLearn.find(skill => skill._id === skillId) || {};
 
       return weakSkill;
     },
-
-    filteredActiveRequests() {
-      if (!this.currentUser || !this.getSwapRequests || this.getSwapRequests.length === 0) {
-        return [];
-      }
-
-      const currentActiveSkill = this.currentUser.skillsToLearn.find(
-        (skill) => skill._id === this.localSkillId && skill.isActive
-      );
-
-      const filteredRequests = this.getSwapRequests.filter((request) => {
-        return (
-          (request.receiverData.skillsToLearn.some((skill) => skill._id === this.localSkillId) ||
-          request.receiverData.skillsToTeach.some((skill) => skill._id === this.localSkillId)) &&
-          currentActiveSkill &&
-          (request.status === "pending" || request.status === "accepted")
-        );
-      });
-
-      return filteredRequests;
-    },
   },
 
-  methods: {
-    goToMatchingUsers() {
-      this.$router.push({
-        name: "MatchingUsers",
-        query: { skillToLearnId: this.localSkillId },
-      });
-    },
-  },
-
-  async mounted() {
+  async created() {
     this.isLoading = true;
     try {
-      this.localSkillId = this.$route.query.weakSkillId;
-
       await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
       await this.$store.dispatch("chat/switchPartnerIsBusy");
       } catch (error) {
@@ -102,7 +75,7 @@ export default {
     } finally {
       this.isLoading = false;
     }
-  }
+  },
 };
 </script>
 <style scoped>

@@ -7,6 +7,7 @@
       :key="pastRequest._id"
       :request="pastRequest"
     />
+
     <v-card v-if="pastRequests.length === 0">
       <v-card-text>Здесь будет информация о прошлых запросах этого навыка</v-card-text>
     </v-card>

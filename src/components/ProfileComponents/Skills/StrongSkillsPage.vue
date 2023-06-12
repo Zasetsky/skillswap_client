@@ -2,20 +2,21 @@
   <v-container v-if="isLoading">
     Загрузка...
   </v-container>
+
   <v-container v-else>
     <v-row>
       <v-col cols="12">
         <h2>{{ strongSkillObject.skill || strongSkillObject.category || strongSkillObject.subCategory }}</h2>
       </v-col>
     </v-row>
+
     <v-row>
       <v-col cols="12" sm="6">
-        <accepted-requests
-          :disabled="getIsBusy"
-        />
+        <accepted-requests/>
 
         <received-requests />
       </v-col>
+
       <v-col cols="12" sm="6">
         <past-requests />
       </v-col>
@@ -45,9 +46,6 @@ export default {
   
   computed: {
     ...mapGetters("auth", ["currentUser"]),
-    ...mapGetters("chat", ["getIsBusy"]),
-    ...mapGetters("chat", ["getCurrentChat"]),
-    ...mapGetters("swapRequests", ["getSwapRequests"]),
 
     strongSkillObject() {
       if (!this.currentUser) {
