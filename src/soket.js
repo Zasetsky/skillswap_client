@@ -22,6 +22,7 @@ export function connectSocket(token) {
     // Chat
     store.dispatch("chat/listenForNewChat");
     store.dispatch("chat/listenForNewMessage");
+    store.dispatch("deal/listenIsSending");
 
     // Deal
     store.dispatch("deal/listenForDealObserver");

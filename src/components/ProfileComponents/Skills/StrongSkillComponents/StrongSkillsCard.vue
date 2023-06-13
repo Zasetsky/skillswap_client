@@ -1,8 +1,8 @@
 <template>
   <v-card
     :key="request._id"
-    class="mb-4 skill_card"
-    :class="{skill_card_pending: request.status === 'pending' || request.status === 'rejected'}"
+    class="mb-4"
+    :class="request.status === 'pending' || request.status === 'rejected' ? 'skill_card_pending' : 'skill_card'"
     @click="handleClick"
   >
     <v-card-text>
@@ -23,36 +23,7 @@
       <template v-if="isPast">
         <strong>Статус:</strong> {{ request.status }}
       </template>
-
-      <div v-if="request.status === 'pending'">
-        <v-select
-          v-model="selectedSkill"
-          :items="request.senderData.skillsToTeach"
-          label="Выберите навык для обучения"
-          class="actions mt-4"
-          item-text="skill"
-          item-value="item"
-          return-object
-        />
-
-        <v-btn 
-          class="actions mt-4"
-          color="primary"
-          :disabled="!selectedSkill?.skill"
-          :style="!selectedSkill?.skill ? 'pointer-events: none' : ''"
-          @click.stop="acceptSwapRequest"
-        >
-          Принять запрос
-        </v-btn>
-        <v-btn
-          class="actions  mt-4 ml-2"
-          color="error"
-          @click.stop="rejectSwapRequest"
-        >
-          Отклонить запрос
-        </v-btn>
-      </div>
-
+      <slot name="actions"></slot>
     </v-card-text>
   </v-card>
 </template>
@@ -69,12 +40,6 @@ export default {
       type: Object,
       default: () => ({}),
     },
-  },
-
-  data() {
-    return {
-      selectedSkill: null,
-    }
   },
 
   computed: {
@@ -135,30 +100,8 @@ export default {
         chatId = this.request.chatId;
         status = this.request.status;
       }
-      
+
       this.openOrCreateChat(receiverId, senderId, requestId, chatId, status);
-    },
-
-    async acceptSwapRequest() {
-      const swapRequestId = this.request._id;
-      const chosenSkill = this.selectedSkill;
-      try {
-        await this.$store.dispatch('swapRequests/acceptSwapRequest', {
-          swapRequestId,
-          chosenSkill,
-        });
-      } catch (error) {
-        console.error('Error accepting swap request:', error);
-      }
-    },
-
-    async rejectSwapRequest() {
-      const swapRequestId = this.request._id;
-      try {
-        await this.$store.dispatch('swapRequests/rejectSwapRequest', swapRequestId);
-      } catch (error) {
-        console.error('Error rejecting swap request:', error);
-      }
     },
   },
 
@@ -181,16 +124,12 @@ export default {
   transition: all 0.3s ease;
 }
 
-.skill_card_pending {
-  pointer-events: none;
-}
-.actions {
-  pointer-events: auto;
-}
-
 .skill_card:hover {
   /* transform: scale(1.005); */
   background-color: rgba(0, 0, 0, 0.05);;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.skill_card_pending {
+  pointer-events: none;
 }
 </style>

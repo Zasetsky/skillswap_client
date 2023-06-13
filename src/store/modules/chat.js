@@ -37,7 +37,6 @@ const actions = {
       });
 
       socket.once("chat", (newChat) => {
-        commit("SET_CURRENT_CHAT", newChat);
         resolve(newChat);
       });
 

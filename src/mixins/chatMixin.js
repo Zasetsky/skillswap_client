@@ -2,11 +2,12 @@ export default {
   methods: {
     async createChat(receiverId, senderId, requestId) {
       try {
-        await this.$store.dispatch("chat/createChat", {
+        const newChat = await this.$store.dispatch("chat/createChat", {
           receiverId,
           senderId,
           requestId,
         });
+        return newChat;
       } catch (error) {
         console.error("Error creating chat:", error);
       }
@@ -28,24 +29,27 @@ export default {
       if (status === 'rejected' || status === 'pending') {
         return;
       }
-
-      if (this.getIsBusy && !chatId) {
+  
+      let store = this.$store;
+      let isBusy = store.getters["chat/getIsBusy"];
+  
+      if (isBusy && !chatId) {
         console.log('Is BUSY!!!');
         return;
       }
-
+  
       let localChatId;
-
       if (!chatId) {
-        await this.createChat(receiverId, senderId, requestId);
-        localChatId = this.getCurrentChat._id;
-
+        let newChat = await this.createChat(receiverId, senderId, requestId);
+        localChatId = newChat._id;
+  
         await this.createDeal(receiverId, senderId, requestId, localChatId);
       } else {
         await this.$store.dispatch("chat/fetchCurrentChat", chatId);
         localChatId = chatId;
       }
-
+      
+  
       this.$router.push({
         name: 'Chat',
         query: { chatId: localChatId },

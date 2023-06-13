@@ -1,6 +1,8 @@
 <template>
-  <div>
-    <v-container>
+  <v-container v-if="isLoading">
+    Идёт загрузка...
+  </v-container>
+    <v-container v-else>
       <v-row>
         <v-col
           cols="12"
@@ -22,7 +24,6 @@
         </v-col>
       </v-row>
     </v-container>
-  </div>
 </template>
 
 <script>
@@ -68,7 +69,7 @@ export default {
   },
 
   methods: {
-    ...mapActions('chat', ['fetchAllChats', 'fetchCurrentChat']),
+    ...mapActions('chat', ['fetchAllChats']),
     ...mapActions('swapRequests', ['fetchAllSwapRequests']),
     ...mapActions('user', ['fetchUserProfile']),
 
@@ -144,8 +145,6 @@ export default {
 
     async openChat(chatId) {
       try {
-        await this.fetchCurrentChat(chatId);
-
         this.$router.push({
           name: 'Chat',
           query: { chatId },
