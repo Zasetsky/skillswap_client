@@ -6,6 +6,14 @@
       :key="receivedRequest._id"
       :request="receivedRequest"
     >
+    <template v-slot:rating>
+      <strong>{{ skillsLabel(receivedRequest) }}</strong>
+      <span v-for="(skillToTeach, index) in receivedRequest.senderData.skillsToTeach" :key="skillToTeach._id">
+        {{ skillToTeach.skill + " " + skillToTeach.rating}}
+        <span v-if="index < receivedRequest.senderData.skillsToTeach.length - 1">, </span>
+      </span><br>
+    </template>
+
     <template v-slot:actions>
         <v-select
           v-model="selectedSkill"
@@ -27,7 +35,7 @@
           Принять запрос
         </v-btn>
         <v-btn
-          class="actions  mt-4 ml-2"
+          class="actions  mt-4"
           color="error"
           @click.stop="rejectSwapRequest(receivedRequest._id)"
         >
@@ -103,6 +111,14 @@ export default {
         await this.$store.dispatch('swapRequests/rejectSwapRequest', swapRequestId);
       } catch (error) {
         console.error('Error rejecting swap request:', error);
+      }
+    },
+
+    skillsLabel(request) {
+      if (request.senderData.skillsToTeach.length > 1) {
+        return "Выберите навыки, которые будут вам преподавать:";
+      } else {
+        return "Выберите навык, который будут вам преподавать:";
       }
     },
   }

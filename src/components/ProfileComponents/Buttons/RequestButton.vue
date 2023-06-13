@@ -29,11 +29,12 @@ export default {
     myStrongSkillsForUser() {
       const mySkills = this.currentUser.skillsToTeach;
       const userSkills = this.getUserProfile.skillsToLearn || [];
-      const skillsForUser = userSkills.filter(userSkill => {
-        return mySkills.some(mySkill => {
+      const skillsForUser = mySkills.filter(mySkill => {
+        return userSkills.some(userSkill => {
           return mySkill._id === userSkill._id;
         });
       });
+
       return skillsForUser;
     },
 

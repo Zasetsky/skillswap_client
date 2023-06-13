@@ -95,7 +95,6 @@ export default {
     ...mapGetters('deal', ['getCurrentDeal']),
     ...mapGetters('auth', ['currentUser']),
     ...mapGetters('swapRequests', ['getCurrentSwapRequest']),
-    ...mapGetters('review', ['getCurrentDealReviews']),
 
     receiver() {
       const deal = this.getCurrentDeal;

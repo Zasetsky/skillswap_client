@@ -31,7 +31,7 @@ const actions = {
 
       socket.emit("createChat", { receiverId, senderId, requestId });
 
-      socket.on("notCreatingChat", () => {
+      socket.on("notCreatedChat", () => {
         commit("SET_IS_BUSY", true);
         socket.emit("toggleIsBusy", requestId);
       });

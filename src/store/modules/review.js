@@ -6,26 +6,29 @@ const API_URL = 'http://localhost:3000/api/reviews'
 const state = {
     reviews: {},
     dealReviews: [],
+    reviewsArray: [],
     ratingFilter: 0,
     selectedSkill: null,
 }
 
 const getters = {
-    getFilteredReviews: (state) => (userId) => {
-      let reviews = state.reviews[userId] || [];
-      
-      if (state.selectedSkill) {
-        reviews = reviews.filter(review => review.skill.skill === state.selectedSkill);
-      }
-      
-      if (state.ratingFilter > 0) {
-        reviews = reviews.filter(review => review.skillRating === state.ratingFilter);
-      }
-  
-      return reviews;
-    },
+  getFilteredReviews: (state) => (userId) => {
+    let reviews = state.reviews[userId] || [];
+    
+    if (state.selectedSkill) {
+      reviews = reviews.filter(review => review.skill.skill === state.selectedSkill);
+    }
+    
+    if (state.ratingFilter > 0) {
+      reviews = reviews.filter(review => review.skillRating === state.ratingFilter);
+    }
 
-    getCurrentDealReviews: (state) => state.dealReviews
+    return reviews;
+  },
+
+  getCurrentDealReviews: (state) => state.dealReviews,
+
+  getAllReviews: (state) => state.reviewsArray
 }
 
 const actions = {
@@ -73,6 +76,18 @@ const actions = {
         console.error(error.response.data.error);
     }
   },
+
+  async fetchAllUserReviews({ commit }) {
+    try {
+      const response = await axios.get(`${API_URL}/user/all`);
+      const reviews = response.data.reviews;
+
+      commit('SET_ALL_USER_REVIEWS', reviews);
+
+  } catch (error) {
+      console.error(error.response.data.error);
+  }
+  }
 }
 
 const mutations = {
@@ -100,6 +115,10 @@ const mutations = {
 
   SET_SELECTED_SKILL(state, skill) {
     state.selectedSkill = skill;
+  },
+
+  SET_ALL_USER_REVIEWS(state, reviews) {
+    state.reviewsArray = reviews;
   },
 
   SET_USER_REVIEWS(state, { userId, reviews }) {

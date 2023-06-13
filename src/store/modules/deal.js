@@ -47,7 +47,7 @@ const actions = {
 
       socket.emit("getCurrentDeal", chatId);
   
-      socket.on("currentDeal", (deal) => {
+      socket.once("currentDeal", (deal) => {
         commit("SET_CURRENT_DEAL", deal);
         resolve(deal);
       });
@@ -153,21 +153,18 @@ const actions = {
   },
 
 
-  getAllDeals({ commit }) {
-      return new Promise((resolve, reject) => {
-      try {
-        const socket = getSocket();
+  fetchAllDeals({ commit }) {
+    const socket = getSocket();
 
-        socket.emit("getAllDeals");
-        socket.on("allDeals", (deals) => {
-          commit("SET_DEALS", deals);
-          resolve(deals);
-        });
-      } catch (error) {
-          console.error("Error fetching all deals:", error);
-          reject(error);
-      }
-      });
+    socket.emit("getAllDeals");
+
+    socket.on("allDeals", (deals) => {
+      commit("SET_DEALS", deals);
+    });
+
+    socket.on("error", (error) => {
+      console.error("Error geting all deals:", error.message);
+    });
   },
 
   confirmDeal(context, dealId) {

@@ -11,17 +11,39 @@
       </v-avatar>
 
       <strong>Имя:</strong> {{ getName }}<br>
-      <strong>Описание:</strong> {{ getDescription }}<br>
 
-      <template v-if="request.senderData && request.senderData.skillsToLearn">
-        <strong>Навыки для обмена:</strong>
-          <span v-for="(skillToTeach, index) in request.senderData.skillsToTeach" :key="index">
-            {{ skillToTeach.skill }}<span v-if="index < request.senderData.skillsToTeach.length - 1">, </span>
-          </span><br>
+      <slot name="rating"></slot>
+
+      <template v-if="request.status !== 'pending'">
+        <strong>{{ skillsLabel }}</strong>
+        <span v-for="(skillToTeach, index) in skillsToDisplay" :key="index">
+          {{ skillToTeach.skill }}
+          <span v-if="index < request.senderData.skillsToTeach.length - 1">, </span>
+        </span><br>
+      </template>
+
+      <template v-if="isDealStatusAllowed">
+        <strong>Длительность занятия:</strong> {{ deal.form.meetingDuration }} мин<br>
+      </template>
+
+      <template v-if="isDealStatusAllowed">
+        <span :class="{'completed': deal.form.isCompleted}">
+          <strong>Встреча по навыку {{ request.senderData.skillsToLearn[0].skill }}:</strong> {{ deal.form.meetingDate }} в {{ deal.form.meetingTime }}<br>
+        </span>
+
+        <span :class="{'completed': deal.form2.isCompleted}">
+          <strong>Встреча по навыку {{ request.senderData.skillsToTeach[0].skill }}:</strong> {{ deal.form2.meetingDate }} в {{ deal.form2.meetingTime }}<br>
+        </span>
+      </template>
+
+      <slot name="review"></slot>
+
+      <template v-if="request.dealId">
+        <strong>Статус сделки:</strong> {{ deal.status }}<br>
       </template>
 
       <template v-if="isPast">
-        <strong>Статус:</strong> {{ request.status }}
+        <strong>Статус запроса:</strong> {{ request.status }}
       </template>
       <slot name="actions"></slot>
     </v-card-text>
@@ -40,10 +62,40 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    deal: {
+      type: Object,
+      default: () => ({}),
+    },
   },
 
   computed: {
     ...mapGetters("auth", ["currentUser"]),
+
+    skillsToDisplay() {
+      // Если текущий пользователь - отправитель
+      if (this.currentUser._id === this.request.senderId) {
+        return this.request.senderData.skillsToLearn;
+      } 
+      // Иначе, текущий пользователь - получатель
+      else {
+        return this.request.senderData.skillsToTeach;
+      }
+    },
+
+    isDealStatusAllowed() {
+      if (!this.deal) {
+        return false;
+      }
+      return [
+        "confirmed",
+        "reschedule_offer",
+        "reschedule_offer_update",
+        "confirmed_reschedule",
+        "half_completed",
+        "half_completed_confirmed_reschedule",
+        "completed"
+      ].includes(this.deal.status);
+    },
 
     isPast() {
       const validStauses = ["completed", "rejected", "cancelled"].includes(this.request.status);
@@ -79,6 +131,20 @@ export default {
     getDescription() {
       return this.getUserData?.bio || '';
     },
+
+    skillsLabel() {
+      if (this.request.senderData.skillsToTeach.length > 1) {
+        return "Навыки, от которых вы отказались:";
+      } else if (this.request.status === "rejected" && this.request.senderData.skillsToTeach.length < 2) {
+        return "Навык, от которого вы отказались:";
+      } else if (this.request.status === "cancelled") {
+        return "Навык, где случилась отмена:";
+      } else if (this.request.status === "completed") {
+        return "Навык который вам преподавали:";
+      } else {
+        return "Навык который вам преподают:";
+      }
+    },
   },
 
   methods: {
@@ -106,16 +172,16 @@ export default {
   },
 
   watch: {
-  'request._id': {
-    immediate: true,
-    deep: true,
-    handler(newValue, oldValue) {
-      if (oldValue && newValue !== oldValue) {
-        this.selectedSkill = null;
-      }
+    'request._id': {
+      immediate: true,
+      deep: true,
+      handler(newValue, oldValue) {
+        if (oldValue && newValue !== oldValue) {
+          this.selectedSkill = null;
+        }
+      },
     },
   },
-},
 };
 </script>
 <style scoped>
@@ -131,5 +197,9 @@ export default {
 }
 .skill_card_pending {
   pointer-events: none;
+}
+
+.completed {
+  text-decoration: line-through;
 }
 </style>

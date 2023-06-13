@@ -14,11 +14,11 @@
       <strong>Описание:</strong> {{ getDescription }}<br>
 
       <template v-if="request.receiverData && request.status !== 'rejected'">
-        <strong>Навык для обмена:</strong> {{ request.status === 'pending' ? '???' : (request.receiverData.skillsToTeach[0]?.skill ?? '') }}<br>
+        <strong>Навык, который вы преподаёте:</strong> {{ request.status === 'pending' ? '???' : (request.receiverData.skillsToTeach[0]?.skill ?? '') }}<br>
       </template>
 
       <template v-if="isPast">
-        <strong>Статус:</strong> {{ request.status }}
+        <strong>Статус запроса:</strong> {{ request.status }}
       </template>
       
       <v-btn

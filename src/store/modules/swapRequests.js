@@ -122,6 +122,11 @@ const actions = {
           console.log(data.message);
           context.dispatch("fetchAllSwapRequests");
         });
+
+        socket.on("pendingSwapRequestsDeleted", (data) => {
+          console.log(data.message);
+          context.dispatch("fetchAllSwapRequests");
+        });
     } catch (error) {
         console.error("Error listening for swap requests:", error);
     }
