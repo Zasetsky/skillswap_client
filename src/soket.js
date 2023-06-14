@@ -40,6 +40,9 @@ export function connectSocket(token) {
     store.dispatch("swapRequests/listenForSwapRequestDeleted");
     store.dispatch("swapRequests/listenForSwapRequestRejected");
     store.dispatch("swapRequests/listenForSwapRequestUpdates");
+
+    // review
+    store.dispatch("review/listenCreateReview");
   });
 
   socket.on('connect_error', (error) => {

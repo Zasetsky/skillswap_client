@@ -33,7 +33,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("review", ["fetchUserReviews", "listenCreateReview"]),
+    ...mapActions("review", ["fetchUserReviews"]),
     ...mapMutations('review', ['SET_RATING_FILTER']),
 
     handleRatingClick() {
@@ -65,7 +65,6 @@ export default {
     try {
       await this.fetchUserReviews(this.currentUserId);
 
-      await this.listenCreateReview();
     } catch (error) {
       console.log(error);
     }

@@ -22,7 +22,6 @@ import StrongSkillsCard from "./StrongSkillsCard.vue";
 
 import { mapGetters } from "vuex";
 import skillMixins from "@/mixins/skillMixins";
-import { getSocket } from "@/soket";
 
 export default {
   mixins: [skillMixins],
@@ -35,17 +34,6 @@ export default {
     ...mapGetters('swapRequests', ['filteredSwapRequests']),
     ...mapGetters('chat', ['getIsBusy']),
     ...mapGetters('deal', ['getAllDeals'])
-  },
-
-  async created() {
-    await this.$store.dispatch("deal/fetchAllDeals");
-  },
-
-  beforeDestroy() {
-    const socket = getSocket();
-
-    socket.off("allDeals");
-    socket.off("error");
   },
 
   watch: {

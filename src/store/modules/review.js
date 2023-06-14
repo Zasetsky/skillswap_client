@@ -42,11 +42,12 @@ const actions = {
     });
   },
 
-  listenCreateReview({ commit }) {
+  listenCreateReview({ commit, dispatch }) {
     const socket = getSocket();
 
     socket.on('reviewCreated', review => {
       commit('ADD_REVIEW_TO_EXISTING_REVIEWS', review);
+      dispatch('fetchAllUserReviews');
     });
     console.log('reviewRecieved');
   },

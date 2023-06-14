@@ -36,7 +36,37 @@
         </span>
       </template>
 
-      <slot name="review"></slot>
+      <template>
+        <div v-if="findReviewsForPastRequest(request, getAllReviews, currentUser).receiverReview" class="review_container">
+          <strong>Вам оставили рейтинг:</strong>
+          <span>{{ request.senderData.skillsToTeach[0].skill }}</span>
+          <v-rating
+            class="review_container_rating"
+            color="gold"
+            dense
+            readonly
+            small
+            :value="findReviewsForPastRequest(request, getAllReviews, currentUser).receiverReview"
+          >
+          </v-rating>
+          <br>
+        </div>
+        
+        <div v-if="findReviewsForPastRequest(request, getAllReviews, currentUser).senderReview" class="review_container">
+          <strong>Вы оставили рейтинг:</strong> 
+          <span>{{ request.senderData.skillsToLearn[0].skill }}</span>
+          <v-rating
+            class="review_container_rating"
+            color="gold"
+            dense
+            readonly
+            small
+            :value="findReviewsForPastRequest(request, getAllReviews, currentUser).senderReview"
+          >
+          </v-rating>
+          <br>
+        </div>
+      </template>
 
       <template v-if="request.dealId">
         <strong>Статус сделки:</strong> {{ deal.status }}<br>
@@ -53,9 +83,10 @@
 <script>
 import { mapGetters } from "vuex";
 import chatMixin from '@/mixins/chatMixin.js';
+import skillMixins from "@/mixins/skillMixins";
 
 export default {
-  mixins: [chatMixin],
+  mixins: [chatMixin, skillMixins],
 
   props: {
     request: {
@@ -70,6 +101,7 @@ export default {
 
   computed: {
     ...mapGetters("auth", ["currentUser"]),
+    ...mapGetters('review', ['getAllReviews']),
 
     skillsToDisplay() {
       // Если текущий пользователь - отправитель
@@ -184,7 +216,7 @@ export default {
   },
 };
 </script>
-<style scoped>
+<style scoped lang="scss">
 .skill_card {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -201,5 +233,17 @@ export default {
 
 .completed {
   text-decoration: line-through;
+}
+
+.review_container {
+  display: flex;
+
+  span{
+    margin-left: 0.2rem;
+  }
+
+  &_rating {
+    margin-left: 0.2rem;
+  }
 }
 </style>

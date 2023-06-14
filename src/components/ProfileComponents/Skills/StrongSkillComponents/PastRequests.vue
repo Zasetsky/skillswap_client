@@ -2,18 +2,11 @@
   <div>
     <h3>История запросов и сделок</h3>
     <strong-skills-card
-      class="skill-card"
       v-for="pastRequest in pastRequests"
       :key="pastRequest._id"
       :request="pastRequest"
       :deal="findDeal(pastRequest)"
-    >
-      <template v-slot:review>
-        <strong>Вам оставили рейтинг:</strong> {{ pastRequest.senderData.skillsToTeach[0].skill }} {{ findReviews(pastRequest).receiverReview }}<br>
-        
-        <strong>Вы оставили рейтинг:</strong> {{ pastRequest.senderData.skillsToLearn[0].skill }} {{ findReviews(pastRequest).senderReview }}<br>
-      </template>
-    </strong-skills-card>
+    />
 
     <v-card v-if="pastRequests.length === 0">
       <v-card-text>Здесь будет информация о прошлых запросах этого навыка</v-card-text>
@@ -26,7 +19,6 @@ import StrongSkillsCard from "./StrongSkillsCard.vue";
 
 import { mapGetters } from "vuex";
 import skillMixins from "@/mixins/skillMixins";
-import { getSocket } from "@/soket";
 
 export default {
   mixins: [skillMixins],
@@ -39,7 +31,6 @@ export default {
     ...mapGetters("swapRequests", ["getSwapRequests"]),
     ...mapGetters("auth", ["currentUser"]),
     ...mapGetters('deal', ['getAllDeals']),
-    ...mapGetters('review', ['getAllReviews']),
 
     pastRequests() {
       if (!this.getSwapRequests || this.getSwapRequests.length === 0) {
@@ -71,11 +62,6 @@ export default {
       });
     },
   },
-  
-  async created() {
-    await this.$store.dispatch("deal/fetchAllDeals");
-    await this.$store.dispatch("review/fetchAllUserReviews");
-  },
 
   methods: {
     async findReviews(pastRequest) {
@@ -85,31 +71,24 @@ export default {
       }
 
       // Отзыв, где пользователь является отправителем
-      const senderReview = this.getAllReviews.find(review => 
+      let senderReview = this.getAllReviews.find(review => 
         review.sender === this.currentUser._id && review.swapRequestId === pastRequest._id
       );
 
       // Отзыв, где пользователь является получателем
-      const receiverReview = this.getAllReviews.find(review => 
+      let receiverReview = this.getAllReviews.find(review => 
         review.receiver === this.currentUser._id && review.swapRequestId === pastRequest._id
       );
-
-      console.log('Sender review: ', senderReview);
-      console.log('Receiver review: ', receiverReview);
+      senderReview = senderReview.skillRating,
+      receiverReview = receiverReview.skillRating
+      console.log(senderReview);
+      console.log(receiverReview);
 
       return {
-        senderReview: senderReview ? senderReview.skillRating : 'Отзыв отсутствует',
-        receiverReview: receiverReview ? receiverReview.skillRating : 'Отзыв отсутствует',
+        senderReview,
+        receiverReview
       };
     },
-  },
-
-
-  beforeDestroy() {
-    const socket = getSocket();
-
-    socket.off("allDeals");
-    socket.off("error");
   },
 };
 </script>

@@ -30,6 +30,7 @@ import ReceivedRequests from "./StrongSkillComponents/ReceivedRequests.vue";
 import PastRequests from "./StrongSkillComponents/PastRequests.vue";
 
 import { mapGetters } from "vuex";
+import { getSocket } from "@/soket";
 
 export default {
   components: {
@@ -63,11 +64,20 @@ export default {
     try {
       await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
       await this.$store.dispatch("chat/switchPartnerIsBusy");
+      await this.$store.dispatch("deal/fetchAllDeals");
+      await this.$store.dispatch("review/fetchAllUserReviews");
     } catch (error) {
       console.error('Error fetching swap request:', error);
     } finally {
       this.isLoading = false;
     }
+  },
+
+  beforeDestroy() {
+    const socket = getSocket();
+
+    socket.off("allDeals");
+    socket.off("error");
   },
 };
 </script>
