@@ -34,6 +34,7 @@ import MatchingButton from "./WeakSkillComponents/MatchingButton.vue";
 import PastRequests from "./WeakSkillComponents/PastRequests.vue";
 
 import { mapGetters } from "vuex";
+import { getSocket } from "@/soket";
 
 
 export default {
@@ -58,7 +59,7 @@ export default {
         return {};
       }
 
-      const skillId = this.$route.query.weakSkillId
+      const skillId = this.$route.query.weakSkillId;
       const weakSkill = this.currentUser.skillsToLearn.find(skill => skill._id === skillId) || {};
 
       return weakSkill;
@@ -70,12 +71,20 @@ export default {
     try {
       await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
       await this.$store.dispatch("chat/switchPartnerIsBusy");
+      await this.$store.dispatch("deal/fetchAllDeals");
       await this.$store.dispatch("review/fetchAllUserReviews");
       } catch (error) {
         console.error('Error creating swap request:', error);
     } finally {
       this.isLoading = false;
     }
+  },
+
+  beforeDestroy() {
+    const socket = getSocket();
+
+    socket.off("allDeals");
+    socket.off("error");
   },
 };
 </script>

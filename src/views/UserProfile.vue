@@ -17,12 +17,12 @@
           <p>{{ getUserProfile.bio }}</p>
 
           <request-button
-            :isSwapRequestAlreadySent="isSwapRequestAlreadySent" 
-            :isSwapRequestReceived="isSwapRequestReceived"
+            :isSwapRequestAlreadySent="isSwapRequestAlreadySent"
+            :isCurrentWeakSkillActive="isCurrentWeakSkillActive"
             />
           <cancel-button
             :isSwapRequestAlreadySent="isSwapRequestAlreadySent"
-            :isSwapRequestReceived="isSwapRequestReceived"
+            :isCurrentWeakSkillActive="isCurrentWeakSkillActive"
             />
         </v-col>
       </v-row>
@@ -86,24 +86,26 @@ export default {
   computed: {
     ...mapGetters("user", ["getUserProfile"]),
     ...mapGetters("swapRequests", ["getSwapRequests"]),
+    ...mapGetters("auth", ["currentUser"]),
 
     isSwapRequestAlreadySent() {
       if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
-        return this.getSwapRequests.some((request) => request.receiverId === this.localUserId && (request.status === "pending" || request.status === "accepted"));
-      }
-      else {
+        return this.getSwapRequests.some((request) => 
+          (request.receiverId === this.localUserId ||
+          request.senderId === this.localUserId) &&
+          request.senderData.skillsToLearn[0]?._id === this.$route.query.skillToLearnId &&
+          (request.status === "pending" || request.status === "accepted")
+        );
+      } else {
         return false;
       }
     },
 
-    isSwapRequestReceived() {
-      if (this.getSwapRequests || this.getSwapRequests.length !== 0) {
-        return this.getSwapRequests.some((request) => request.senderId === this.localUserId && (request.status === "pending" || request.status === "accepted"));
-      }
-      else {
-        return false;
-      }
-    },
+    isCurrentWeakSkillActive() {
+      return this.currentUser.skillsToLearn.some(skill => 
+        skill._id === this.$route.query.skillToLearnId && skill.isActive
+      );
+    }
   },
 
   methods: {

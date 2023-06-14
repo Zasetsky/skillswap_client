@@ -1,16 +1,13 @@
 <template>
   <div>
-    <v-btn class="grey lighten-2" v-if="isSwapRequestAlreadySent" @click="cancelSwapRequest">
+    <v-btn
+      class="grey lighten-2"
+      v-if="isSwapRequestAlreadySent && !isCurrentWeakSkillActive"
+      @click="cancelSwapRequest"
+    >
       <v-hover>
         <template v-slot:default="{ hover }">
-          <span style="min-width: 286px;">{{ hover ? 'Отменить запрос' : 'Запрос на обмен уже отправлен' }}</span>
-        </template>
-      </v-hover>
-    </v-btn>
-    <v-btn class="grey lighten-2" v-if="isSwapRequestReceived" @click="cancelSwapRequest" style="min-width: 300px;">
-      <v-hover>
-        <template v-slot:default="{ hover }">
-          <span style="min-width: 269px;">{{ hover ? 'Отклонить запрос' : 'Запрос на обмен уже получен' }}</span>
+          <span style="min-width: 286px;">{{ hover ? 'Отменить запрос' : 'Вы уже предложили этот навык' }}</span>
         </template>
       </v-hover>
     </v-btn>
@@ -26,7 +23,7 @@ export default {
       default: false
     },
 
-    isSwapRequestReceived: {
+    isCurrentWeakSkillActive: {
       type: Boolean,
       default: false
     },
@@ -57,10 +54,6 @@ export default {
         console.error("Error creating swap request:", error);
       }
     },
-  }
-  
+  },
 }
 </script>
-<style lang="">
-  
-</style>

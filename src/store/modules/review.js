@@ -130,9 +130,9 @@ const mutations = {
       }
     },
 
-    SET_CURRENT_DEAL_REVIEWS(state, reviews) {
-      state.dealReviews = reviews;
-    },
+  SET_CURRENT_DEAL_REVIEWS(state, reviews) {
+    state.dealReviews = reviews;
+  },
 
   logout(state) {
       state.reviews = {};

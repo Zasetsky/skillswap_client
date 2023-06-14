@@ -1,6 +1,11 @@
 <template>
   <div>
-    <v-btn v-if="!isSwapRequestAlreadySent && !isSwapRequestReceived" color="primary" @click="proposeSkillExchange">
+    <v-btn
+        v-if="!isSwapRequestAlreadySent || isCurrentWeakSkillActive"
+        :disabled="isCurrentWeakSkillActive"
+        color="primary"
+        @click="proposeSkillExchange"
+      >
       Предложить обмен навыками
     </v-btn>
   </div>
@@ -16,7 +21,7 @@ export default {
       default: false
     },
 
-    isSwapRequestReceived: {
+    isCurrentWeakSkillActive: {
       type: Boolean,
       default: false
     },
