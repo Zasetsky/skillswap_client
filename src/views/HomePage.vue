@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <profile-banner :user="currentUser" />
     <v-row class="mt-5 ml-16">
       <v-col style="display: flex;">
         <profile-avatar 
@@ -41,7 +42,8 @@
 </template>
 
 <script>
-import ProfileAvatar from "@/components/ProfileComponents/Avatar/ProfileAvatar.vue";
+import ProfileBanner from "@/components/ProfileComponents/Images/ProfileBanner.vue";
+import ProfileAvatar from "@/components/ProfileComponents/Images/ProfileAvatar.vue";
 import SkillChips from "@/components/ProfileComponents/Skills/SkillsChip/SkillChipGroup.vue";
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
 import UserRatingCard from "@/components/ProfileComponents/Rating/UserRatingCard.vue";
@@ -52,6 +54,7 @@ import { mapGetters } from "vuex";
 
 export default {
   components: {
+    ProfileBanner,
     ProfileAvatar,
     SkillChips,
     UserStatisticsDiagram,
