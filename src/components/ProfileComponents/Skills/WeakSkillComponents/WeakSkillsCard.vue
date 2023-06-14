@@ -13,14 +13,65 @@
       <strong>Имя:</strong> {{ getName }}<br>
       <strong>Описание:</strong> {{ getDescription }}<br>
 
-      <template v-if="request.receiverData && request.status !== 'rejected'">
-        <strong>Навык, который вы преподаёте:</strong> {{ request.status === 'pending' ? '???' : (request.receiverData.skillsToTeach[0]?.skill ?? '') }}<br>
+      <template v-if="request.senderData && request.status !== 'rejected'">
+        <strong>Навык, который вы преподаёте:</strong> 
+        {{ request.status === 'pending' ? '???' : (skillToTeach) }}<br>
+      </template>
+
+      <template v-if="isDealStatusAllowed">
+        <strong>Длительность занятия:</strong> {{ deal.form.meetingDuration }} мин<br>
+      </template>
+
+      <template v-if="isDealStatusAllowed">
+        <span :class="{'completed': deal.form.isCompleted}">
+          <strong>Встреча по навыку {{ request.senderData.skillsToLearn[0].skill }}:</strong> {{ deal.form.meetingDate }} в {{ deal.form.meetingTime }}<br>
+        </span>
+
+        <span :class="{'completed': deal.form2.isCompleted}">
+          <strong>Встреча по навыку {{ request.senderData.skillsToTeach[0].skill }}:</strong> {{ deal.form2.meetingDate }} в {{ deal.form2.meetingTime }}<br>
+        </span>
+      </template>
+
+      <template>
+        <div v-if="findReviewsForPastRequest(request, getAllReviews, currentUser).receiverReview" class="review_container">
+          <strong>Вам оставили рейтинг:</strong>
+          <span>{{ teachingSkill }}</span>
+          <v-rating
+            class="review_container_rating"
+            color="gold"
+            dense
+            readonly
+            small
+            :value="findReviewsForPastRequest(request, getAllReviews, currentUser).receiverReview"
+          >
+          </v-rating>
+          <br>
+        </div>
+        
+        <div v-if="findReviewsForPastRequest(request, getAllReviews, currentUser).senderReview" class="review_container">
+          <strong>Вы оставили рейтинг:</strong> 
+          <span>{{ learningSkill }}</span>
+          <v-rating
+            class="review_container_rating"
+            color="gold"
+            dense
+            readonly
+            small
+            :value="findReviewsForPastRequest(request, getAllReviews, currentUser).senderReview"
+          >
+          </v-rating>
+          <br>
+        </div>
+      </template>
+      
+      <template v-if="request.dealId">
+        <strong>Статус сделки:</strong> {{ deal.status }}<br>
       </template>
 
       <template v-if="isPast">
         <strong>Статус запроса:</strong> {{ request.status }}
       </template>
-      
+
       <v-btn
         v-if="request.status === 'pending'"
         class="btn mt-4"
@@ -38,12 +89,17 @@
 <script>
 import { mapGetters } from "vuex";
 import chatMixin from '@/mixins/chatMixin.js';
+import skillMixins from "@/mixins/skillMixins";
 
 export default {
-  mixins: [chatMixin],
+  mixins: [chatMixin, skillMixins],
 
   props: {
     request: {
+      type: Object,
+      default: () => ({}),
+    },
+    deal: {
       type: Object,
       default: () => ({}),
     },
@@ -51,6 +107,46 @@ export default {
 
   computed: {
     ...mapGetters("auth", ["currentUser"]),
+    ...mapGetters("review", ["getAllReviews"]),
+
+    skillToTeach() {
+      if (this.currentUser._id === this.request.senderId) {
+        return this.request.senderData.skillsToTeach[0]?.skill ?? '';
+      } else {
+        return this.request.receiverData.skillsToLearn[0]?.skill ?? '';
+      }
+    },
+
+    teachingSkill() {
+      if (this.currentUser._id === this.request.senderId) {
+        return this.request.senderData.skillsToTeach[0]?.skill ?? '';
+      } else {
+        return this.request.senderData.skillsToLearn[0]?.skill ?? '';
+      }
+    },
+
+    learningSkill() {
+      if (this.currentUser._id === this.request.senderId) {
+        return this.request.senderData.skillsToLearn[0]?.skill ?? '';
+      } else {
+        return this.request.senderData.skillsToTeach[0]?.skill ?? '';
+      }
+    },
+
+    isDealStatusAllowed() {
+      if (!this.deal) {
+        return false;
+      }
+      return [
+        "confirmed",
+        "reschedule_offer",
+        "reschedule_offer_update",
+        "confirmed_reschedule",
+        "half_completed",
+        "half_completed_confirmed_reschedule",
+        "completed"
+      ].includes(this.deal.status);
+    },
 
     isPast() {
       const validStauses = ["completed", "rejected", "cancelled"].includes(this.request.status);
@@ -123,7 +219,7 @@ export default {
   }
 };
 </script>
-<style scoped>
+<style scoped lang="scss">
 .skill_card {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -141,5 +237,21 @@ export default {
   /* transform: scale(1.005); */
   background-color: rgba(0, 0, 0, 0.05);;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.completed {
+  text-decoration: line-through;
+}
+
+.review_container {
+  display: flex;
+
+  span{
+    margin-left: 0.2rem;
+  }
+
+  &_rating {
+    margin-left: 0.2rem;
+  }
 }
 </style>

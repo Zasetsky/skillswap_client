@@ -70,6 +70,7 @@ export default {
     try {
       await this.$store.dispatch("swapRequests/fetchAllSwapRequests");
       await this.$store.dispatch("chat/switchPartnerIsBusy");
+      await this.$store.dispatch("review/fetchAllUserReviews");
       } catch (error) {
         console.error('Error creating swap request:', error);
     } finally {

@@ -6,6 +6,7 @@
       :key="request._id"
       :class="{ 'disabled-component': getIsBusy }"
       :request="request"
+      :deal="findDeal(request)"
     />
 
     <v-card v-if="filteredSwapRequests.length === 0">
@@ -18,10 +19,13 @@
 
 <script>
 import WeakSkillsCard from "./WeakSkillsCard.vue";
+import skillMixins from "@/mixins/skillMixins";
 
 import { mapGetters } from "vuex";
 
 export default {
+  mixins: [skillMixins],
+
   components: {
     WeakSkillsCard,
   },
@@ -29,6 +33,7 @@ export default {
   computed: {
     ...mapGetters('swapRequests', ['filteredSwapRequests']),
     ...mapGetters("chat", [ "getIsBusy"]),
+    ...mapGetters('deal', ['getAllDeals']),
   },
 
   watch: {

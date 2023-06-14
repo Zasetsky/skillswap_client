@@ -39,7 +39,7 @@
       <template>
         <div v-if="findReviewsForPastRequest(request, getAllReviews, currentUser).receiverReview" class="review_container">
           <strong>Вам оставили рейтинг:</strong>
-          <span>{{ request.senderData.skillsToTeach[0].skill }}</span>
+          <span>{{ teachingSkill }}</span>
           <v-rating
             class="review_container_rating"
             color="gold"
@@ -54,7 +54,7 @@
         
         <div v-if="findReviewsForPastRequest(request, getAllReviews, currentUser).senderReview" class="review_container">
           <strong>Вы оставили рейтинг:</strong> 
-          <span>{{ request.senderData.skillsToLearn[0].skill }}</span>
+          <span>{{ learningSkill }}</span>
           <v-rating
             class="review_container_rating"
             color="gold"
@@ -111,6 +111,22 @@ export default {
       // Иначе, текущий пользователь - получатель
       else {
         return this.request.senderData.skillsToTeach;
+      }
+    },
+
+    teachingSkill() {
+      if (this.currentUser._id === this.request.senderId) {
+        return this.request.senderData.skillsToTeach[0]?.skill ?? '';
+      } else {
+        return this.request.senderData.skillsToLearn[0]?.skill ?? '';
+      }
+    },
+
+    learningSkill() {
+      if (this.currentUser._id === this.request.senderId) {
+        return this.request.senderData.skillsToLearn[0]?.skill ?? '';
+      } else {
+        return this.request.senderData.skillsToTeach[0]?.skill ?? '';
       }
     },
 
