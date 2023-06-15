@@ -1,12 +1,14 @@
 <template>
-  <v-container>
+  <div class="home_container">
     <profile-banner :user="currentUser" />
+
     <v-row class="mt-5 ml-16">
       <v-col style="display: flex;">
         <profile-avatar 
           style="margin-top: 50px;"
           :user="currentUser"
         />
+
         <user-rating-card
           :user="currentUser"
         />
@@ -38,11 +40,11 @@
         />
       </v-col>
     </v-row>
-  </v-container>
+  </div>
 </template>
 
 <script>
-import ProfileBanner from "@/components/ProfileComponents/Images/ProfileBanner.vue";
+import ProfileBanner from "@/components/ProfileComponents/Images/Banner/ProfileBanner.vue";
 import ProfileAvatar from "@/components/ProfileComponents/Images/ProfileAvatar.vue";
 import SkillChips from "@/components/ProfileComponents/Skills/SkillsChip/SkillChipGroup.vue";
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
@@ -84,19 +86,9 @@ export default {
 </script>
 
 <style scoped>
+.home_container {
+    padding: 0;
+    margin: 0;
+}
 
-
-/* .swap-request-counter {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background-color: red;
-  color: white;
-  border-radius: 50%;
-  font-size: 10px;
-  line-height: 18px;
-  height: 18px;
-  width: 18px;
-  text-align: center;
-} */
 </style>

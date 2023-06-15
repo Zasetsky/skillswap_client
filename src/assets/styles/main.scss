@@ -1,33 +1,11 @@
+@import './login-register.scss';
 
 body {
-    overflow-y: auto;
-    scrollbar-width: none;
+    margin: 0;
+    padding: 0;
     background-color: #fdfdfd;
 }
 
 body::-webkit-scrollbar {
-    display: none !important;
-  }
-
-.email-custom-outline input::-webkit-calendar-picker-indicator {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-.switch-form-text {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-    font-size: 16px;
-    color: rgba(0, 0, 0, 0.6);
-    font-weight: 500;
-    text-align: center;
-}
-
-.switch-form-link {
-    margin-left: 5px;
-    color: #264058;
-    text-decoration: none;
-    font-weight: bold;
-    cursor: pointer;
+  display: none !important;
 }
