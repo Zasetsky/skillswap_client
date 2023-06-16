@@ -2,7 +2,7 @@
   <div class="banner-container" :class="draggingClass">
     <div class="save-cancel_buttons" v-if="showButtons">
         <v-btn class="save-cancel_buttons_btn" @click="saveBanner">Сохранить</v-btn>
-        <v-btn class="save-cancel_buttons_btn" @click="cancelBanner">Отменить</v-btn>
+        <!-- <v-btn class="save-cancel_buttons_btn" @click="cancelBanner">Отменить</v-btn> -->
     </div>
     <div 
       class="profile-banner" 
@@ -51,9 +51,9 @@ export default {
     return {
       dragging: false,
       startY: 0,
-      bannerY: 0,
+      bannerY: this.user.bannerPosition ? parseInt(this.user.bannerPosition) : 0,
       selectedFile: null,
-      bannerUrl: this.user.banner ? this.user.banner : '',
+      bannerUrl: this.user.banner || '',
       showOverlay: false,
       menuVisible: false,
       dialog: false,
@@ -80,6 +80,18 @@ export default {
   },
 
   methods: {
+    async saveBanner() {
+      try {
+        await this.$store.dispatch('user/updateBanner', {
+          file: this.selectedFile,
+          bannerPosition: this.bannerY,
+        });
+        this.showButtons = false;
+      } catch (error) {
+        console.error("Error updating banner:", error);
+      }
+    },
+
     mouseDown(e) {
       this.dragging = true;
       this.startY = e.clientY;
@@ -130,6 +142,7 @@ export default {
 
     handleFileUpload(event) {
       const file = event.target.files[0];
+      this.selectedFile = file;
       const reader = new window.FileReader();
       reader.onload = (e) => {
         const url =  e.target.result;
@@ -166,13 +179,12 @@ export default {
   display: flex;
   justify-content: flex-end;
   &_btn{ 
-    margin-top: 0.5rem;
-    margin-right: 1rem;
+    margin: 0.5rem 1rem 0.5rem 0;
   }
 }
 
 .banner-container {
-  height: 20rem;
+  height: 17rem;
   background-color: #f9f9f9;
   position: relative;
 }

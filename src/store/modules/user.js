@@ -5,6 +5,7 @@ const API_URL = 'http://localhost:3000/api/profile'
 
 const state = {
   avatarUrl: null,
+  bannerUrl: null,
   userProfile: {}
 };
 
@@ -14,19 +15,32 @@ const getters = {
 };
 
 const actions = {
+  async updateBanner({ commit }, payload) {
+    try {
+      console.log(payload);
+      const formData = new FormData();
+      formData.append('file', payload.file);
+      formData.append('bannerPosition', payload.bannerPosition);
+      console.log(payload);
+
+      const response = await axios.put(`${API_URL}/banner`, formData);
+
+      const bannerUrl = response.data.banner;
+      commit('SET_BANNER_URL', bannerUrl);
+
+    } catch (error) {
+      console.error("Error updating banner:", error);
+    }
+  },
 
   // Обновление аватарки
 
   async updateAvatar({ commit }, file) {
     try {
       const formData = new FormData();
-      formData.append('avatar', file);
+      formData.append('file', file);
 
-      const response = await axios.post(`${API_URL}/avatar`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(`${API_URL}/avatar`, formData);
 
       const avatarUrl = response.data.avatar;
       commit("SET_AVATAR_URL", avatarUrl);
@@ -50,26 +64,6 @@ const actions = {
       console.error("Error updating profile:", error);
     }
   },
-
-  // Получение геолокации
-  // 
-  // async getCurrentLocation() {
-  //   return new Promise((resolve, reject) => {
-  //     if (navigator.geolocation) {
-  //       navigator.geolocation.getCurrentPosition(
-  //         (position) => {
-  //           const { latitude, longitude } = position.coords;
-  //           resolve({ latitude, longitude });
-  //         },
-  //         (error) => {
-  //           reject(error);
-  //         }
-  //       );
-  //     } else {
-  //       reject(new Error('Geolocation not supported in this browser'));
-  //     }
-  //   });
-  // },
 
   // Обновление доступности для обмена
 
@@ -120,6 +114,11 @@ const mutations = {
   SET_AVATAR_URL(state, avatarUrl) {
     state.avatarUrl = avatarUrl;
   },
+
+  SET_BANNER_URL(state, bannerUrl) {
+    state.bannerUrl = bannerUrl;
+  },
+
   setUserProfile(state, userProfile) {
     state.userProfile = userProfile;
   },
