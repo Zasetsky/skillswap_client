@@ -3,7 +3,7 @@
     <v-menu v-model="menuVisible" offset-y @input="menuChange">
       <template v-slot:activator="{ on }">
         <div class="camera-icon" v-on="on">
-          <v-icon large>
+          <v-icon color="white" large>
             mdi-camera
           </v-icon>
           <span>Change Banner</span>

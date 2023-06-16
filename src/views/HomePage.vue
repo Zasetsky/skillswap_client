@@ -45,7 +45,7 @@
 
 <script>
 import ProfileBanner from "@/components/ProfileComponents/Images/Banner/ProfileBanner.vue";
-import ProfileAvatar from "@/components/ProfileComponents/Images/ProfileAvatar.vue";
+import ProfileAvatar from "@/components/ProfileComponents/Images/Avatar/ProfileAvatar.vue";
 import SkillChips from "@/components/ProfileComponents/Skills/SkillsChip/SkillChipGroup.vue";
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"
 import UserRatingCard from "@/components/ProfileComponents/Rating/UserRatingCard.vue";

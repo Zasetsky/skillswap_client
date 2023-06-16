@@ -51,7 +51,7 @@
 
 
 <script>
-import ProfileAvatar from '@/components/ProfileComponents/Images/ProfileAvatar.vue';
+import ProfileAvatar from "@/components/ProfileComponents/Images/Avatar/ProfileAvatar.vue";
 import RequestButton from '@/components/ProfileComponents/Buttons/RequestButton.vue';
 import CancelButton from '@/components/ProfileComponents/Buttons/RequestCancelButton.vue';
 import UserStatisticsDiagram from "@/components/ProfileComponents/Rating/UserStatisticsDiagram.vue"

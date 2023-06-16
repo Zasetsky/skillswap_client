@@ -50,6 +50,7 @@ export default {
   data() {
     return {
       dragging: false,
+      isBannerMovable: false,
       startY: 0,
       bannerY: this.user.bannerPosition ? parseInt(this.user.bannerPosition) : 0,
       selectedFile: null,
@@ -69,11 +70,12 @@ export default {
         return {
           backgroundImage: `url(${this.bannerUrl})`,
           backgroundPosition: `center ${this.bannerY}px`,
-          cursor: 'move'
+          cursor: this.isBannerMovable ? 'move' : 'default'
         };
       }
       return {};
     },
+
     draggingClass() {
       return this.dragging ? 'no-select' : '';
     }
@@ -106,7 +108,7 @@ export default {
 
       // Ограничиваем перемещение изображения
       const newBannerY = this.bannerY + dy;
-      if (newBannerY <= 0 && Math.abs(newBannerY) <= this.imageHeight + this.containerHeight) {
+      if (newBannerY <= 0 && Math.abs(newBannerY) <= this.imageHeight - this.containerHeight) {
         this.bannerY = newBannerY;
         this.startY = e.clientY;
       }
@@ -148,6 +150,7 @@ export default {
         const url =  e.target.result;
         this.bannerUrl = url;
         this.showButtons = true;
+        this.isBannerMovable  = true;
 
         // Обновляем высоту изображения
         const img = new Image();
