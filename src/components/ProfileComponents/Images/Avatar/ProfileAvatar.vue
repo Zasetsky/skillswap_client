@@ -1,23 +1,26 @@
 <template>
   <div class="avatar-container">
-    <v-avatar size="150">
+    <v-avatar class="user_avatar" size="150" @click="openFullImage">
       <img :src="computedAvatarUrl" alt="User Avatar" />
     </v-avatar>
     <div class="overlay" @click="openDialog">
       <v-icon color="white">mdi-camera</v-icon>
     </div>
-    <avatar-dialog ref="avatarDialog" @file-chosen="handleFileChosen"></avatar-dialog>
+    <avatar-dialog ref="avatarDialog" :user="user" @file-chosen="handleFileChosen" @image-chosen="handleImageChosen"></avatar-dialog>
+    <full-image-dialog ref="fullImageDialog" :allAvatars="user.allAvatars" :currentAvatar="computedAvatarUrl"></full-image-dialog>
     <avatar-crop-dialog ref="avatarCropDialog" :dialog="cropDialog" :image-src="imageSrc" @crop-complete="updateAvatar" @update:dialog="cropDialog = $event"></avatar-crop-dialog>
   </div>
 </template>
 
 <script>
 import AvatarDialog from './AvatarDialog.vue';
+import FullImageDialog from './FullImageDialog.vue';
 import AvatarCropDialog from './AvatarCropDialog.vue';
 
 export default {
   components: {
     AvatarDialog,
+    FullImageDialog,
     AvatarCropDialog
   },
   props: {
@@ -45,6 +48,16 @@ export default {
     openDialog() {
       this.$refs.avatarDialog.open();
     },
+
+    openFullImage() {
+      this.$refs.fullImageDialog.open();
+    },
+
+    handleImageChosen(avatarUrl) {
+      this.imageSrc = avatarUrl;
+      this.cropDialog = true;
+    },
+
     handleFileChosen(file) {
       let reader = new FileReader();
 
@@ -81,6 +94,10 @@ export default {
   width: 150px;
   height: 150px;
   border-radius: 50%;
+}
+
+.user_avatar {
+  cursor: pointer;
 }
 
 .overlay {
