@@ -17,17 +17,15 @@ const getters = {
 const actions = {
   async updateBanner({ commit }, payload) {
     try {
-      console.log(payload);
       const formData = new FormData();
-      formData.append('file', payload.file);
+      formData.append('banner', payload.file);
       formData.append('bannerPosition', payload.bannerPosition);
-      console.log(payload);
-
+  
       const response = await axios.put(`${API_URL}/banner`, formData);
-
+  
       const bannerUrl = response.data.banner;
       commit('SET_BANNER_URL', bannerUrl);
-
+  
     } catch (error) {
       console.error("Error updating banner:", error);
     }
@@ -35,18 +33,20 @@ const actions = {
 
   // Обновление аватарки
 
-  async updateAvatar({ commit }, file) {
+  async updateAvatars({ commit }, { original, cropped }) {
+    console.log(original, cropped);
     try {
       const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await axios.post(`${API_URL}/avatar`, formData);
-
+      formData.append('original', original);
+      formData.append('cropped', cropped);
+  
+      const response = await axios.post(`${API_URL}/avatars`, formData);
+  
       const avatarUrl = response.data.avatar;
       commit("SET_AVATAR_URL", avatarUrl);
-
+  
     } catch (error) {
-      console.error("Error updating avatar:", error);
+      console.error("Error updating avatars:", error);
     }
   },
 

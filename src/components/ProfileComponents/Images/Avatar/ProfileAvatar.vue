@@ -1,60 +1,76 @@
 <template>
-  <div class="avatar-container" @click="triggerAvatarUpdate">
+  <div class="avatar-container">
     <v-avatar size="150">
-      <img :src="avatarUrl" alt="User Avatar" />
+      <img :src="computedAvatarUrl" alt="User Avatar" />
     </v-avatar>
-    <div class="overlay">
+    <div class="overlay" @click="openDialog">
       <v-icon color="white">mdi-camera</v-icon>
     </div>
-    <input type="file" ref="avatarInput" accept="image/*" @change="handleAvatarUpdate" style="display: none;">
+    <avatar-dialog ref="avatarDialog" @file-chosen="handleFileChosen"></avatar-dialog>
+    <avatar-crop-dialog ref="avatarCropDialog" :dialog="cropDialog" :image-src="imageSrc" @crop-complete="updateAvatar" @update:dialog="cropDialog = $event"></avatar-crop-dialog>
   </div>
 </template>
 
 <script>
+import AvatarDialog from './AvatarDialog.vue';
+import AvatarCropDialog from './AvatarCropDialog.vue';
+
 export default {
+  components: {
+    AvatarDialog,
+    AvatarCropDialog
+  },
   props: {
     user: {
       type: Object,
       default: null  
     }
   },
-
   data() {
     return {
-      avatarUrl: null
+      originalFile: null,
+      croppedFile: null,
+      cropDialog: false,
+      imageSrc: null,
     }
   },
-
   computed: {
     computedAvatarUrl() {
-      if (this.avatarUrl) return this.avatarUrl;
+      if (this.croppedFile) return URL.createObjectURL(this.croppedFile);
       if (!this.user || !this.user.avatar) return "https://via.placeholder.com/150"
       return this.user.avatar;
     },
   },
-
   methods: {
-    triggerAvatarUpdate() {
-      this.$refs.avatarInput.click();
+    openDialog() {
+      this.$refs.avatarDialog.open();
     },
-
-    handleAvatarUpdate(event) {
-      const file = event.target.files[0];
-      this.updateAvatar(file);
-    },
-
-    updateAvatar(file) {
+    handleFileChosen(file) {
       let reader = new FileReader();
 
       reader.onload = e => {
-        this.avatarUrl = e.target.result;
+        this.imageSrc = e.target.result;
+        this.cropDialog = true;
       };
 
       reader.readAsDataURL(file);
+      this.originalFile = file;
+    },
+    async updateAvatar(blob) {
+      this.croppedFile = new File([blob], "cropped.jpeg", { type: "image/jpeg" });
+
+      await this.$store.dispatch('user/updateAvatars', {
+        original: this.originalFile,
+        cropped: this.croppedFile
+      });
+
+      this.imageSrc = null;
+      this.cropDialog = false;
     }
   }
 }
 </script>
+
 
 <style scoped>
 .avatar-container {
@@ -70,7 +86,7 @@ export default {
 .overlay {
   position: absolute;
   bottom: 15px;
-  right: 0px;
+  right: 5px;
   height: 30px;
   width: 30px;
   display: flex;
